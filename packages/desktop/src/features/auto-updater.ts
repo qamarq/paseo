@@ -225,7 +225,8 @@ class ElectronAppUpdateRuntime implements AppUpdateRuntime {
 
 const appUpdateService = createAppUpdateService({
   runtime: new ElectronAppUpdateRuntime(),
-  isPackaged: () => app.isPackaged && DESKTOP_IDENTITY.updatesEnabled,
+  isPackaged: () => app.isPackaged,
+  updatesEnabled: () => DESKTOP_IDENTITY.updatesEnabled,
   now: () => Date.now(),
   bucket: async () => bucketFromStagingUserId(await getStagingUserId()),
   reportCheckError: (error) => {

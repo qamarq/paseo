@@ -77,6 +77,7 @@ export interface AppUpdateService {
 export interface AppUpdateServiceDeps {
   runtime: AppUpdateRuntime;
   isPackaged(): boolean;
+  updatesEnabled?(): boolean;
   now(): number;
   bucket(): Promise<number>;
   reportCheckError?(error: unknown): void;
@@ -139,7 +140,10 @@ function buildDeferredInstallResult(currentVersion: string): AppUpdateInstallRes
   };
 }
 
+const UPDATES_DISABLED_MESSAGE = "Updates are disabled in this build.";
+
 export function createAppUpdateService(deps: AppUpdateServiceDeps): AppUpdateService {
+  const updatesDisabled = () => deps.updatesEnabled?.() === false;
   let cachedUpdateInfo: RuntimeUpdateInfo | null = null;
   let downloadedUpdateVersion: string | null = null;
   let configuredReleaseChannel: AppReleaseChannel | null = null;
@@ -253,6 +257,14 @@ export function createAppUpdateService(deps: AppUpdateServiceDeps): AppUpdateSer
         readyToInstall: false,
       });
     }
+    if (updatesDisabled()) {
+      return buildCheckResult({
+        currentVersion,
+        hasUpdate: false,
+        readyToInstall: false,
+        errorMessage: intent === "manual" ? UPDATES_DISABLED_MESSAGE : null,
+      });
+    }
 
     return runCheckExclusively(async () => {
       configureRuntime(releaseChannel, intent);
@@ -339,6 +351,9 @@ export function createAppUpdateService(deps: AppUpdateServiceDeps): AppUpdateSer
         version: currentVersion,
         message: "Auto-update is not available in development mode.",
       };
+    }
+    if (updatesDisabled()) {
+      return { installed: false, version: currentVersion, message: UPDATES_DISABLED_MESSAGE };
     }
 
     const check = await checkForAppUpdate({

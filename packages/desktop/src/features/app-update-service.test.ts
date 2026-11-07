@@ -151,11 +151,16 @@ class FakeAppUpdateRuntime implements AppUpdateRuntime {
   }
 }
 
-function createService(input?: { now?: () => number; bucket?: () => Promise<number> }) {
+function createService(input?: {
+  now?: () => number;
+  bucket?: () => Promise<number>;
+  updatesEnabled?: () => boolean;
+}) {
   const runtime = new FakeAppUpdateRuntime();
   const service = createAppUpdateService({
     runtime,
     isPackaged: () => true,
+    updatesEnabled: input?.updatesEnabled,
     now: input?.now ?? (() => Date.parse("2026-04-28T12:00:00.000Z")),
     bucket: input?.bucket ?? (async () => 0.99),
   });
@@ -169,6 +174,44 @@ const rolledOutUpdate = {
 };
 
 describe("app update service", () => {
+  it("tells a manual check that this build has updates disabled without contacting the feed", async () => {
+    const { runtime, service } = createService({ updatesEnabled: () => false });
+    runtime.nextCheck({ isUpdateAvailable: true, updateInfo: rolledOutUpdate });
+
+    const manual = await service.checkForAppUpdate({
+      currentVersion: "1.2.3",
+      releaseChannel: "stable",
+      intent: "manual",
+    });
+    const automatic = await service.checkForAppUpdate({
+      currentVersion: "1.2.3",
+      releaseChannel: "stable",
+      intent: "automatic",
+    });
+
+    expect(manual.hasUpdate).toBe(false);
+    expect(manual.errorMessage).toBe("Updates are disabled in this build.");
+    expect(automatic.hasUpdate).toBe(false);
+    expect(automatic.errorMessage).toBeNull();
+    expect(runtime.checkCount).toBe(0);
+  });
+
+  it("refuses to install when this build has updates disabled", async () => {
+    const { runtime, service } = createService({ updatesEnabled: () => false });
+
+    const result = await service.downloadAndInstallUpdate({
+      currentVersion: "1.2.3",
+      releaseChannel: "stable",
+    });
+
+    expect(result).toEqual({
+      installed: false,
+      version: "1.2.3",
+      message: "Updates are disabled in this build.",
+    });
+    expect(runtime.downloadCallCount).toBe(0);
+  });
+
   it("does not expose automatic stable updates before the user is admitted to rollout", async () => {
     const { runtime, service } = createService();
     runtime.nextCheck({ isUpdateAvailable: true, updateInfo: rolledOutUpdate });

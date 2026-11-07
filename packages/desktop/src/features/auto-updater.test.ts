@@ -64,6 +64,7 @@ describe("checkForAppUpdate", () => {
 
       expect(shipped.DESKTOP_IDENTITY.updatesEnabled).toBe(false);
       expect(result.hasUpdate).toBe(false);
+      expect(result.errorMessage).toBe("Updates are disabled in this build.");
       expect(autoUpdaterMock.checkForUpdates).not.toHaveBeenCalled();
     } finally {
       identityMock.updatesEnabled = true;
