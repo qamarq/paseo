@@ -346,6 +346,21 @@ describe("Mono action and message colors", () => {
   });
 });
 
+describe("Mono diff gutter", () => {
+  it.each([
+    ["default", 0.15, 0.25],
+    ["highContrast", 0.28, 0.45],
+  ] as const)(
+    "composes the %s gutter overlay up to MonoCode's gutter strength",
+    (diffPalette, line, gutter) => {
+      const { colors } = buildMonoTheme(input({ diffPalette }));
+      const overlay = Number(/, ([\d.]+)\)$/.exec(colors.diffAdditionGutter)?.[1]);
+
+      expect(1 - (1 - line) * (1 - overlay)).toBeCloseTo(gutter, 2);
+    },
+  );
+});
+
 describe("monoWindowTint", () => {
   const tint = { hue: 243, saturation: 0, darkLightness: 6 };
 

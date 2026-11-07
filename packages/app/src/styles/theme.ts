@@ -175,12 +175,16 @@ function statusTints(colors: typeof lightStatusColors, alphaHex: string) {
 const lightStatusTints = statusTints(lightStatusColors, "1f"); // 12%
 const darkStatusTints = statusTints(darkStatusColors, "29"); // 16%
 
+const NO_GUTTER_TINT = "rgba(0, 0, 0, 0)";
+
 function diffLineColors(colors: typeof lightStatusColors) {
   return {
     diffAdditionForeground: colors.statusSuccess,
     diffDeletionForeground: colors.statusDanger,
     diffAdditionBackground: hexColorWithAlpha(colors.statusSuccess, 0.15),
     diffDeletionBackground: hexColorWithAlpha(colors.statusDanger, 0.1),
+    diffAdditionGutter: NO_GUTTER_TINT,
+    diffDeletionGutter: NO_GUTTER_TINT,
   };
 }
 
