@@ -731,6 +731,15 @@ export interface ChromeTokens {
   userBubbleRadius: number | null;
   userBubblePaddingX: number | null;
   userBubblePaddingY: number | null;
+  /** Tool-call rows: the spine under opened rows and whether the target is set in mono. */
+  railColor: string | null;
+  toolTargetMono: boolean;
+  /** Turn metadata (duration, timestamp, copy and fork icons). */
+  metaColor: string | null;
+  /** Assistant prose, links and Markdown headings. */
+  proseColor: string | null;
+  linkColor: string | null;
+  headingColor: string | null;
   inlineCodeRadius: number | null;
   inlineCodeFill: string | null;
   codeBlockRadius: number | null;
@@ -776,6 +785,12 @@ export const DEFAULT_CHROME: ChromeTokens = {
   userBubbleRadius: null,
   userBubblePaddingX: null,
   userBubblePaddingY: null,
+  railColor: null,
+  toolTargetMono: false,
+  metaColor: null,
+  proseColor: null,
+  linkColor: null,
+  headingColor: null,
   inlineCodeRadius: null,
   inlineCodeFill: null,
   codeBlockRadius: null,

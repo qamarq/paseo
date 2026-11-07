@@ -21,7 +21,9 @@ export function createMarkdownStyles(
     fontSize,
     fontFamily: theme.fontFamily.ui,
     lineHeight: Math.round(fontSize * 1.4),
-    color: muted ? theme.colors.foregroundMuted : theme.colors.foreground,
+    color: muted
+      ? theme.colors.foregroundMuted
+      : (theme.chrome.proseColor ?? theme.colors.foreground),
     ...block,
   };
   const heading = (scale: number) => ({
@@ -29,6 +31,7 @@ export function createMarkdownStyles(
     fontSize: Math.round(fontSize * scale),
     lineHeight: Math.round(fontSize * scale * 1.3),
     fontWeight: "bold",
+    ...(theme.chrome.headingColor && !muted ? { color: theme.chrome.headingColor } : {}),
   });
   return {
     containerStyle: isWeb ? WEB_CONTAINER : undefined,
@@ -65,10 +68,14 @@ export function createMarkdownStyles(
           caution: { color: theme.colors.statusDanger, backgroundColor: theme.colors.surface2 },
         },
       },
-      link: { color: theme.colors.accentBright, underline: false },
+      // Prose sits below full ink on the desktop Mono look; emphasis keeps full ink.
+      ...(theme.chrome.proseColor && !muted
+        ? { strong: { color: theme.colors.foreground }, em: { color: theme.colors.foreground } }
+        : {}),
+      link: { color: theme.chrome.linkColor ?? theme.colors.accentBright, underline: false },
       linkVariants: {
         "^(?!https?://).+": {
-          color: theme.colors.accentBright,
+          color: theme.chrome.linkColor ?? theme.colors.accentBright,
         },
       },
       code: {
