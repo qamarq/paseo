@@ -16,6 +16,7 @@ import type { ExplorerFrameProps } from "./frame-props";
 function ExplorerFrameBase({
   children,
   surfaceColor,
+  dockSurfaceColor,
   presentation,
   isOpen,
   isWorkspaceActive,
@@ -51,7 +52,10 @@ function ExplorerFrameBase({
           presentation={presentation}
           dockVisible={isOpen}
           frameStyle={geometry.frameStyle}
-          panelStyle={[{ backgroundColor: surfaceColor }, geometry.panelStyle]}
+          panelStyle={[
+            { backgroundColor: overlay ? surfaceColor : dockSurfaceColor },
+            geometry.panelStyle,
+          ]}
         >
           <View style={styles.content}>
             {resizeEnabled ? geometry.resizeHandle : null}
@@ -64,5 +68,6 @@ function ExplorerFrameBase({
 }
 export const ExplorerFrame = withUnistyles(ExplorerFrameBase, (theme) => ({
   surfaceColor: theme.colors.surfaceSidebar,
+  dockSurfaceColor: theme.colors.surfaceSidebarGlass,
 }));
 const styles = StyleSheet.create({ content: { flex: 1, minHeight: 0 } });

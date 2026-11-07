@@ -9,7 +9,7 @@ import {
 } from "react";
 import { withUnistyles } from "react-native-unistyles";
 import { AppearanceStyleBoundary } from "@/components/appearance-style-boundary";
-import { isWeb } from "@/constants/platform";
+import { getIsElectron } from "@/constants/platform";
 
 type NativeStackNavigationOptions = Exclude<
   NonNullable<ComponentProps<typeof Stack>["screenOptions"]>,
@@ -61,7 +61,7 @@ function ThemedStackBase({
     [nestedNavigatorScreens, screenOwnedAppearance],
   );
   const navigationTheme = useTheme();
-  const webNavigationTheme = useMemo(
+  const desktopNavigationTheme = useMemo(
     () => ({
       ...navigationTheme,
       colors: { ...navigationTheme.colors, background: backgroundColor },
@@ -74,8 +74,12 @@ function ThemedStackBase({
       {children}
     </Stack>
   );
-  // On web the stack's screen container paints the navigation theme's background under content.
-  return isWeb ? <ThemeProvider value={webNavigationTheme}>{stack}</ThemeProvider> : stack;
+  // On desktop the stack's screen container paints the navigation theme's background under content.
+  return getIsElectron() ? (
+    <ThemeProvider value={desktopNavigationTheme}>{stack}</ThemeProvider>
+  ) : (
+    stack
+  );
 }
 
 export const ThemedStack = withUnistyles(ThemedStackBase, (theme) => ({
