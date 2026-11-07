@@ -7,6 +7,7 @@ import { z } from "zod";
 import type { AppReleaseChannel } from "../features/auto-updater.js";
 import {
   DEFAULT_WINDOW_GLASS_APPEARANCE,
+  WINDOW_BLUR_RADIUS_RANGE,
   WINDOW_GLASS_TINT_PATTERN,
   WINDOW_ZOOM_FACTOR_RANGE,
   type WindowGlassAppearance,
@@ -96,6 +97,12 @@ const WindowAppearanceSchema = z
       .regex(WINDOW_GLASS_TINT_PATTERN)
       .nullable()
       .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glassTint),
+    blurRadius: z
+      .number()
+      .int()
+      .min(WINDOW_BLUR_RADIUS_RANGE.min)
+      .max(WINDOW_BLUR_RADIUS_RANGE.max)
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.blurRadius),
     zoomFactor: z
       .number()
       .min(WINDOW_ZOOM_FACTOR_RANGE.min)
@@ -360,9 +367,10 @@ export function createDesktopSettingsStore({
     getWindowAppearance(): Promise<WindowGlassAppearance> {
       return serialize(async () => {
         try {
-          const { glass, backgroundColor, glassTint, zoomFactor } = (await loadDocument())
-            .windowAppearance;
-          return { glass, backgroundColor, glassTint, zoomFactor };
+          const { glass, backgroundColor, glassTint, blurRadius, zoomFactor } = (
+            await loadDocument()
+          ).windowAppearance;
+          return { glass, backgroundColor, glassTint, blurRadius, zoomFactor };
         } catch {
           return { ...DEFAULT_WINDOW_GLASS_APPEARANCE };
         }

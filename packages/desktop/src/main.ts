@@ -53,6 +53,7 @@ import {
   getGlassWindowOptions,
   windowGlassArguments,
 } from "./window/window-glass.js";
+import { loadNativeGlass } from "./window/native-glass.js";
 import { registerDialogHandlers } from "./features/dialogs.js";
 import {
   registerNotificationHandlers,
@@ -127,8 +128,10 @@ const DESKTOP_WINDOW_CHROME_MODE = resolveDesktopWindowChromeMode({
   isPackaged: app.isPackaged,
 });
 const UPDATE_QUIT_DEADLINE_MS = 5_000;
+const nativeGlass = loadNativeGlass(process.platform);
 const windowGlass = createWindowGlassController({
   platform: process.platform,
+  nativeGlass,
   persist: (appearance) => {
     void getDesktopSettingsStore()
       .saveWindowAppearance(appearance)
@@ -717,6 +720,7 @@ async function createWindow(
       platform: process.platform,
       appearance: windowAppearance,
       fallbackBackgroundColor,
+      nativeGlass,
     }),
     ...(iconPath ? { icon: iconPath } : {}),
     ...getMainWindowChromeOptions({

@@ -77,6 +77,19 @@ describe("window-manager", () => {
       expect(readWindowChromeUpdate({ zoomFactor: 2.1 })).toBeNull();
     });
 
+    it("accepts whole blur radii only inside the backdrop range", () => {
+      expect(readWindowChromeUpdate({ glass: true, blurRadius: 44 })).toEqual({
+        glass: true,
+        blurRadius: 44,
+      });
+      expect(readWindowChromeUpdate({ blurRadius: 1 })).toEqual({ blurRadius: 1 });
+      expect(readWindowChromeUpdate({ blurRadius: 64 })).toEqual({ blurRadius: 64 });
+      expect(readWindowChromeUpdate({ blurRadius: 0 })).toBeNull();
+      expect(readWindowChromeUpdate({ blurRadius: 65 })).toBeNull();
+      expect(readWindowChromeUpdate({ blurRadius: 12.5 })).toBeNull();
+      expect(readWindowChromeUpdate({ blurRadius: "44" })).toBeNull();
+    });
+
     it("drops a malformed glass flag or tint", () => {
       expect(readWindowChromeUpdate({ glass: "yes" })).toBeNull();
       expect(readWindowChromeUpdate({ glassTint: "red; background: url(x)" })).toBeNull();
