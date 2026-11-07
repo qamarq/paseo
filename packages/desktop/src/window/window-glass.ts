@@ -2,24 +2,30 @@ export interface WindowGlassAppearance {
   glass: boolean;
   backgroundColor: string | null;
   glassTint: string | null;
+  zoomFactor: number;
 }
 
 export interface WindowGlassUpdate {
   backgroundColor?: string;
   glass?: boolean;
   glassTint?: string;
+  zoomFactor?: number;
 }
 
 interface GlassWindow {
   setVibrancy(type: "under-window" | null): void;
   setBackgroundColor(color: string): void;
+  webContents: { setZoomFactor(factor: number): void };
 }
 
 export const DEFAULT_WINDOW_GLASS_APPEARANCE: WindowGlassAppearance = {
   glass: false,
   backgroundColor: null,
   glassTint: null,
+  zoomFactor: 1,
 };
+
+export const WINDOW_ZOOM_FACTOR_RANGE = { min: 0.5, max: 2 } as const;
 
 export const WINDOW_GLASS_TINT_PATTERN = /^rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\)$/;
 
@@ -61,7 +67,10 @@ export function windowGlassArguments(input: {
 
 function sameAppearance(a: WindowGlassAppearance, b: WindowGlassAppearance): boolean {
   return (
-    a.glass === b.glass && a.backgroundColor === b.backgroundColor && a.glassTint === b.glassTint
+    a.glass === b.glass &&
+    a.backgroundColor === b.backgroundColor &&
+    a.glassTint === b.glassTint &&
+    a.zoomFactor === b.zoomFactor
   );
 }
 
@@ -114,9 +123,11 @@ export function createWindowGlassController(input: {
         glass: supportsGlass(input.platform) && (update.glass ?? current.glass),
         backgroundColor: requestedBackground ?? current.backgroundColor,
         glassTint: update.glassTint ?? current.glassTint,
+        zoomFactor: update.zoomFactor ?? current.zoomFactor,
       };
       states.set(win, next);
 
+      if (next.zoomFactor !== current.zoomFactor) win.webContents.setZoomFactor(next.zoomFactor);
       const glassChanged = next.glass !== current.glass;
       if (glassChanged) win.setVibrancy(next.glass ? VIBRANCY : null);
       const backgroundColor = next.glass ? TRANSPARENT_BACKGROUND : next.backgroundColor;

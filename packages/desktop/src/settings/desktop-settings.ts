@@ -8,6 +8,7 @@ import type { AppReleaseChannel } from "../features/auto-updater.js";
 import {
   DEFAULT_WINDOW_GLASS_APPEARANCE,
   WINDOW_GLASS_TINT_PATTERN,
+  WINDOW_ZOOM_FACTOR_RANGE,
   type WindowGlassAppearance,
 } from "../window/window-glass.js";
 
@@ -95,6 +96,11 @@ const WindowAppearanceSchema = z
       .regex(WINDOW_GLASS_TINT_PATTERN)
       .nullable()
       .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glassTint),
+    zoomFactor: z
+      .number()
+      .min(WINDOW_ZOOM_FACTOR_RANGE.min)
+      .max(WINDOW_ZOOM_FACTOR_RANGE.max)
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.zoomFactor),
   })
   .catch(() => ({ ...DEFAULT_WINDOW_GLASS_APPEARANCE }));
 
@@ -354,8 +360,9 @@ export function createDesktopSettingsStore({
     getWindowAppearance(): Promise<WindowGlassAppearance> {
       return serialize(async () => {
         try {
-          const { glass, backgroundColor, glassTint } = (await loadDocument()).windowAppearance;
-          return { glass, backgroundColor, glassTint };
+          const { glass, backgroundColor, glassTint, zoomFactor } = (await loadDocument())
+            .windowAppearance;
+          return { glass, backgroundColor, glassTint, zoomFactor };
         } catch {
           return { ...DEFAULT_WINDOW_GLASS_APPEARANCE };
         }

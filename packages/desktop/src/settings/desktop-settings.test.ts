@@ -372,6 +372,7 @@ describe("desktop-settings", () => {
       glass: false,
       backgroundColor: null,
       glassTint: null,
+      zoomFactor: 1,
     });
   });
 
@@ -385,6 +386,7 @@ describe("desktop-settings", () => {
       glass: true,
       backgroundColor: "#0f0f0f",
       glassTint: "rgba(15, 15, 15, 0.67)",
+      zoomFactor: 1.3,
     });
     const reloaded = createDesktopSettingsStore({ userDataPath });
 
@@ -392,6 +394,7 @@ describe("desktop-settings", () => {
       glass: true,
       backgroundColor: "#0f0f0f",
       glassTint: "rgba(15, 15, 15, 0.67)",
+      zoomFactor: 1.3,
     });
     expect((await reloaded.get()).releaseChannel).toBe("beta");
   });
@@ -408,6 +411,7 @@ describe("desktop-settings", () => {
           glass: true,
           backgroundColor: "red",
           glassTint: "rgba(1, 2, 3, 0.5)}body{",
+          zoomFactor: 9,
         },
       }),
     );
@@ -416,6 +420,7 @@ describe("desktop-settings", () => {
       glass: true,
       backgroundColor: null,
       glassTint: null,
+      zoomFactor: 1,
     });
   });
 
@@ -428,6 +433,7 @@ describe("desktop-settings", () => {
       glass: false,
       backgroundColor: null,
       glassTint: null,
+      zoomFactor: 1,
     });
   });
 
@@ -438,7 +444,12 @@ describe("desktop-settings", () => {
 
     await Promise.all([
       store.patch({ releaseChannel: "beta" }),
-      store.saveWindowAppearance({ glass: true, backgroundColor: "#0f0f0f", glassTint: null }),
+      store.saveWindowAppearance({
+        glass: true,
+        backgroundColor: "#0f0f0f",
+        glassTint: null,
+        zoomFactor: 1,
+      }),
       store.patch({ notifications: { playSound: false } }),
     ]);
     const reloaded = createDesktopSettingsStore({ userDataPath });

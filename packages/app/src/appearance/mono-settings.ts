@@ -88,3 +88,35 @@ export function resolveMonoGlass(input: {
 }): boolean {
   return input.active && input.scheme === "dark" && input.isMac;
 }
+
+const INTERFACE_SCALE_STEP = 10;
+
+export const INTERFACE_SCALE_OPTIONS: readonly number[] = Array.from(
+  {
+    length: (ranges.interfaceScale.max - ranges.interfaceScale.min) / INTERFACE_SCALE_STEP + 1,
+  },
+  (_, index) => ranges.interfaceScale.min + index * INTERFACE_SCALE_STEP,
+);
+
+export type InterfaceScaleStep = -1 | 0 | 1;
+
+export function readInterfaceScaleStep(payload: unknown): InterfaceScaleStep | null {
+  if (typeof payload !== "object" || payload === null || !("step" in payload)) return null;
+  const { step } = payload;
+  return step === -1 || step === 0 || step === 1 ? step : null;
+}
+
+export function stepInterfaceScale(current: number, step: InterfaceScaleStep): number {
+  if (step === 0) return DEFAULT_MONO_APPEARANCE.interfaceScale;
+  const next =
+    step > 0
+      ? Math.floor(current / INTERFACE_SCALE_STEP) * INTERFACE_SCALE_STEP + INTERFACE_SCALE_STEP
+      : Math.ceil(current / INTERFACE_SCALE_STEP) * INTERFACE_SCALE_STEP - INTERFACE_SCALE_STEP;
+  return Math.min(ranges.interfaceScale.max, Math.max(ranges.interfaceScale.min, next));
+}
+
+const SCHEME_CYCLE: readonly MonoSchemePreference[] = ["system", "dark", "light"];
+
+export function nextMonoScheme(current: MonoSchemePreference): MonoSchemePreference {
+  return SCHEME_CYCLE[(SCHEME_CYCLE.indexOf(current) + 1) % SCHEME_CYCLE.length] ?? "dark";
+}
