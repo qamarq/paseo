@@ -430,4 +430,24 @@ describe("desktop-settings", () => {
       glassTint: null,
     });
   });
+
+  it("keeps every update when writes overlap", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+    const store = createDesktopSettingsStore({ userDataPath });
+
+    await Promise.all([
+      store.patch({ releaseChannel: "beta" }),
+      store.saveWindowAppearance({ glass: true, backgroundColor: "#0f0f0f", glassTint: null }),
+      store.patch({ notifications: { playSound: false } }),
+    ]);
+    const reloaded = createDesktopSettingsStore({ userDataPath });
+
+    expect(await reloaded.get()).toEqual({
+      releaseChannel: "beta",
+      notifications: { playSound: false },
+      daemon: { manageBuiltInDaemon: true, keepRunningAfterQuit: false },
+    });
+    expect((await reloaded.getWindowAppearance()).glass).toBe(true);
+  });
 });

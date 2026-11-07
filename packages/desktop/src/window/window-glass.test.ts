@@ -93,7 +93,11 @@ describe("createWindowGlassController", () => {
       persist: (appearance) => persisted.push(appearance),
     });
     const win = createFakeWindow();
-    controller.register(win, { ...DEFAULT_WINDOW_GLASS_APPEARANCE, backgroundColor: "#0f0f0f" });
+    controller.register(
+      win,
+      { ...DEFAULT_WINDOW_GLASS_APPEARANCE, backgroundColor: "#0f0f0f" },
+      "#181B1A",
+    );
 
     controller.apply(win, { glass: true, glassTint: GLASS.glassTint ?? undefined });
     controller.apply(win, { backgroundColor: "#101010" });
@@ -110,7 +114,7 @@ describe("createWindowGlassController", () => {
   it("restores the opaque background when glass turns off", () => {
     const controller = createWindowGlassController({ platform: "darwin", persist: () => {} });
     const win = createFakeWindow();
-    controller.register(win, GLASS);
+    controller.register(win, GLASS, "#181B1A");
 
     controller.apply(win, { glass: false });
 
@@ -127,7 +131,7 @@ describe("createWindowGlassController", () => {
       persist: (appearance) => persisted.push(appearance),
     });
     const win = createFakeWindow();
-    controller.register(win, GLASS);
+    controller.register(win, GLASS, "#181B1A");
 
     controller.apply(win, { glass: true, backgroundColor: "#202020" });
 
@@ -140,12 +144,41 @@ describe("createWindowGlassController", () => {
     const persist = vi.fn();
     const controller = createWindowGlassController({ platform: "darwin", persist });
     const win = createFakeWindow();
-    controller.register(win, GLASS);
+    controller.register(win, GLASS, "#181B1A");
 
     controller.apply(win, { glass: true });
     vi.runAllTimers();
 
     expect(persist).not.toHaveBeenCalled();
     expect(win.calls).toEqual([]);
+  });
+
+  it("falls back to the system color when glass turns off before any color was saved", () => {
+    const controller = createWindowGlassController({ platform: "darwin", persist: () => {} });
+    const win = createFakeWindow();
+    controller.register(win, { ...GLASS, backgroundColor: null }, "#181B1A");
+
+    controller.apply(win, { glass: false });
+
+    expect(win.calls).toEqual([
+      ["vibrancy", null],
+      ["background", "#181B1A"],
+    ]);
+  });
+
+  it("writes a pending appearance immediately on flush", () => {
+    const persist = vi.fn();
+    const controller = createWindowGlassController({ platform: "darwin", persist });
+    const win = createFakeWindow();
+    controller.register(win, GLASS, "#181B1A");
+
+    controller.apply(win, { glass: false });
+    controller.flush();
+    controller.flush();
+
+    expect(persist).toHaveBeenCalledTimes(1);
+    expect(persist).toHaveBeenCalledWith({ ...GLASS, glass: false });
+    vi.runAllTimers();
+    expect(persist).toHaveBeenCalledTimes(1);
   });
 });
