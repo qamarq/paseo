@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { darkHighlightColors, lightHighlightColors } from "@getpaseo/highlight";
 import { hexColorWithAlpha } from "@/utils/color";
+import type { SurfaceBackdrop } from "./surface-backdrop";
 
 export const baseColors = {
   // Base colors
@@ -677,6 +678,76 @@ export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
 // Chat and markdown content column; the appearance updater patches the user's width in.
 export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 
+/**
+ * Chrome geometry and surface effects that a theme may override. `null` and `0` mean "keep the
+ * component's own value", so every built-in theme renders exactly as before; only the desktop Mono
+ * theme sets them (docs/design.md, "Desktop glass").
+ */
+export interface ChromeTokens {
+  /** Layers are see-through: knockouts and painted scrims cannot match what is behind them. */
+  glass: boolean;
+  /** Fills for chips and rows named by the surface they would paint, e.g. translucent under glass. */
+  fills: Partial<Record<SurfaceBackdrop, string>> | null;
+  rowRadius: number | null;
+  sectionLabelSize: number | null;
+  sectionLabelColor: string | null;
+  tabHeight: number | null;
+  tabRadius: number | null;
+  iconButtonSize: number | null;
+  floatingRadius: number | null;
+  floatingFill: string | null;
+  floatingBorder: string | null;
+  floatingBlur: number;
+  menuItemRadius: number | null;
+  modalRadius: number | null;
+  modalFill: string | null;
+  modalBorder: string | null;
+  modalBlur: number;
+  scrim: string | null;
+  /** Dims a row under a busy overlay; translucent so glass still reads through it. */
+  veil: string | null;
+  composerRadius: number | null;
+  composerFill: string | null;
+  composerBorder: string | null;
+  composerBlur: number;
+  userBubbleRadius: number | null;
+  inlineCodeRadius: number | null;
+  inlineCodeFill: string | null;
+  codeBlockRadius: number | null;
+  codeBlockFill: string | null;
+}
+
+export const DEFAULT_CHROME: ChromeTokens = {
+  glass: false,
+  fills: null,
+  rowRadius: null,
+  sectionLabelSize: null,
+  sectionLabelColor: null,
+  tabHeight: null,
+  tabRadius: null,
+  iconButtonSize: null,
+  floatingRadius: null,
+  floatingFill: null,
+  floatingBorder: null,
+  floatingBlur: 0,
+  menuItemRadius: null,
+  modalRadius: null,
+  modalFill: null,
+  modalBorder: null,
+  modalBlur: 0,
+  scrim: null,
+  veil: null,
+  composerRadius: null,
+  composerFill: null,
+  composerBorder: null,
+  composerBlur: 0,
+  userBubbleRadius: null,
+  inlineCodeRadius: null,
+  inlineCodeFill: null,
+  codeBlockRadius: null,
+  codeBlockFill: null,
+};
+
 // `fontSize`, `fontFamily`, `lineHeight`, and `contentMaxWidth` are deliberately widened to plain
 // `number`/`string` (not narrowed by `as const`) so the appearance updater can patch
 // them at runtime via `UnistylesRuntime.updateTheme`. The remaining tokens keep their
@@ -692,6 +763,7 @@ interface CommonTheme {
   borderRadius: typeof BORDER_RADIUS;
   borderWidth: typeof BORDER_WIDTH;
   opacity: typeof OPACITY;
+  chrome: ChromeTokens;
 }
 
 const commonTheme: CommonTheme = {
@@ -705,6 +777,7 @@ const commonTheme: CommonTheme = {
   borderRadius: BORDER_RADIUS,
   borderWidth: BORDER_WIDTH,
   opacity: OPACITY,
+  chrome: DEFAULT_CHROME,
 };
 
 const darkShadow = {

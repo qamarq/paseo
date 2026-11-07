@@ -230,6 +230,51 @@ describe("buildMonoTheme", () => {
     expect(colors.surfaceWorkspaceGlass).toBe(colors.surface0);
   });
 
+  it("makes row and chip fills translucent and turns off knockouts under glass", () => {
+    const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+
+    expect(chrome.glass).toBe(true);
+    expect(colors.surfaceSidebarHover).toBe("rgba(235, 235, 235, 0.05)");
+    expect(colors.surfaceSidebarSelected).toBe("rgba(235, 235, 235, 0.12)");
+    expect(chrome.fills).toMatchObject({
+      surface0: "transparent",
+      surfaceSidebar: "transparent",
+      surface2: "rgba(235, 235, 235, 0.1)",
+    });
+    expect(colors.terminal.background).toBe("rgba(0, 0, 0, 0)");
+  });
+
+  it("keeps the main pane fill and terminal opaque when main pane glass is off", () => {
+    const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(chrome.fills?.surface0).toBeUndefined();
+    expect(colors.terminal.background).toBe(colors.surface0);
+  });
+
+  it("uses MonoCode's chrome geometry with or without glass", () => {
+    for (const glass of [null, { mainPaneGlass: true }]) {
+      const { chrome } = buildMonoTheme(input({ glass }));
+      expect(chrome).toMatchObject({
+        tabHeight: 30,
+        tabRadius: 6,
+        floatingRadius: 12,
+        modalRadius: 16,
+        composerRadius: 8,
+      });
+    }
+    expect(buildMonoTheme(input()).chrome.glass).toBe(false);
+  });
+
+  it("frosts floating surfaces in dark and keeps them solid in light", () => {
+    const dark = buildMonoTheme(input()).chrome;
+    const light = buildMonoTheme(input({ scheme: "light" }));
+
+    expect(dark.floatingBlur).toBe(24);
+    expect(dark.composerBlur).toBe(8);
+    expect(light.chrome.floatingBlur).toBe(0);
+    expect(light.chrome.floatingFill).toBe(light.colors.surface0);
+  });
+
   it("never applies glass to the light scheme", () => {
     const glassy = buildMonoTheme(input({ scheme: "light", glass: { mainPaneGlass: true } }));
 
