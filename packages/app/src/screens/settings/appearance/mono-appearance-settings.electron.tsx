@@ -33,7 +33,7 @@ import { createTrailingThrottle } from "@/utils/trailing-throttle";
 import { MONO_APPEARANCE_COPY as copy } from "./mono-appearance-copy";
 import { MonoSettingsGroup } from "./mono-settings-group";
 
-// Theme colour changes rebuild and remount the web shell, so live slider updates are rate-limited.
+// Each live slider step rebuilds the Mono theme, so updates are rate-limited.
 const LIVE_APPLY_INTERVAL_MS = 200;
 const NO_PLUGIN_THEME = "none";
 const CUSTOM_ACCENT_FALLBACK = "#4da3f5";
@@ -79,8 +79,15 @@ function useLiveMonoUpdate<Value>(
   update: UpdateMono,
   toPatch: (value: Value) => Partial<MonoAppearance>,
 ) {
+  const latest = useRef({ update, toPatch });
+  useEffect(() => {
+    latest.current = { update, toPatch };
+  });
   const [throttle] = useState(() =>
-    createTrailingThrottle((value: Value) => update(toPatch(value)), LIVE_APPLY_INTERVAL_MS),
+    createTrailingThrottle(
+      (value: Value) => latest.current.update(latest.current.toPatch(value)),
+      LIVE_APPLY_INTERVAL_MS,
+    ),
   );
   useEffect(() => () => throttle.flush(), [throttle]);
   return throttle;
@@ -374,6 +381,7 @@ export function MonoAppearanceSettings() {
             <MonoSliderRow
               field="blurRadius"
               label={copy.translucency.blurRadius.label}
+              hint={copy.translucency.blurRadius.hint}
               value={mono.blurRadius}
               unit=""
               disabled={isLight}

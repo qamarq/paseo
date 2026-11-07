@@ -56,7 +56,7 @@ export const MONO_APPEARANCE_COPY = {
       label: "Sidebar opacity",
       hint: "Applies to the sidebars and the other glass panes.",
     },
-    blurRadius: { label: "Blur radius" },
+    blurRadius: { label: "Blur radius", hint: "Background blur behind the window." },
     mainPaneGlass: {
       label: "Main pane glass",
       hint: "Extend the translucent treatment to the main pane behind sessions and editors.",
@@ -66,7 +66,7 @@ export const MONO_APPEARANCE_COPY = {
     title: "Interface",
     scale: {
       label: "Interface scale",
-      hint: "Zoom the whole interface. You can also use Cmd+=, Cmd+- and Cmd+0.",
+      hint: "Zoom the whole interface. You can also use Ctrl+=, Ctrl+-, and Ctrl+0 (Cmd on macOS).",
     },
   },
 } as const;
