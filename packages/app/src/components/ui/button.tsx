@@ -78,8 +78,8 @@ const foregroundIconMapping = (theme: Theme) => ({ iconColor: theme.colors.foreg
 const foregroundMutedIconMapping = (theme: Theme) => ({
   iconColor: theme.colors.foregroundMuted,
 });
-const accentForegroundIconMapping = (theme: Theme) => ({
-  iconColor: theme.colors.accentForeground,
+const actionPrimaryForegroundIconMapping = (theme: Theme) => ({
+  iconColor: theme.colors.actionPrimaryForeground,
 });
 const destructiveForegroundIconMapping = (theme: Theme) => ({
   iconColor: theme.colors.destructiveForeground,
@@ -107,8 +107,8 @@ const styles = StyleSheet.create((theme) => {
     iconOnlySm: geometry.buttonIconOnlySm,
     iconOnlyMd: geometry.buttonIconOnlyMd,
     default: {
-      backgroundColor: theme.colors.accent,
-      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.actionPrimary,
+      borderColor: theme.colors.actionPrimary,
     },
     secondary: {
       backgroundColor: theme.colors.surface3,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create((theme) => {
       ...geometry.buttonTextSm,
     },
     textDefault: {
-      color: theme.colors.accentForeground,
+      color: theme.colors.actionPrimaryForeground,
     },
     textDestructive: {
       color: theme.colors.destructiveForeground,
@@ -241,7 +241,7 @@ export function Button({
 
   function resolveIconMapping() {
     if (variant === "default") {
-      return accentForegroundIconMapping;
+      return actionPrimaryForegroundIconMapping;
     }
     if (variant === "destructive") {
       return destructiveForegroundIconMapping;

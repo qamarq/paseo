@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import { darkHighlightColors, lightHighlightColors } from "@getpaseo/highlight";
+import { hexColorWithAlpha } from "@/utils/color";
 
 export const baseColors = {
   // Base colors
@@ -173,6 +174,15 @@ function statusTints(colors: typeof lightStatusColors, alphaHex: string) {
 const lightStatusTints = statusTints(lightStatusColors, "1f"); // 12%
 const darkStatusTints = statusTints(darkStatusColors, "29"); // 16%
 
+function diffLineColors(colors: typeof lightStatusColors) {
+  return {
+    diffAdditionForeground: colors.statusSuccess,
+    diffDeletionForeground: colors.statusDanger,
+    diffAdditionBackground: hexColorWithAlpha(colors.statusSuccess, 0.15),
+    diffDeletionBackground: hexColorWithAlpha(colors.statusDanger, 0.1),
+  };
+}
+
 // Status *dot* colors — the small filled discs on a sidebar row, and the glyphs that stand in
 // for them. Same four hues and the same generation rule as the status colors above, but its
 // own band, because a dot is doing a different job than a check icon or a host badge.
@@ -286,6 +296,10 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     accent: tint.accent,
     accentBright: tint.accentBright,
     accentForeground: tint.accentForeground ?? tint.surface0,
+    actionPrimary: tint.accent,
+    actionPrimaryForeground: tint.accentForeground ?? tint.surface0,
+    userBubble: tint.surface3,
+    userBubbleBorder: tint.surface3,
 
     destructive: tint.destructive,
     destructiveForeground: tint.surface0,
@@ -306,6 +320,7 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     ring: tint.ring,
 
     ...lightDiffColors,
+    ...diffLineColors(lightStatusColors),
     ...lightStatusColors,
     ...lightStatusTints,
     ...lightStatusDotColors,
@@ -421,6 +436,10 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     accent: tint.accent,
     accentBright: tint.accentBright,
     accentForeground: tint.accentForeground ?? "#ffffff",
+    actionPrimary: tint.accent,
+    actionPrimaryForeground: tint.accentForeground ?? "#ffffff",
+    userBubble: tint.surface3,
+    userBubbleBorder: tint.surface3,
 
     destructive: tint.destructive,
     destructiveForeground: "#ffffff",
@@ -442,6 +461,7 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     ring,
 
     ...darkDiffColors,
+    ...diffLineColors(darkStatusColors),
     ...darkStatusColors,
     ...darkStatusTints,
     ...darkStatusDotColors,

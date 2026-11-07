@@ -98,6 +98,7 @@ export interface DesktopWindowChromeUpdate {
   trafficLightOffsetY?: number;
   glass?: boolean;
   glassTint?: string;
+  zoomFactor?: number;
 }
 
 export interface DesktopWindowBridge {

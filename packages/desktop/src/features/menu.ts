@@ -64,6 +64,11 @@ export function reloadActiveBrowserOrWindow({
   win.webContents.reload();
 }
 
+// The renderer owns the interface scale setting; it applies the zoom factor and persists it.
+function stepInterfaceScale(win: BrowserWindow, step: -1 | 0 | 1): void {
+  win.webContents.send("paseo:event:interface-scale", { step });
+}
+
 function buildApplicationMenuTemplate(
   options: ApplicationMenuOptions,
   capturing: boolean,
@@ -121,25 +126,19 @@ function buildApplicationMenuTemplate(
           label: "Zoom In",
           accelerator: "CmdOrCtrl+=",
           enabled: zoomEnabled,
-          click: withBrowserWindow((win) => {
-            win.webContents.setZoomLevel(win.webContents.getZoomLevel() + 0.5);
-          }),
+          click: withBrowserWindow((win) => stepInterfaceScale(win, 1)),
         },
         {
           label: "Zoom Out",
           accelerator: "CmdOrCtrl+-",
           enabled: zoomEnabled,
-          click: withBrowserWindow((win) => {
-            win.webContents.setZoomLevel(win.webContents.getZoomLevel() - 0.5);
-          }),
+          click: withBrowserWindow((win) => stepInterfaceScale(win, -1)),
         },
         {
           label: "Actual Size",
           accelerator: "CmdOrCtrl+0",
           enabled: zoomEnabled,
-          click: withBrowserWindow((win) => {
-            win.webContents.setZoomLevel(0);
-          }),
+          click: withBrowserWindow((win) => stepInterfaceScale(win, 0)),
         },
         { type: "separator" },
         {

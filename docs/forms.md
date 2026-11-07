@@ -57,7 +57,9 @@ complete`), keyed off the opened snapshot's serverId. Waiting for data is a
 ## Form kit
 
 - Compose `Field` / `SelectField` / `FormTextInput` / `SegmentedControl` /
-  `Switch` from `components/ui/`. Geometry (heights, padding, radii, focus/hover
+  `Switch` / `Slider` from `components/ui/`. `Slider` reports every step through
+  `onValueChange` and the release through `onSlidingComplete`; rate-limit work
+  that is expensive per step, such as theme changes. Geometry (heights, padding, radii, focus/hover
   states) is owned by `components/ui/control-geometry.ts` — controls never
   declare their own, and screens never nudge global component styles to align
   a row.

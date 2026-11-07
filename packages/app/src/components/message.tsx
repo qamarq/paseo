@@ -292,6 +292,9 @@ function shouldStopDetailWheelPropagation(detailRoot: HTMLElement, event: WheelE
   return canScrollHorizontally;
 }
 
+// Painted in the bubble colour unless the theme gives the bubble an edge; padding absorbs it.
+const USER_BUBBLE_BORDER_WIDTH = 1;
+
 const userMessageStylesheet = StyleSheet.create((theme) => ({
   container: {
     flexDirection: "row",
@@ -313,11 +316,13 @@ const userMessageStylesheet = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing[4],
   },
   bubble: {
-    backgroundColor: theme.colors.surface3,
+    backgroundColor: theme.colors.userBubble,
+    borderWidth: USER_BUBBLE_BORDER_WIDTH,
+    borderColor: theme.colors.userBubbleBorder,
     borderRadius: theme.borderRadius["2xl"],
     borderTopRightRadius: theme.borderRadius.sm,
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[4],
+    paddingHorizontal: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
+    paddingVertical: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
     minWidth: 0,
     flexShrink: 1,
   },

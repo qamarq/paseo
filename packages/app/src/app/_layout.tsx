@@ -72,7 +72,8 @@ import {
   resolveSidebarActivity,
   resolveLeftSidebarPresentation,
 } from "@/components/desktop-sidebar-layout";
-import { isNative, isWeb } from "@/constants/platform";
+import { getIsElectron, isNative, isWeb } from "@/constants/platform";
+import { cycleMonoScheme } from "@/appearance/mono-scheme-selection";
 import { HorizontalScrollProvider } from "@/contexts/horizontal-scroll-context";
 import { SessionProvider } from "@/contexts/session-context";
 import { SidebarCalloutProvider } from "@/contexts/sidebar-callout-context";
@@ -408,6 +409,10 @@ function AppContainer({ children, chromeEnabled: chromeEnabledOverride }: AppCon
   });
 
   const cycleTheme = useCallback(() => {
+    if (getIsElectron()) {
+      void updateSettings(cycleMonoScheme);
+      return;
+    }
     void updateSettings({ theme: getNextThemePreference(settings.theme) });
   }, [settings.theme, updateSettings]);
 
@@ -499,7 +504,11 @@ function AppContainer({ children, chromeEnabled: chromeEnabledOverride }: AppCon
   );
   let themedSidebarChrome = sidebarChrome;
   if (isWeb) {
-    themedSidebarChrome = <AppearanceStyleBoundary>{sidebarChrome}</AppearanceStyleBoundary>;
+    themedSidebarChrome = (
+      <AppearanceStyleBoundary colorChanges={SHELL_COLOR_CHANGES}>
+        {sidebarChrome}
+      </AppearanceStyleBoundary>
+    );
   }
   const workspaceChrome = (
     <WindowLayoutSurface compact={isCompactLayout} style={rowStyle}>
@@ -530,7 +539,7 @@ function AppContainer({ children, chromeEnabled: chromeEnabledOverride }: AppCon
     <View style={layoutStyles.surfaceFill}>
       {workspaceChrome}
       <AddHostFlowHost />
-      <AppearanceStyleBoundary>
+      <AppearanceStyleBoundary colorChanges={SHELL_COLOR_CHANGES}>
         {!isCompactLayout && appChromeLayout.sidebarToggleOwner === "window" ? (
           <WindowChromeRegion corners="top-left">
             <WindowChromeSafeArea
@@ -547,7 +556,7 @@ function AppContainer({ children, chromeEnabled: chromeEnabledOverride }: AppCon
         <FloatingPanelPortalHost />
       </AppearanceStyleBoundary>
       {isCompactLayout ? themedSidebarChrome : null}
-      <AppearanceStyleBoundary>
+      <AppearanceStyleBoundary colorChanges={SHELL_COLOR_CHANGES}>
         <DownloadToast />
         <RosettaCalloutSource />
         <UpdateCalloutSource />
@@ -861,6 +870,11 @@ const ROOT_STACK_SCREEN_OPTIONS = {
   animation: "none" as const,
 };
 const ROOT_STACK_NESTED_NAVIGATOR_SCREENS = ["h/[serverId]"] as const;
+// Desktop appearance sliders rebuild colours live; settings and the shell hold no parsed content.
+const ROOT_STACK_IN_PLACE_COLOR_SCREENS = getIsElectron()
+  ? (["settings/index", "settings/[section]"] as const)
+  : undefined;
+const SHELL_COLOR_CHANGES = getIsElectron() ? "inPlace" : "remount";
 
 function RootStack() {
   const storeReady = useStoreReady();
@@ -868,6 +882,7 @@ function RootStack() {
     <ThemedStack
       screenOptions={ROOT_STACK_SCREEN_OPTIONS}
       nestedNavigatorScreens={ROOT_STACK_NESTED_NAVIGATOR_SCREENS}
+      inPlaceColorScreens={ROOT_STACK_IN_PLACE_COLOR_SCREENS}
     >
       <Stack.Screen name="index" />
       <Stack.Protected guard={storeReady}>

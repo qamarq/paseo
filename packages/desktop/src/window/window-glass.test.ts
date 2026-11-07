@@ -12,14 +12,24 @@ const GLASS: WindowGlassAppearance = {
   glass: true,
   backgroundColor: "#0f0f0f",
   glassTint: "rgba(15, 15, 15, 0.67)",
+  zoomFactor: 1,
 };
 
 function createFakeWindow() {
   const calls: Array<[string, string | null]> = [];
+  const zoom = { factor: 1 };
   return {
     calls,
+    zoom,
     setVibrancy: (type: "under-window" | null) => calls.push(["vibrancy", type]),
     setBackgroundColor: (color: string) => calls.push(["background", color]),
+    webContents: {
+      getZoomFactor: () => zoom.factor,
+      setZoomFactor: (factor: number) => {
+        zoom.factor = factor;
+        calls.push(["zoom", String(factor)]);
+      },
+    },
   };
 }
 
@@ -180,5 +190,34 @@ describe("createWindowGlassController", () => {
     expect(persist).toHaveBeenCalledWith({ ...GLASS, glass: false });
     vi.runAllTimers();
     expect(persist).toHaveBeenCalledTimes(1);
+  });
+
+  it("applies and persists the interface zoom factor", () => {
+    const persist = vi.fn();
+    const controller = createWindowGlassController({ platform: "linux", persist });
+    const win = createFakeWindow();
+    controller.register(win, GLASS, "#181B1A");
+
+    controller.apply(win, { zoomFactor: 1.2 });
+    controller.apply(win, { zoomFactor: 1.2 });
+    vi.runAllTimers();
+
+    expect(win.calls).toEqual([["zoom", "1.2"]]);
+    expect(persist).toHaveBeenCalledWith({ ...GLASS, glass: false, zoomFactor: 1.2 });
+  });
+
+  it("re-applies a zoom factor that another same-origin window changed", () => {
+    const controller = createWindowGlassController({ platform: "linux", persist: vi.fn() });
+    const win = createFakeWindow();
+    controller.register(win, GLASS, "#181B1A");
+
+    controller.apply(win, { zoomFactor: 1.2 });
+    win.zoom.factor = 1.5;
+    controller.apply(win, { zoomFactor: 1.2 });
+
+    expect(win.calls).toEqual([
+      ["zoom", "1.2"],
+      ["zoom", "1.2"],
+    ]);
   });
 });

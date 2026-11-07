@@ -71,6 +71,12 @@ describe("window-manager", () => {
       expect(readWindowChromeUpdate({ glass: false })).toEqual({ glass: false });
     });
 
+    it("accepts zoom factors only inside the interface scale range", () => {
+      expect(readWindowChromeUpdate({ zoomFactor: 1.5 })).toEqual({ zoomFactor: 1.5 });
+      expect(readWindowChromeUpdate({ zoomFactor: 0.4 })).toBeNull();
+      expect(readWindowChromeUpdate({ zoomFactor: 2.1 })).toBeNull();
+    });
+
     it("drops a malformed glass flag or tint", () => {
       expect(readWindowChromeUpdate({ glass: "yes" })).toBeNull();
       expect(readWindowChromeUpdate({ glassTint: "red; background: url(x)" })).toBeNull();
