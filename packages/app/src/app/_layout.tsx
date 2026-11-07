@@ -1006,7 +1006,7 @@ export default function RootLayout() {
 const layoutStyles = StyleSheet.create((theme) => ({
   surfaceFill: {
     flex: 1,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfaceWindow,
   },
   windowSidebarToggle: {
     position: "absolute",
