@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonoTheme, MONO_DIFF_PALETTES, type MonoThemeInput } from "./mono-theme";
+import { buildMonoTheme, type MonoThemeInput } from "./mono-theme";
 import { darkTheme, lightTheme } from "./theme";
 
 function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
@@ -150,13 +150,6 @@ describe("buildMonoTheme", () => {
 
     expect(colors.diffAddition).toBe(add);
     expect(colors.diffDeletion).toBe(del);
-  });
-
-  it("strengthens diff tints only in high contrast", () => {
-    expect(MONO_DIFF_PALETTES.default.backgroundAlpha).toBe(0.15);
-    expect(MONO_DIFF_PALETTES.colorblind.gutterAlpha).toBe(0.25);
-    expect(MONO_DIFF_PALETTES.highContrast.backgroundAlpha).toBe(0.28);
-    expect(MONO_DIFF_PALETTES.highContrast.gutterAlpha).toBe(0.45);
   });
 
   it("emits opaque hex for surfaces and borders so hex-alpha suffixes stay valid", () => {

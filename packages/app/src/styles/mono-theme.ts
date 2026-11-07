@@ -26,14 +26,10 @@ export interface MonoDiffColors {
   deletionForeground: string;
 }
 
-export interface MonoDiffPaletteSpec {
-  dark: MonoDiffColors;
-  light: MonoDiffColors;
-  backgroundAlpha: number;
-  gutterAlpha: number;
-}
-
-export const MONO_DIFF_PALETTES: Record<MonoDiffPalette, MonoDiffPaletteSpec> = {
+export const MONO_DIFF_PALETTES: Record<
+  MonoDiffPalette,
+  Record<MonoColorScheme, MonoDiffColors>
+> = {
   default: {
     dark: {
       addition: "#10b981",
@@ -47,8 +43,6 @@ export const MONO_DIFF_PALETTES: Record<MonoDiffPalette, MonoDiffPaletteSpec> = 
       deletion: "#f43f5e",
       deletionForeground: "#be123c",
     },
-    backgroundAlpha: 0.15,
-    gutterAlpha: 0.25,
   },
   colorblind: {
     dark: {
@@ -63,8 +57,6 @@ export const MONO_DIFF_PALETTES: Record<MonoDiffPalette, MonoDiffPaletteSpec> = 
       deletion: "#bc4c00",
       deletionForeground: "#953800",
     },
-    backgroundAlpha: 0.15,
-    gutterAlpha: 0.25,
   },
   highContrast: {
     dark: {
@@ -79,8 +71,6 @@ export const MONO_DIFF_PALETTES: Record<MonoDiffPalette, MonoDiffPaletteSpec> = 
       deletion: "#953800",
       deletionForeground: "#471700",
     },
-    backgroundAlpha: 0.28,
-    gutterAlpha: 0.45,
   },
 };
 

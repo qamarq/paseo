@@ -1,21 +1,5 @@
 import { z } from "zod";
-import type { MonoDiffPalette } from "@/styles/mono-theme";
-
-export type MonoSchemePreference = "system" | "dark" | "light";
-
-export interface MonoAppearance {
-  scheme: MonoSchemePreference;
-  /** Lowercase `#rrggbb`; null keeps the neutral default. */
-  accentColor: string | null;
-  diffPalette: MonoDiffPalette;
-  hue: number;
-  saturation: number;
-  darkLightness: number;
-  sidebarOpacity: number;
-  blurRadius: number;
-  mainPaneGlass: boolean;
-  interfaceScale: number;
-}
+import type { MonoColorScheme, MonoDiffPalette } from "@/styles/mono-theme";
 
 export const MONO_APPEARANCE_RANGES = {
   hue: { min: 0, max: 360 },
@@ -26,7 +10,7 @@ export const MONO_APPEARANCE_RANGES = {
   interfaceScale: { min: 50, max: 200 },
 } as const;
 
-export const DEFAULT_MONO_APPEARANCE: MonoAppearance = {
+const DEFAULTS = {
   scheme: "dark",
   accentColor: null,
   diffPalette: "default",
@@ -37,7 +21,13 @@ export const DEFAULT_MONO_APPEARANCE: MonoAppearance = {
   blurRadius: 44,
   mainPaneGlass: true,
   interfaceScale: 100,
-};
+} as const;
+
+const DIFF_PALETTES = [
+  "default",
+  "colorblind",
+  "highContrast",
+] as const satisfies readonly MonoDiffPalette[];
 
 function clampedInteger(range: { min: number; max: number }, fallback: number) {
   return z
@@ -46,25 +36,37 @@ function clampedInteger(range: { min: number; max: number }, fallback: number) {
     .catch(fallback);
 }
 
-const defaults = DEFAULT_MONO_APPEARANCE;
 const ranges = MONO_APPEARANCE_RANGES;
 
-export const MonoAppearanceSchema = z
-  .object({
-    scheme: z.enum(["system", "dark", "light"]).catch(defaults.scheme),
-    accentColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/)
-      .transform((color) => color.toLowerCase())
-      .nullable()
-      .catch(defaults.accentColor),
-    diffPalette: z.enum(["default", "colorblind", "highContrast"]).catch(defaults.diffPalette),
-    hue: clampedInteger(ranges.hue, defaults.hue),
-    saturation: clampedInteger(ranges.saturation, defaults.saturation),
-    darkLightness: clampedInteger(ranges.darkLightness, defaults.darkLightness),
-    sidebarOpacity: clampedInteger(ranges.sidebarOpacity, defaults.sidebarOpacity),
-    blurRadius: clampedInteger(ranges.blurRadius, defaults.blurRadius),
-    mainPaneGlass: z.boolean().catch(defaults.mainPaneGlass),
-    interfaceScale: clampedInteger(ranges.interfaceScale, defaults.interfaceScale),
-  })
-  .catch(DEFAULT_MONO_APPEARANCE);
+const MonoAppearanceFieldsSchema = z.object({
+  scheme: z.enum(["system", "dark", "light"]).catch(DEFAULTS.scheme),
+  accentColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .transform((color) => color.toLowerCase())
+    .nullable()
+    .catch(DEFAULTS.accentColor),
+  diffPalette: z.enum(DIFF_PALETTES).catch(DEFAULTS.diffPalette),
+  hue: clampedInteger(ranges.hue, DEFAULTS.hue),
+  saturation: clampedInteger(ranges.saturation, DEFAULTS.saturation),
+  darkLightness: clampedInteger(ranges.darkLightness, DEFAULTS.darkLightness),
+  sidebarOpacity: clampedInteger(ranges.sidebarOpacity, DEFAULTS.sidebarOpacity),
+  blurRadius: clampedInteger(ranges.blurRadius, DEFAULTS.blurRadius),
+  mainPaneGlass: z.boolean().catch(DEFAULTS.mainPaneGlass),
+  interfaceScale: clampedInteger(ranges.interfaceScale, DEFAULTS.interfaceScale),
+});
+
+export type MonoAppearance = z.output<typeof MonoAppearanceFieldsSchema>;
+export type MonoSchemePreference = MonoAppearance["scheme"];
+
+export const DEFAULT_MONO_APPEARANCE: MonoAppearance = { ...DEFAULTS };
+
+export const MonoAppearanceSchema = MonoAppearanceFieldsSchema.catch(DEFAULT_MONO_APPEARANCE);
+
+export function resolveMonoColorScheme(
+  preference: MonoSchemePreference,
+  systemScheme: string | null | undefined,
+): MonoColorScheme {
+  if (preference !== "system") return preference;
+  return systemScheme === "light" ? "light" : "dark";
+}
