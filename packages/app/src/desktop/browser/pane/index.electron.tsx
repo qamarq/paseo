@@ -1686,7 +1686,7 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   chromeRow: {
     height: WORKSPACE_SECONDARY_HEADER_HEIGHT,
@@ -1696,7 +1696,7 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing[2],
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   chromeLeft: {
     flexDirection: "row",
@@ -1750,7 +1750,7 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing[1],
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   metaError: {
     fontSize: theme.fontSize.sm,

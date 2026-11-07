@@ -1992,10 +1992,10 @@ const styles = StyleSheet.create((theme) => ({
   modeBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent",
+    backgroundColor: theme.chrome.pillFill ?? "transparent",
     gap: theme.spacing[1],
     ...toolbarContentSlot(theme.spacing[2]),
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.chrome.pillRadius ?? theme.borderRadius.full,
   },
   modelControl: {
     minWidth: 0,
@@ -2016,10 +2016,10 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.borderRadius.full,
   },
   modeBadgeHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.chrome.pillHoverFill ?? theme.colors.surface2,
   },
   modeBadgePressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.chrome.pillHoverFill ?? theme.colors.surface2,
   },
   disabledBadge: {
     opacity: 0.5,
@@ -2028,7 +2028,7 @@ const styles = StyleSheet.create((theme) => ({
     minWidth: 0,
     flexShrink: 1,
     color: theme.colors.foregroundMuted,
-    fontSize: theme.fontSize.base,
+    fontSize: theme.chrome.pillTextSize ?? theme.fontSize.base,
     fontWeight: theme.fontWeight.normal,
   },
   tooltipText: {

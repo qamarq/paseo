@@ -76,6 +76,8 @@ function shapedCharactersFor(options: { lineCount: number; lineLength: number })
       deletion: "red",
       additionBackground: "#010",
       deletionBackground: "#100",
+      additionGutter: "transparent",
+      deletionGutter: "transparent",
       emptyBackground: "#111",
       selection: "blue",
       headerActiveSurface: "#222",

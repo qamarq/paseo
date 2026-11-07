@@ -37,6 +37,7 @@ import {
   type Rect,
   type Size,
 } from "../anchor";
+import { floatingSurfaceStyle } from "@/styles/floating-surface";
 
 const SCROLL_CONTENT_STYLE = { flexGrow: 1 } as const;
 const CONTENT_ENTERING_DURATION_MS = 150;
@@ -474,10 +475,12 @@ const styles = StyleSheet.create((theme) => ({
     left: 0,
   },
   content: {
-    backgroundColor: theme.colors.surface1,
     borderWidth: 1,
-    borderColor: theme.colors.borderAccent,
-    borderRadius: theme.borderRadius.lg,
+    ...floatingSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface1,
+      borderColor: theme.colors.borderAccent,
+      borderRadius: theme.borderRadius.lg,
+    }),
     overflow: "hidden",
     ...theme.shadow.md,
   },

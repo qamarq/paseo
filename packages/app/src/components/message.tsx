@@ -319,10 +319,12 @@ const userMessageStylesheet = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.userBubble,
     borderWidth: USER_BUBBLE_BORDER_WIDTH,
     borderColor: theme.colors.userBubbleBorder,
-    borderRadius: theme.borderRadius["2xl"],
-    borderTopRightRadius: theme.borderRadius.sm,
-    paddingHorizontal: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
-    paddingVertical: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
+    borderRadius: theme.chrome.userBubbleRadius ?? theme.borderRadius["2xl"],
+    borderTopRightRadius: theme.chrome.userBubbleRadius ?? theme.borderRadius.sm,
+    paddingHorizontal:
+      (theme.chrome.userBubblePaddingX ?? theme.spacing[4]) - USER_BUBBLE_BORDER_WIDTH,
+    paddingVertical:
+      (theme.chrome.userBubblePaddingY ?? theme.spacing[4]) - USER_BUBBLE_BORDER_WIDTH,
     minWidth: 0,
     flexShrink: 1,
   },

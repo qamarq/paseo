@@ -69,14 +69,19 @@ import {
 import type { WorkspaceTabDescriptor } from "@/screens/workspace/workspace-tabs-types";
 import type { PaneHost } from "@/panels/panel-manifest";
 import type { WorkspaceTabLaunchPurpose } from "@/workspace-tabs/launcher";
-import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
+import { withChromeSize } from "@/styles/density";
+import { surfaceFill, type SurfaceBackdrop } from "@/styles/surface-backdrop";
 import {
   resolveWorkspaceTabChipBackdrop,
   type WorkspaceTabRailSurface,
 } from "@/screens/workspace/workspace-tab-chip-backdrop";
 import type { Theme } from "@/styles/theme";
 import { RenderProfile } from "@/utils/render-profiler";
-import { TrailingActionScrim } from "@/components/ui/trailing-action-scrim";
+import {
+  SCRIM_WIDTH,
+  TrailingActionScrim,
+  trailingActionMask,
+} from "@/components/ui/trailing-action-scrim";
 import { useKeyboardActionHandler } from "@/hooks/use-keyboard-action-handler";
 import { useCompactTimeAgo } from "@/hooks/use-time-ago";
 import { formatCompactTimeAgoAsProse } from "@/utils/time";
@@ -92,6 +97,7 @@ import {
 import { smallIconButtonChromeFrameSize } from "@/components/ui/icon-button-chrome";
 import {
   HorizontalScrollBoundaryShades,
+  horizontalScrollMask,
   useHorizontalScrollBoundary,
 } from "@/components/ui/horizontal-scroll-boundary";
 import { useSessionStore } from "@/stores/session-store";
@@ -683,8 +689,10 @@ function TabHandleContent({
   tabLabelSkeletonStyle,
   tabLabelStyle,
   modifiedTestId,
+  maskTail,
 }: {
   presentation: WorkspaceTabPresentation;
+  maskTail: boolean;
   isHighlighted: boolean;
   showLabel: boolean;
   backdrop: SurfaceBackdrop;
@@ -699,7 +707,7 @@ function TabHandleContent({
   );
 
   return (
-    <View style={styles.tabHandle} dataSet={tabHandleDataSet}>
+    <View style={[styles.tabHandle, maskTail && styles.tabHandleMasked]} dataSet={tabHandleDataSet}>
       <View style={styles.tabIcon}>
         <WorkspaceTabIcon presentation={presentation} active={isHighlighted} backdrop={backdrop} />
       </View>
@@ -887,6 +895,7 @@ function TabChip({
                 tabLabelSkeletonStyle={tabLabelSkeletonStyle}
                 tabLabelStyle={tabLabelStyle}
                 modifiedTestId={`workspace-tab-modified-${testIdentity}`}
+                maskTail={showCloseControl}
               />
             </ContextMenuTrigger>
           </TooltipTrigger>
@@ -1659,6 +1668,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   tabsScrollOverflow: {
     flex: 1,
+    ...horizontalScrollMask(theme),
   },
   tabsContent: {
     flexDirection: "row",
@@ -1687,16 +1697,16 @@ const styles = StyleSheet.create((theme) => ({
     marginRight: PANE_SPLIT_ACTIONS_OUTER_MARGIN,
   },
   tab: {
-    height: CONTROL_HEIGHTS.sm,
+    height: withChromeSize(CONTROL_HEIGHTS.sm, theme.chrome.tabHeight),
     paddingHorizontal: TAB_CHIP_HORIZONTAL_PADDING,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing[1],
     userSelect: "none",
   },
   tabFill: (backdrop: SurfaceBackdrop) => ({
-    backgroundColor: theme.colors[backdrop],
+    backgroundColor: surfaceFill(theme, backdrop),
   }),
   tabHoverFrame: {
     position: "relative",
@@ -1713,6 +1723,11 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     minWidth: 0,
     userSelect: "none",
+  },
+  // The handle stops at the chip's padding, inside the close overlay's span.
+  tabHandleMasked: {
+    minWidth: 0,
+    ...trailingActionMask(theme, SCRIM_WIDTH - TAB_CHIP_HORIZONTAL_PADDING),
   },
   tabIcon: {
     width: TAB_ICON_WIDTH,
@@ -1743,7 +1758,7 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 1,
     minWidth: 0,
     color: theme.colors.foregroundMuted,
-    fontSize: theme.fontSize.base,
+    fontSize: theme.chrome.tabLabelSize ?? theme.fontSize.base,
     fontWeight: theme.fontWeight.normal,
     userSelect: "none",
   },
@@ -1777,8 +1792,8 @@ const styles = StyleSheet.create((theme) => ({
     right: 0,
     bottom: 0,
     width: 48,
-    borderTopRightRadius: theme.borderRadius.md,
-    borderBottomRightRadius: theme.borderRadius.md,
+    borderTopRightRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
+    borderBottomRightRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,

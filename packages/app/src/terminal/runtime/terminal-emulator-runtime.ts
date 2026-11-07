@@ -174,6 +174,14 @@ function prependTerminalOutput(
   return output;
 }
 
+const TRANSLUCENT_RGBA = /^rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*(0|0?\.\d+)\s*\)$/;
+
+/** A see-through background (desktop glass) needs xterm's slower transparency path. */
+export function hasTranslucentBackground(theme: ITheme): boolean {
+  const background = theme.background?.trim() ?? "";
+  return background === "transparent" || TRANSLUCENT_RGBA.test(background);
+}
+
 function withOverviewRulerBorderHidden(theme: ITheme): ITheme {
   return {
     ...theme,
@@ -569,6 +577,7 @@ export class TerminalEmulatorRuntime {
         width: 8,
       },
       scrollback: input.scrollback,
+      allowTransparency: hasTranslucentBackground(input.theme),
       theme: withOverviewRulerBorderHidden(input.theme),
     });
     const fitAddon = new FitAddon();
@@ -977,6 +986,10 @@ export class TerminalEmulatorRuntime {
     }
 
     try {
+      const allowTransparency = hasTranslucentBackground(input.theme);
+      if (terminal.options.allowTransparency !== allowTransparency) {
+        terminal.options.allowTransparency = allowTransparency;
+      }
       terminal.options.theme = withOverviewRulerBorderHidden(input.theme);
     } catch {
       // ignore

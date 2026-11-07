@@ -20,7 +20,7 @@ import {
 } from "@/utils/status-indicator-geometry";
 import { StatusRing } from "@/components/status-ring";
 import { getStatusRingOffset } from "@/components/status-ring/geometry";
-import type { SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
+import { knockoutColor, type SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
 
 // Every surfaced status shares one badge shell, so the badge never changes size or position
 // between states. Only the thing inside it changes.
@@ -314,10 +314,12 @@ const styles = StyleSheet.create((theme) => {
       right: getStatusRingOffset(STATUS_BADGE_OFFSET, STATUS_BADGE_SIZE),
       bottom: getStatusRingOffset(STATUS_BADGE_OFFSET, STATUS_BADGE_SIZE),
     },
-    statusBadgeOnSidebar: { backgroundColor: theme.colors.surfaceSidebar },
-    statusBadgeOnSidebarHover: { backgroundColor: theme.colors.surfaceSidebarHover },
-    statusBadgeOnSidebarSelected: { backgroundColor: theme.colors.surfaceSidebarSelected },
-    statusBadgeOnSurface2: { backgroundColor: theme.colors.surface2 },
+    statusBadgeOnSidebar: { backgroundColor: knockoutColor(theme, "surfaceSidebar") },
+    statusBadgeOnSidebarHover: { backgroundColor: knockoutColor(theme, "surfaceSidebarHover") },
+    statusBadgeOnSidebarSelected: {
+      backgroundColor: knockoutColor(theme, "surfaceSidebarSelected"),
+    },
+    statusBadgeOnSurface2: { backgroundColor: knockoutColor(theme, "surface2") },
     statusDotRunning: statusDot("running"),
     statusDotFailed: statusDot("failed"),
     statusDotAttention: statusDot("attention"),

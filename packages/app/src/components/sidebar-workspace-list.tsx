@@ -32,7 +32,7 @@ import {
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { density, densityIconBox, densityIconProps } from "@/styles/density";
 import type { Theme } from "@/styles/theme";
-import type { SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
+import { surfaceFill, type SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
 import { getSidebarRowBackdrop } from "@/components/sidebar/sidebar-row-backdrop";
 import { type GestureType } from "react-native-gesture-handler";
 import { WorkspaceRenameModal } from "@/components/workspace-rename-modal";
@@ -2630,7 +2630,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.surfaceSidebarHover,
   },
   newWorkspaceGhostRowPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   // The width of a workspace row's status slot, so the label lands on the same rail as the
   // titles above it.
@@ -2670,7 +2670,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.surfaceSidebarHover,
   },
   projectRowPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   projectRowDragging: {
     backgroundColor: theme.colors.surface2,
@@ -2697,7 +2697,7 @@ const styles = StyleSheet.create((theme) => ({
   projectTitle: {
     color: theme.colors.foregroundMuted,
     fontSize: theme.fontSize.base,
-    fontWeight: "400",
+    fontWeight: theme.chrome.rowLabelWeight ?? "400",
     minWidth: 0,
     flexShrink: 1,
   },
@@ -2756,7 +2756,7 @@ const styles = StyleSheet.create((theme) => ({
     opacity: 0,
   },
   projectKebabButtonHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   projectTrailingControlSlot: {
     width: 24,
@@ -2817,7 +2817,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.surfaceSidebarHover,
   },
   workspaceRowPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   workspaceRowDragging: {
     backgroundColor: theme.colors.surface2,
@@ -2845,7 +2845,7 @@ const styles = StyleSheet.create((theme) => ({
   workspaceArchivingOverlay: {
     ...StyleSheet.absoluteFill,
     borderRadius: theme.borderRadius.lg,
-    backgroundColor: `${theme.colors.surface0}cc`,
+    backgroundColor: theme.chrome.veil ?? `${theme.colors.surface0}cc`,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
@@ -2889,6 +2889,6 @@ const styles = StyleSheet.create((theme) => ({
     marginLeft: 2,
   },
   kebabButtonHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
 }));

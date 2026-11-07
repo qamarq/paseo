@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_CHROME,
   REGISTERED_THEMES,
   darkPureBlackTheme,
   darkTheme,
@@ -116,5 +117,20 @@ describe("Action, message and diff line tokens", () => {
     expect(theme.colors.userBubbleBorder).toBe(theme.colors.userBubble);
     expect(theme.colors.diffAdditionForeground).toBe(theme.colors.statusSuccess);
     expect(theme.colors.diffDeletionForeground).toBe(theme.colors.statusDanger);
+  });
+});
+
+describe("Chrome tokens", () => {
+  it.each(Object.entries(REGISTERED_THEMES))(
+    "leave every component default in %s",
+    (_name, theme) => {
+      expect(theme.chrome).toEqual(DEFAULT_CHROME);
+    },
+  );
+
+  it("override nothing by default", () => {
+    for (const value of Object.values(DEFAULT_CHROME)) {
+      expect([null, 0, false]).toContain(value);
+    }
   });
 });
