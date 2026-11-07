@@ -48,6 +48,11 @@ import {
 import { setupDarwinCompositorWatchdog } from "./window/compositor-watchdog/index.js";
 import { showWindowWhenReady } from "./window/show-when-ready.js";
 import { resolveDesktopWindowChromeMode, windowChromeModeArgument } from "./window/chrome.js";
+import {
+  createWindowGlassController,
+  getGlassWindowOptions,
+  windowGlassArguments,
+} from "./window/window-glass.js";
 import { registerDialogHandlers } from "./features/dialogs.js";
 import {
   registerNotificationHandlers,
@@ -122,6 +127,14 @@ const DESKTOP_WINDOW_CHROME_MODE = resolveDesktopWindowChromeMode({
   isPackaged: app.isPackaged,
 });
 const UPDATE_QUIT_DEADLINE_MS = 5_000;
+const windowGlass = createWindowGlassController({
+  platform: process.platform,
+  persist: (appearance) => {
+    void getDesktopSettingsStore()
+      .saveWindowAppearance(appearance)
+      .catch((error) => log.warn("[window] failed to persist window glass", error));
+  },
+});
 const pendingBrowserWindowOpenRequests = new PendingBrowserWindowOpenRequests();
 const agentNavigationInbox = new AgentNavigationInbox();
 
@@ -677,6 +690,7 @@ async function createWindow(
 ): Promise<BrowserWindow> {
   const iconPath = await getEffectiveAppIconPath();
   const systemTheme = resolveSystemWindowTheme();
+  const windowAppearance = await getDesktopSettingsStore().getWindowAppearance();
 
   // Only the first window of a session restores and persists saved geometry.
   // Additional windows (⌘N, second-instance, "Open in new window") open at the
@@ -696,20 +710,28 @@ async function createWindow(
     title,
     ...resolveWindowBounds(restoredWindowState),
     show: false,
-    backgroundColor: getWindowBackgroundColor(systemTheme),
+    ...getGlassWindowOptions({
+      platform: process.platform,
+      appearance: windowAppearance,
+      fallbackBackgroundColor: getWindowBackgroundColor(systemTheme),
+    }),
     ...(iconPath ? { icon: iconPath } : {}),
     ...getMainWindowChromeOptions({
       mode: DESKTOP_WINDOW_CHROME_MODE,
     }),
     webPreferences: {
       preload: getPreloadPath(),
-      additionalArguments: [windowChromeModeArgument(DESKTOP_WINDOW_CHROME_MODE)],
+      additionalArguments: [
+        windowChromeModeArgument(DESKTOP_WINDOW_CHROME_MODE),
+        ...windowGlassArguments({ platform: process.platform, appearance: windowAppearance }),
+      ],
       contextIsolation: true,
       nodeIntegration: false,
       webviewTag: true,
     },
   });
   applyDesktopWindowChromeMode({ win: mainWindow, mode: DESKTOP_WINDOW_CHROME_MODE });
+  windowGlass.register(mainWindow, windowAppearance);
 
   const webContentsId = mainWindow.webContents.id;
   options.onCreated?.(webContentsId);
@@ -966,7 +988,7 @@ async function bootstrap(): Promise<void> {
   });
   ensureNotificationCenterRegistration();
   registerDaemonManager();
-  registerWindowManager({ mode: DESKTOP_WINDOW_CHROME_MODE });
+  registerWindowManager({ mode: DESKTOP_WINDOW_CHROME_MODE, windowGlass });
   registerDialogHandlers();
   registerNotificationHandlers();
   const openExternalUrl = createExternalUrlOpener({ open: shell.openExternal });

@@ -1,0 +1,115 @@
+export interface WindowGlassAppearance {
+  glass: boolean;
+  backgroundColor: string | null;
+  glassTint: string | null;
+}
+
+export interface WindowGlassUpdate {
+  backgroundColor?: string;
+  glass?: boolean;
+  glassTint?: string;
+}
+
+interface GlassWindow {
+  setVibrancy(type: "under-window" | null): void;
+  setBackgroundColor(color: string): void;
+}
+
+export const DEFAULT_WINDOW_GLASS_APPEARANCE: WindowGlassAppearance = {
+  glass: false,
+  backgroundColor: null,
+  glassTint: null,
+};
+
+export const WINDOW_GLASS_TINT_PATTERN = /^rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\)$/;
+
+const TRANSPARENT_BACKGROUND = "#00000000";
+const VIBRANCY = "under-window";
+const GLASS_TINT_ARGUMENT_PREFIX = "--paseo-window-glass-tint=";
+const PERSIST_DELAY_MS = 300;
+
+function supportsGlass(platform: NodeJS.Platform): boolean {
+  return platform === "darwin";
+}
+
+export function getGlassWindowOptions(input: {
+  platform: NodeJS.Platform;
+  appearance: WindowGlassAppearance;
+  fallbackBackgroundColor: string;
+}): Pick<
+  Electron.BrowserWindowConstructorOptions,
+  "backgroundColor" | "vibrancy" | "visualEffectState"
+> {
+  const backgroundColor = input.appearance.backgroundColor ?? input.fallbackBackgroundColor;
+  if (!supportsGlass(input.platform)) return { backgroundColor };
+  if (!input.appearance.glass) return { backgroundColor, visualEffectState: "active" };
+  return {
+    backgroundColor: TRANSPARENT_BACKGROUND,
+    vibrancy: VIBRANCY,
+    visualEffectState: "active",
+  };
+}
+
+export function windowGlassArguments(input: {
+  platform: NodeJS.Platform;
+  appearance: WindowGlassAppearance;
+}): string[] {
+  const { glass, glassTint } = input.appearance;
+  if (!supportsGlass(input.platform) || !glass || glassTint === null) return [];
+  return [`${GLASS_TINT_ARGUMENT_PREFIX}${glassTint}`];
+}
+
+function sameAppearance(a: WindowGlassAppearance, b: WindowGlassAppearance): boolean {
+  return (
+    a.glass === b.glass && a.backgroundColor === b.backgroundColor && a.glassTint === b.glassTint
+  );
+}
+
+export interface WindowGlassController {
+  register(win: GlassWindow, appearance: WindowGlassAppearance): void;
+  apply(win: GlassWindow, update: WindowGlassUpdate): void;
+}
+
+export function createWindowGlassController(input: {
+  platform: NodeJS.Platform;
+  persist: (appearance: WindowGlassAppearance) => void;
+}): WindowGlassController {
+  const states = new WeakMap<GlassWindow, WindowGlassAppearance>();
+  let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function schedulePersist(appearance: WindowGlassAppearance): void {
+    if (persistTimer !== null) clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => {
+      persistTimer = null;
+      input.persist(appearance);
+    }, PERSIST_DELAY_MS);
+  }
+
+  return {
+    register(win, appearance) {
+      states.set(win, {
+        ...appearance,
+        glass: supportsGlass(input.platform) && appearance.glass,
+      });
+    },
+
+    apply(win, update) {
+      const current = states.get(win) ?? DEFAULT_WINDOW_GLASS_APPEARANCE;
+      const requestedBackground = update.backgroundColor ? update.backgroundColor : null;
+      const next: WindowGlassAppearance = {
+        glass: supportsGlass(input.platform) && (update.glass ?? current.glass),
+        backgroundColor: requestedBackground ?? current.backgroundColor,
+        glassTint: update.glassTint ?? current.glassTint,
+      };
+      states.set(win, next);
+
+      const glassChanged = next.glass !== current.glass;
+      if (glassChanged) win.setVibrancy(next.glass ? VIBRANCY : null);
+      const backgroundColor = next.glass ? TRANSPARENT_BACKGROUND : next.backgroundColor;
+      if (backgroundColor !== null && (glassChanged || requestedBackground !== null)) {
+        win.setBackgroundColor(backgroundColor);
+      }
+      if (!sameAppearance(current, next)) schedulePersist(next);
+    },
+  };
+}

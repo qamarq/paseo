@@ -1,6 +1,7 @@
-import { contextBridge, ipcRenderer, webUtils } from "electron";
+import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 import type { BrowserKeyboardPolicy } from "./features/browser-keyboard/index.js";
 import type { DesktopWindowChromeMode } from "./window/chrome.js";
+import type { WindowChromeUpdate } from "./window/window-manager.js";
 
 // This preload runs in Electron's sandbox and is tsc-compiled (not bundled), so it MUST
 // NOT emit any runtime module load other than "electron" — a require() of a local or
@@ -21,6 +22,24 @@ function readWindowChromeMode(): DesktopWindowChromeMode {
   // COMPAT(windowChromeMode): added in v0.5.3; remove after 2026-11-25.
   if (process.platform === "darwin") return "native-mac";
   return process.platform === "linux" ? "custom-linux" : "custom-windows";
+}
+
+// Keep in sync with WINDOW_GLASS_TINT_PATTERN in window/window-glass.ts.
+const WINDOW_GLASS_TINT_PATTERN = /^rgba\(\d{1,3}, \d{1,3}, \d{1,3}, (0|1|0?\.\d+)\)$/;
+
+function readWindowGlassTint(): string {
+  const prefix = "--paseo-window-glass-tint=";
+  const value = process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length);
+  return value && WINDOW_GLASS_TINT_PATTERN.test(value) ? value : "transparent";
+}
+
+// The window paints its own background on macOS so vibrancy can show through before React mounts.
+if (process.platform === "darwin") {
+  webFrame.insertCSS(
+    `:root{--paseo-window-tint:${readWindowGlassTint()}}` +
+      "html{background-color:var(--paseo-window-tint)!important}" +
+      "body{background-color:transparent!important}",
+  );
 }
 
 interface AttachedBrowserRegistration {
@@ -65,7 +84,7 @@ contextBridge.exposeInMainWorld("paseoDesktop", {
       setFullscreen: (fullscreen: boolean) =>
         ipcRenderer.invoke("paseo:window:setFullscreen", fullscreen),
       isFullscreen: () => ipcRenderer.invoke("paseo:window:isFullscreen"),
-      updateChrome: (update: { backgroundColor?: string; trafficLightOffsetY?: number }) =>
+      updateChrome: (update: WindowChromeUpdate) =>
         ipcRenderer.invoke("paseo:window:updateChrome", update),
       onResized: (handler: EventHandler): (() => void) => {
         const listener = (_ipcEvent: Electron.IpcRendererEvent, payload: unknown) => {

@@ -63,6 +63,22 @@ describe("window-manager", () => {
       expect(readWindowChromeUpdate({ trafficLightOffsetY: -11 })).toBeNull();
     });
 
+    it("accepts glass updates with a well-formed tint", () => {
+      expect(readWindowChromeUpdate({ glass: true, glassTint: "rgba(15, 15, 15, 0.67)" })).toEqual({
+        glass: true,
+        glassTint: "rgba(15, 15, 15, 0.67)",
+      });
+      expect(readWindowChromeUpdate({ glass: false })).toEqual({ glass: false });
+    });
+
+    it("drops a malformed glass flag or tint", () => {
+      expect(readWindowChromeUpdate({ glass: "yes" })).toBeNull();
+      expect(readWindowChromeUpdate({ glassTint: "red; background: url(x)" })).toBeNull();
+      expect(
+        readWindowChromeUpdate({ glass: true, glassTint: "rgba(15, 15, 15, 0.67)}html{" }),
+      ).toEqual({ glass: true });
+    });
+
     it("preserves fractional traffic-light offsets", () => {
       expect(readWindowChromeUpdate({ trafficLightOffsetY: 1.5 })).toEqual({
         trafficLightOffsetY: 1.5,

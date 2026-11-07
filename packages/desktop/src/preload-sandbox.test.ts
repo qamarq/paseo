@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { PASEO_BROWSER_PROFILE_PARTITION } from "./features/browser-profile.js";
+import { WINDOW_GLASS_TINT_PATTERN } from "./window/window-glass.js";
 
 // The preload runs inside Electron's sandbox and is tsc-compiled (not bundled), so at
 // runtime it may only load Electron's sandbox allowlist. Any other module (local or
@@ -95,5 +96,15 @@ describe("preload sandbox safety", () => {
       "PASEO_BROWSER_PROFILE_PARTITION not found as a double-quoted string literal in preload.ts",
     ).not.toBeNull();
     expect(match![1]).toBe(PASEO_BROWSER_PROFILE_PARTITION);
+  });
+
+  it("inlines the window glass tint pattern instead of importing it", () => {
+    const source = readFileSync(preloadPath, "utf8");
+    const match = source.match(/const\s+WINDOW_GLASS_TINT_PATTERN\s*=\s*\/(.+)\/;/);
+    expect(
+      match,
+      "WINDOW_GLASS_TINT_PATTERN not found as a regex literal in preload.ts",
+    ).not.toBeNull();
+    expect(match![1]).toBe(WINDOW_GLASS_TINT_PATTERN.source);
   });
 });
