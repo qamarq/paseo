@@ -9,6 +9,8 @@ source "$ROOT_DIR/scripts/dev-home.sh"
 
 export PATH="$ROOT_DIR/node_modules/.bin:$PATH"
 export PASEO_LISTEN="${PASEO_LISTEN:-127.0.0.1:6768}"
+# Shells and agents started by a packaged Paseo inherit its PASEO_HOME; only dev launchers keep theirs.
+if [ "${PASEO_DEV_MANAGED_HOME:-0}" != "1" ]; then unset PASEO_HOME; fi
 configure_dev_paseo_home
 
 DEV_ROOT="${PASEO_DEV_ROOT:-$(default_dev_paseo_root)}"
