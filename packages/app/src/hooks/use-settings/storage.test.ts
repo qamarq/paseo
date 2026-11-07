@@ -24,6 +24,7 @@ import {
   DEFAULT_SIDEBAR_ROW_ITEMS,
   SIDEBAR_ROW_ITEMS,
 } from "@/components/sidebar/display-preferences/row-items";
+import { DEFAULT_MONO_APPEARANCE } from "@/appearance/mono-settings";
 import { DEFAULT_CONTENT_MAX_WIDTH, THEME_OPTIONS } from "@/styles/theme";
 
 const LEGACY_SETTINGS_KEY = "@paseo:settings";
@@ -1101,6 +1102,86 @@ describe("appearance settings", () => {
     });
 
     expect((await loadAppSettingsFromStorage(deps)).syntaxTheme).toBe("one");
+  });
+});
+
+describe("mono appearance settings", () => {
+  it("defaults a device without Mono settings to the user's target look", async () => {
+    const deps = makeDeps({
+      storage: createInMemoryKeyValueStorage({
+        [APP_SETTINGS_KEY]: JSON.stringify({ theme: "dark" }),
+      }),
+    });
+
+    expect((await loadAppSettingsFromStorage(deps)).monoAppearance).toEqual({
+      scheme: "dark",
+      accentColor: null,
+      diffPalette: "default",
+      hue: 243,
+      saturation: 0,
+      darkLightness: 6,
+      sidebarOpacity: 45,
+      blurRadius: 44,
+      mainPaneGlass: true,
+      interfaceScale: 100,
+    });
+  });
+
+  it("clamps out-of-range values and resets malformed fields one at a time", async () => {
+    const deps = makeDeps({
+      storage: createInMemoryKeyValueStorage({
+        [APP_SETTINGS_KEY]: JSON.stringify({
+          monoAppearance: {
+            scheme: "auto",
+            accentColor: "#ABCDEF",
+            diffPalette: "high-contrast",
+            hue: 400,
+            saturation: -5,
+            darkLightness: "12",
+            sidebarOpacity: 10,
+            blurRadius: 70.4,
+            mainPaneGlass: false,
+            interfaceScale: 149.6,
+          },
+        }),
+      }),
+    });
+
+    expect((await loadAppSettingsFromStorage(deps)).monoAppearance).toEqual({
+      ...DEFAULT_MONO_APPEARANCE,
+      accentColor: "#abcdef",
+      hue: 360,
+      saturation: 0,
+      sidebarOpacity: 15,
+      blurRadius: 64,
+      mainPaneGlass: false,
+      interfaceScale: 150,
+    });
+  });
+
+  it.each(["red", "#abc", "#abcdefaa", 42])("drops the accent color %s", async (accentColor) => {
+    const deps = makeDeps({
+      storage: createInMemoryKeyValueStorage({
+        [APP_SETTINGS_KEY]: JSON.stringify({ monoAppearance: { accentColor } }),
+      }),
+    });
+
+    expect((await loadAppSettingsFromStorage(deps)).monoAppearance.accentColor).toBeNull();
+  });
+
+  it("persists Mono settings beside the rest of the app settings", async () => {
+    const deps = makeDeps();
+    const queryClient = new QueryClient();
+    const monoAppearance = {
+      ...DEFAULT_MONO_APPEARANCE,
+      scheme: "system" as const,
+      diffPalette: "colorblind" as const,
+      accentColor: "#10b981",
+    };
+
+    await saveAppSettings({ queryClient, updates: { monoAppearance }, deps });
+
+    expect((await loadAppSettingsFromStorage(deps)).monoAppearance).toEqual(monoAppearance);
   });
 });
 
