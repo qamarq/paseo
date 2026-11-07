@@ -682,16 +682,9 @@ export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
 // Chat and markdown content column; the appearance updater patches the user's width in.
 export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 
-/**
- * Chrome geometry and surface effects that a theme may override. `null` and `0` mean "keep the
- * component's own value", so every built-in theme renders exactly as before; only the desktop Mono
- * theme sets them (docs/design.md, "Desktop glass").
- */
 export interface ChromeTokens {
-  /** Layers are see-through: knockouts and painted scrims cannot match what is behind them. */
   glass: boolean;
   feedbackMs: number;
-  /** Fills for chips and rows named by the surface they would paint, e.g. translucent under glass. */
   fills: Partial<Record<SurfaceBackdrop, string>> | null;
   rowRadius: number | null;
   navRowHeight: number | null;
@@ -699,7 +692,6 @@ export interface ChromeTokens {
   searchFieldBorder: string | null;
   sectionLabelSize: number | null;
   sectionLabelColor: string | null;
-  /** The line under the sidebar's navigation rows. */
   sidebarNavDivider: string | null;
   tabHeight: number | null;
   tabRadius: number | null;
@@ -717,7 +709,6 @@ export interface ChromeTokens {
   modalBorder: string | null;
   modalBlur: number;
   scrim: string | null;
-  /** Dims a row under a busy overlay; translucent so glass still reads through it. */
   veil: string | null;
   composerRadius: number | null;
   composerFill: string | null;
@@ -725,7 +716,6 @@ export interface ChromeTokens {
   composerBlur: number;
   sendButtonRadius: number | null;
   secondaryButtonFill: string | null;
-  /** Composer toolbar pickers (model, mode). */
   pillFill: string | null;
   pillHoverFill: string | null;
   pillRadius: number | null;
@@ -733,12 +723,9 @@ export interface ChromeTokens {
   userBubbleRadius: number | null;
   userBubblePaddingX: number | null;
   userBubblePaddingY: number | null;
-  /** Tool-call rows: the spine under opened rows and whether the target is set in mono. */
   railColor: string | null;
   toolTargetMono: boolean;
-  /** Turn metadata (duration, timestamp, copy and fork icons). */
   metaColor: string | null;
-  /** Assistant prose, links and Markdown headings. */
   proseColor: string | null;
   linkColor: string | null;
   headingColor: string | null;

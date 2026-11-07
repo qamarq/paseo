@@ -883,7 +883,6 @@ export const TurnCopyButton = memo(function TurnCopyButton({
   );
 });
 
-// MonoCode sets a tool row's target in 13px mono.
 const TOOL_TARGET_MONO_SIZE = 13;
 
 const expandableBadgeStylesheet = StyleSheet.create((theme) => ({

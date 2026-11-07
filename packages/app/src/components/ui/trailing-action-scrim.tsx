@@ -47,11 +47,7 @@ const backdropColorMappings: Record<SurfaceBackdrop, (theme: Theme) => { color: 
   surfaceSidebarSelected: (theme) => ({ color: knockoutColor(theme, "surfaceSidebarSelected") }),
 };
 
-/**
- * Fades trailing content into the surface beneath an absolutely overlaid action. Under desktop glass
- * the surface cannot be painted, so it frosts what it covers instead; content that can mask its own
- * tail takes `trailingActionMask` as well.
- */
+/** Fades trailing content into the surface beneath an absolutely overlaid action. */
 export function TrailingActionScrim({
   backdrop,
   width = SCRIM_WIDTH,
@@ -76,10 +72,6 @@ export function TrailingActionScrim({
   );
 }
 
-/**
- * The scrim's fade as a mask on the covered content, for desktop glass where the scrim cannot
- * paint. The masked box must end where the scrim does.
- */
 export function trailingActionMask(theme: Theme, width: number = SCRIM_WIDTH) {
   if (!theme.chrome.glass) return {};
   return trailingMask(width, SCRIM_FADE_WIDTH);
