@@ -43,3 +43,12 @@ export function axisMask(
     WebkitMaskImage: `linear-gradient(${direction}, transparent, #000 ${start}px, #000 calc(100% - ${end}px), transparent)`,
   };
 }
+
+export function feedbackTransition(durationMs: number) {
+  if (durationMs <= 0) return {};
+  return {
+    transitionProperty: "background-color, color, opacity",
+    transitionDuration: `${durationMs}ms`,
+    transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+  };
+}

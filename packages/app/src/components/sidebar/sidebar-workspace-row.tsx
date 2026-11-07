@@ -40,6 +40,7 @@ import {
   useSidebarWorkspaceTrailing,
   type SidebarWorkspaceTrailing,
 } from "@/components/sidebar/workspace-trailing";
+import { feedbackTransition } from "@/styles/web-effects";
 
 interface SidebarWorkspaceRowProps {
   workspace: SidebarWorkspaceEntry;
@@ -498,6 +499,7 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     gap: theme.spacing[1],
     userSelect: "none",
+    ...feedbackTransition(theme.chrome.feedbackMs),
   },
   workspaceRowHovered: {
     backgroundColor: theme.colors.surfaceSidebarHover,

@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { Theme } from "@/styles/theme";
 import { MenuDepthProvider, useMenuContext } from "./menu-context";
 import { MENU_ITEM_HEIGHT } from "./menu-geometry";
+import { feedbackTransition } from "@/styles/web-effects";
 
 const ThemedCheck = withUnistyles(Check);
 const ThemedCheckCircle = withUnistyles(CheckCircle);
@@ -449,6 +450,7 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: theme.borderWidth[1],
     borderColor: "transparent",
     borderRadius: theme.chrome.menuItemRadius ?? theme.borderRadius.md,
+    ...feedbackTransition(theme.chrome.feedbackMs),
     outlineWidth: 0,
     outlineColor: "transparent",
   },

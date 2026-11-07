@@ -690,6 +690,7 @@ export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 export interface ChromeTokens {
   /** Layers are see-through: knockouts and painted scrims cannot match what is behind them. */
   glass: boolean;
+  feedbackMs: number;
   /** Fills for chips and rows named by the surface they would paint, e.g. translucent under glass. */
   fills: Partial<Record<SurfaceBackdrop, string>> | null;
   rowRadius: number | null;
@@ -705,6 +706,7 @@ export interface ChromeTokens {
   tabLabelSize: number | null;
   iconButtonSize: number | null;
   floatingRadius: number | null;
+  tooltipRadius: number | null;
   floatingFill: string | null;
   floatingBorder: string | null;
   floatingBlur: number;
@@ -748,6 +750,7 @@ export interface ChromeTokens {
 
 export const DEFAULT_CHROME: ChromeTokens = {
   glass: false,
+  feedbackMs: 0,
   fills: null,
   rowRadius: null,
   navRowHeight: null,
@@ -761,6 +764,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   tabLabelSize: null,
   iconButtonSize: null,
   floatingRadius: null,
+  tooltipRadius: null,
   floatingFill: null,
   floatingBorder: null,
   floatingBlur: 0,
