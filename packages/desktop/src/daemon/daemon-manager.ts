@@ -317,15 +317,7 @@ async function startDaemon(): Promise<DesktopDaemonStatus> {
       listen: DESKTOP_IDENTITY.daemonListen,
     });
   }
-  try {
-    assertDesktopDaemonListen(home);
-  } catch (error) {
-    logDesktopDaemonLifecycle("refused daemon start", {
-      home,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw error;
-  }
+  assertDaemonListenAllowed(home, "start");
   const invocation = createNodeEntrypointInvocation({
     entrypoint: resolveDaemonRunnerEntrypoint(),
     argvMode: "node-script",
@@ -452,8 +444,22 @@ export function keepsTerminalsOnStop(
 }
 
 async function restartDaemon(): Promise<DesktopDaemonStatus> {
-  await runExternalCliJsonCommand(["daemon", "restart", "--home", getPaseoHome(), "--json"]);
+  const home = getPaseoHome();
+  assertDaemonListenAllowed(home, "restart");
+  await runExternalCliJsonCommand(["daemon", "restart", "--home", home, "--json"]);
   return resolveDesktopDaemonStatus();
+}
+
+function assertDaemonListenAllowed(home: string, action: "start" | "restart"): void {
+  try {
+    assertDesktopDaemonListen(home);
+  } catch (error) {
+    logDesktopDaemonLifecycle(`refused daemon ${action}`, {
+      home,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 function getDaemonLogs(): DesktopDaemonLogs {
