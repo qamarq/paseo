@@ -55,19 +55,15 @@ export function getGlassWindowOptions(input: {
   nativeGlass: NativeGlass | null;
 }): Pick<
   Electron.BrowserWindowConstructorOptions,
-  "backgroundColor" | "vibrancy" | "visualEffectState"
+  "backgroundColor" | "transparent" | "vibrancy" | "visualEffectState"
 > {
   const backgroundColor = input.appearance.backgroundColor ?? input.fallbackBackgroundColor;
   if (!supportsGlass(input.platform)) return { backgroundColor };
-  if (!input.appearance.glass) return { backgroundColor, visualEffectState: "active" };
-  if (input.nativeGlass) {
-    return { backgroundColor: TRANSPARENT_BACKGROUND, visualEffectState: "active" };
-  }
-  return {
-    backgroundColor: TRANSPARENT_BACKGROUND,
-    vibrancy: VIBRANCY,
-    visualEffectState: "active",
-  };
+  // Glass can turn on after launch, and only a window created transparent clears translucent paint.
+  const glassCapable = { transparent: true, visualEffectState: "active" } as const;
+  if (!input.appearance.glass) return { ...glassCapable, backgroundColor };
+  if (input.nativeGlass) return { ...glassCapable, backgroundColor: TRANSPARENT_BACKGROUND };
+  return { ...glassCapable, backgroundColor: TRANSPARENT_BACKGROUND, vibrancy: VIBRANCY };
 }
 
 export function windowGlassArguments(input: {

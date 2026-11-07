@@ -58,6 +58,7 @@ describe("getGlassWindowOptions", () => {
       }),
     ).toEqual({
       backgroundColor: "#00000000",
+      transparent: true,
       vibrancy: "under-window",
       visualEffectState: "active",
     });
@@ -71,7 +72,7 @@ describe("getGlassWindowOptions", () => {
         fallbackBackgroundColor: "#181B1A",
         nativeGlass: null,
       }),
-    ).toEqual({ backgroundColor: "#0f0f0f", visualEffectState: "active" });
+    ).toEqual({ backgroundColor: "#0f0f0f", transparent: true, visualEffectState: "active" });
   });
 
   it("falls back to the system color before any appearance is saved", () => {
@@ -82,7 +83,7 @@ describe("getGlassWindowOptions", () => {
         fallbackBackgroundColor: "#181B1A",
         nativeGlass: null,
       }),
-    ).toEqual({ backgroundColor: "#181B1A", visualEffectState: "active" });
+    ).toEqual({ backgroundColor: "#181B1A", transparent: true, visualEffectState: "active" });
   });
 
   it("leaves vibrancy to the native backdrop when it is available", () => {
@@ -93,7 +94,7 @@ describe("getGlassWindowOptions", () => {
         fallbackBackgroundColor: "#181B1A",
         nativeGlass: createFakeNativeGlass([]),
       }),
-    ).toEqual({ backgroundColor: "#00000000", visualEffectState: "active" });
+    ).toEqual({ backgroundColor: "#00000000", transparent: true, visualEffectState: "active" });
   });
 
   it.each(["win32", "linux"] as const)("keeps %s windows opaque", (platform) => {
