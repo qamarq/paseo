@@ -1,10 +1,6 @@
 import type { Theme } from "./theme";
 import { backdropBlur } from "./web-effects";
 
-/**
- * Fill, edge, radius and blur of a menu, popover or tooltip. Each caller passes the values it
- * paints today; the desktop Mono theme swaps in a frosted 12px glass frame.
- */
 export function floatingSurfaceStyle(
   theme: Theme,
   defaults: { backgroundColor: string; borderColor: string; borderRadius: number },
@@ -17,7 +13,6 @@ export function floatingSurfaceStyle(
   };
 }
 
-/** The same for a modal panel: a 16px glass frame on Mono. */
 export function modalSurfaceStyle(
   theme: Theme,
   defaults: { backgroundColor: string; borderColor: string; borderRadius: number },

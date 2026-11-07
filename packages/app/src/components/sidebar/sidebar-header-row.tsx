@@ -7,6 +7,7 @@ import { Shortcut } from "@/components/ui/shortcut";
 import { density, densityIconBox, withChromeSize } from "@/styles/density";
 import { surfaceFill } from "@/styles/surface-backdrop";
 import type { ShortcutKey } from "@/utils/format-shortcut";
+import { feedbackTransition } from "@/styles/web-effects";
 
 type SidebarHeaderRowVariant = "header" | "compact" | "inline";
 
@@ -37,7 +38,6 @@ interface SidebarHeaderRowProps {
    */
   trailing?: ReactNode;
   rowRef?: Ref<View>;
-  /** Opens a search: drawn as a field, with its shortcut always shown, where the theme has one. */
   field?: boolean;
 }
 
@@ -170,8 +170,8 @@ const styles = StyleSheet.create((theme) => ({
     // strip so the hover highlight clears the strip's bottom separator.
     minHeight: withChromeSize(density.tightRowHeight, theme.chrome.navRowHeight),
     borderRadius: theme.chrome.rowRadius ?? theme.borderRadius.lg,
+    ...feedbackTransition(theme.chrome.feedbackMs),
   },
-  // A row that opens a search reads as a field where the theme draws one.
   rowField: {
     borderWidth: theme.chrome.searchFieldBorder ? 1 : 0,
     borderColor: theme.chrome.searchFieldBorder ?? "transparent",
@@ -213,9 +213,7 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing[1],
     paddingRight: theme.spacing[2],
   },
-  // A field keeps its shortcut on show where the theme draws the field; otherwise it is hover-only.
   restingShortcut: {
-    display: theme.chrome.searchFieldBorder ? "flex" : "none",
     opacity: 0.6,
   },
 }));

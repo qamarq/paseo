@@ -24,7 +24,7 @@ import {
 import { DIFF_BODY_BORDER_HEIGHT, expandedBodyBorderTop, visibleRowRange } from "./model";
 import { nativeTextRuns } from "./native-text-runs";
 import { horizontalOffsetForPath, type DiffHorizontalOffsets } from "./horizontal-offsets";
-import { codeLineNumberTone } from "./palette";
+import { codeLineNumberTone, visibleTint } from "./palette";
 import { reviewBackgroundPaint, reviewDividerHeight, reviewGapTop } from "./review-paint";
 import {
   shapeNativeHeaderText,
@@ -51,8 +51,8 @@ export interface NativePaints {
   deletion: SkPaint;
   additionBackground: SkPaint;
   deletionBackground: SkPaint;
-  additionGutter: SkPaint;
-  deletionGutter: SkPaint;
+  additionGutter: SkPaint | null;
+  deletionGutter: SkPaint | null;
   headerSurface: SkPaint;
   headerBorder: SkPaint;
   statusSuccess: SkPaint;
@@ -72,8 +72,8 @@ export function createNativePaints(palette: DiffPalette): NativePaints {
     deletion: paint(palette.deletion),
     additionBackground: paint(palette.additionBackground),
     deletionBackground: paint(palette.deletionBackground),
-    additionGutter: paint(palette.additionGutter),
-    deletionGutter: paint(palette.deletionGutter),
+    additionGutter: visibleTintPaint(palette.additionGutter),
+    deletionGutter: visibleTintPaint(palette.deletionGutter),
     headerSurface: paint(palette.headerSurface),
     headerBorder: paint(palette.headerBorder),
     statusSuccess: paint(palette.statusSuccess),
@@ -236,6 +236,11 @@ function paintNativeChangeIcon(
     canvas.drawCircle(x + 12 * scale, y + 12 * scale, scale, stroke);
   }
   stroke.dispose();
+}
+
+function visibleTintPaint(color: string): SkPaint | null {
+  const tint = visibleTint(color);
+  return tint === null ? null : paint(tint);
 }
 
 function paint(color: string): SkPaint {

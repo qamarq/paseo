@@ -682,15 +682,9 @@ export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
 // Chat and markdown content column; the appearance updater patches the user's width in.
 export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 
-/**
- * Chrome geometry and surface effects that a theme may override. `null` and `0` mean "keep the
- * component's own value", so every built-in theme renders exactly as before; only the desktop Mono
- * theme sets them (docs/design.md, "Desktop glass").
- */
 export interface ChromeTokens {
-  /** Layers are see-through: knockouts and painted scrims cannot match what is behind them. */
   glass: boolean;
-  /** Fills for chips and rows named by the surface they would paint, e.g. translucent under glass. */
+  feedbackMs: number;
   fills: Partial<Record<SurfaceBackdrop, string>> | null;
   rowRadius: number | null;
   navRowHeight: number | null;
@@ -698,11 +692,13 @@ export interface ChromeTokens {
   searchFieldBorder: string | null;
   sectionLabelSize: number | null;
   sectionLabelColor: string | null;
+  sidebarNavDivider: string | null;
   tabHeight: number | null;
   tabRadius: number | null;
   tabLabelSize: number | null;
   iconButtonSize: number | null;
   floatingRadius: number | null;
+  tooltipRadius: number | null;
   floatingFill: string | null;
   floatingBorder: string | null;
   floatingBlur: number;
@@ -713,14 +709,13 @@ export interface ChromeTokens {
   modalBorder: string | null;
   modalBlur: number;
   scrim: string | null;
-  /** Dims a row under a busy overlay; translucent so glass still reads through it. */
   veil: string | null;
   composerRadius: number | null;
   composerFill: string | null;
   composerBorder: string | null;
   composerBlur: number;
   sendButtonRadius: number | null;
-  /** Composer toolbar pickers (model, mode). */
+  secondaryButtonFill: string | null;
   pillFill: string | null;
   pillHoverFill: string | null;
   pillRadius: number | null;
@@ -728,6 +723,12 @@ export interface ChromeTokens {
   userBubbleRadius: number | null;
   userBubblePaddingX: number | null;
   userBubblePaddingY: number | null;
+  railColor: string | null;
+  toolTargetMono: boolean;
+  metaColor: string | null;
+  proseColor: string | null;
+  linkColor: string | null;
+  headingColor: string | null;
   inlineCodeRadius: number | null;
   inlineCodeFill: string | null;
   codeBlockRadius: number | null;
@@ -736,6 +737,7 @@ export interface ChromeTokens {
 
 export const DEFAULT_CHROME: ChromeTokens = {
   glass: false,
+  feedbackMs: 0,
   fills: null,
   rowRadius: null,
   navRowHeight: null,
@@ -743,11 +745,13 @@ export const DEFAULT_CHROME: ChromeTokens = {
   searchFieldBorder: null,
   sectionLabelSize: null,
   sectionLabelColor: null,
+  sidebarNavDivider: null,
   tabHeight: null,
   tabRadius: null,
   tabLabelSize: null,
   iconButtonSize: null,
   floatingRadius: null,
+  tooltipRadius: null,
   floatingFill: null,
   floatingBorder: null,
   floatingBlur: 0,
@@ -764,6 +768,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   composerBorder: null,
   composerBlur: 0,
   sendButtonRadius: null,
+  secondaryButtonFill: null,
   pillFill: null,
   pillHoverFill: null,
   pillRadius: null,
@@ -771,6 +776,12 @@ export const DEFAULT_CHROME: ChromeTokens = {
   userBubbleRadius: null,
   userBubblePaddingX: null,
   userBubblePaddingY: null,
+  railColor: null,
+  toolTargetMono: false,
+  metaColor: null,
+  proseColor: null,
+  linkColor: null,
+  headingColor: null,
   inlineCodeRadius: null,
   inlineCodeFill: null,
   codeBlockRadius: null,

@@ -21,6 +21,7 @@ import {
 import { useLocalDaemonServerId } from "@/hooks/use-is-local-daemon";
 import { PairDeviceModal } from "@/desktop/components/pair-device-modal";
 import { buildSettingsHostSectionRoute } from "@/utils/host-routes";
+import { surfaceFill } from "@/styles/surface-backdrop";
 
 const WINDOW_CONTENT_DATASET = { "window-content": "" };
 
@@ -220,14 +221,14 @@ const styles = StyleSheet.create((theme) => ({
     width: { xs: "100%", md: 220 },
     minHeight: { xs: 0, md: 132 },
     padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface1,
+    backgroundColor: surfaceFill(theme, "surface1"),
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.xl,
     gap: theme.spacing[3],
   },
   tileHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
     borderColor: theme.colors.borderAccent,
   },
   tilePressed: {

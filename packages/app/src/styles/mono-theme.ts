@@ -284,7 +284,6 @@ function glassLayers(
   };
 }
 
-// MonoCode's chrome: Tailwind radii and `content`-at-N% fills (UI-SPEC §3-4).
 const MONO_FILL = {
   rowHover: 0.05,
   rowSelected: 0.12,
@@ -298,15 +297,25 @@ const MONO_FILL = {
   inlineCode: 0.08,
   codeBlock: 0.06,
   sectionLabel: 0.4,
+  sectionLabelLight: 0.55,
   searchFieldBorder: 0.08,
   pill: 0.1,
+  rail: 0.14,
+  meta: 0.45,
   pillHover: 0.15,
 };
 const MODAL_BASE_ALPHA = 0.55;
+const MONO_PROSE_INK = 0.78;
+const MONO_LINK: Record<MonoColorScheme, string> = {
+  dark: "#7dd3fc",
+  light: toHex(hslToRgb(211, 92, 40)),
+};
+const MONO_HEADING: Record<MonoColorScheme, string> = { dark: "#f9a8c9", light: "#be185d" };
 const VEIL_ALPHA = 0.8;
 const MODAL_SCRIM = "rgba(0, 0, 0, 0.4)";
 const FLOATING_BLUR = 24;
 const COMPOSER_BLUR = 8;
+const FEEDBACK_MS = 120;
 
 function monoChrome(
   scheme: MonoColorScheme,
@@ -320,6 +329,7 @@ function monoChrome(
   return {
     ...DEFAULT_CHROME,
     glass: glass !== null,
+    feedbackMs: FEEDBACK_MS,
     fills: glass
       ? {
           ...(glass.mainPaneGlass ? { surface0: "transparent" } : {}),
@@ -335,12 +345,14 @@ function monoChrome(
     rowLabelWeight: "500",
     searchFieldBorder: ink(MONO_FILL.searchFieldBorder),
     sectionLabelSize: 11,
-    sectionLabelColor: ink(MONO_FILL.sectionLabel),
+    sectionLabelColor: ink(dark ? MONO_FILL.sectionLabel : MONO_FILL.sectionLabelLight),
+    sidebarNavDivider: "transparent",
     tabHeight: 30,
     tabRadius: 6,
     tabLabelSize: 13,
     iconButtonSize: 24,
     floatingRadius: 12,
+    tooltipRadius: 8,
     floatingFill: dark ? ink(MONO_FILL.floating) : base,
     floatingBorder: ink(MONO_FILL.floatingBorder),
     floatingBlur: dark ? FLOATING_BLUR : 0,
@@ -357,6 +369,7 @@ function monoChrome(
     composerBorder: ink(MONO_FILL.composerBorder),
     composerBlur: dark ? COMPOSER_BLUR : 0,
     sendButtonRadius: 6,
+    secondaryButtonFill: ink(MONO_FILL.pill),
     pillFill: ink(MONO_FILL.pill),
     pillHoverFill: ink(MONO_FILL.pillHover),
     pillRadius: 6,
@@ -364,6 +377,12 @@ function monoChrome(
     userBubbleRadius: 18,
     userBubblePaddingX: 12,
     userBubblePaddingY: 8,
+    railColor: ink(MONO_FILL.rail),
+    toolTargetMono: true,
+    metaColor: ink(MONO_FILL.meta),
+    proseColor: toHex(mix(content, background, MONO_PROSE_INK)),
+    linkColor: MONO_LINK[scheme],
+    headingColor: MONO_HEADING[scheme],
     inlineCodeRadius: 6,
     inlineCodeFill: ink(MONO_FILL.inlineCode),
     codeBlockRadius: 10,
@@ -404,6 +423,13 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
   const overrides = {
     surfaceSidebarHover: glass ? toRgba(content, MONO_FILL.rowHover) : ink("rowHover"),
     surfaceSidebarSelected: glass ? toRgba(content, MONO_FILL.rowSelected) : ink("rowSelected"),
+    // An opaque hairline reads as a dark seam over glass; a translucent one stays a hairline.
+    ...(glass
+      ? {
+          border: toRgba(content, INK.dark.stroke),
+          borderAccent: toRgba(content, INK.dark.strongStroke),
+        }
+      : {}),
     surfaceWorkspace: tint.surface0,
     interactionHighlight: toRgba(content, INK[scheme].interaction),
     ...primary,

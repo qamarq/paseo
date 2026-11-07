@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildMonoTheme, monoWindowTint, type MonoThemeInput } from "./mono-theme";
+import { knockoutColor } from "./surface-backdrop";
 import { darkTheme, lightTheme } from "./theme";
 
 function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
@@ -244,6 +245,14 @@ describe("buildMonoTheme", () => {
     expect(colors.terminal.background).toBe("rgba(0, 0, 0, 0)");
   });
 
+  it("draws hairlines translucent under glass so they do not read as dark seams", () => {
+    const glassy = buildMonoTheme(input({ glass: { mainPaneGlass: true } })).colors;
+
+    expect(glassy.border).toBe("rgba(235, 235, 235, 0.07)");
+    expect(glassy.borderAccent).toBe("rgba(235, 235, 235, 0.1)");
+    expect(buildMonoTheme(input()).colors.border).toMatch(OPAQUE_HEX);
+  });
+
   it("keeps the main pane fill and terminal opaque when main pane glass is off", () => {
     const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
 
@@ -263,6 +272,23 @@ describe("buildMonoTheme", () => {
       });
     }
     expect(buildMonoTheme(input()).chrome.glass).toBe(false);
+  });
+
+  it("lifts light section labels above MonoCode's 40% so they stay legible", () => {
+    expect(buildMonoTheme(input()).chrome.sectionLabelColor).toBe("rgba(235, 235, 235, 0.4)");
+    expect(buildMonoTheme(input({ scheme: "light" })).chrome.sectionLabelColor).toBe(
+      "rgba(46, 46, 46, 0.55)",
+    );
+  });
+
+  it("knocks out only the backdrops that glass turned translucent", () => {
+    const paneGlass = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+    const sidebarOnly = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(knockoutColor(paneGlass, "surface0")).toBe("transparent");
+    expect(knockoutColor(sidebarOnly, "surface0")).toBe(sidebarOnly.colors.surface0);
+    expect(knockoutColor(sidebarOnly, "surfaceSidebarHover")).toBe("transparent");
+    expect(knockoutColor(darkTheme, "surface1")).toBe(darkTheme.colors.surface1);
   });
 
   it("frosts floating surfaces in dark and keeps them solid in light", () => {

@@ -59,7 +59,6 @@ export function densityIconProps<P extends object>(
   });
 }
 
-/** A breakpoint value with a theme's pointer-layout override (desktop chrome), compact unchanged. */
 export function withChromeSize(value: LayoutValue, override: number | null): LayoutValue {
   return override === null ? value : { xs: value.xs, md: override };
 }

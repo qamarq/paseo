@@ -176,7 +176,7 @@ function prependTerminalOutput(
 
 const TRANSLUCENT_RGBA = /^rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*(0|0?\.\d+)\s*\)$/;
 
-/** A see-through background (desktop glass) needs xterm's slower transparency path. */
+// A see-through background (desktop glass) needs xterm's slower transparency path.
 export function hasTranslucentBackground(theme: ITheme): boolean {
   const background = theme.background?.trim() ?? "";
   return background === "transparent" || TRANSLUCENT_RGBA.test(background);

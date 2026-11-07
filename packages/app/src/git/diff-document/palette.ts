@@ -68,3 +68,9 @@ export function codeLineNumberTone(cell: DiffCell): "addition" | "deletion" | "f
   if (cell.type === "remove") return "deletion";
   return "foregroundMuted";
 }
+
+const INVISIBLE_COLOR = /^(transparent|rgba\(.*,\s*0(\.0*)?\))$/;
+
+export function visibleTint(color: string): string | null {
+  return INVISIBLE_COLOR.test(color.trim()) ? null : color;
+}
