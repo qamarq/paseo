@@ -4,6 +4,8 @@ import {
   buildDarkTheme,
   buildLightSemanticColors,
   buildLightTheme,
+  DEFAULT_CHROME,
+  type ChromeTokens,
   type Theme,
 } from "./theme";
 
@@ -86,6 +88,7 @@ const MONO_DIFF_BACKGROUND_ALPHA: Record<MonoDiffPalette, number> = {
 };
 
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
+const TRANSPARENT_TERMINAL = "rgba(0, 0, 0, 0)";
 const USER_ACCENT_BUBBLE_STRENGTH = 0.24;
 const USER_ACCENT_BORDER_ALPHA = 0.3;
 const WINDOW_BACKGROUND_OPACITY = 0.4;
@@ -266,6 +269,78 @@ function glassLayers(
   };
 }
 
+// MonoCode's chrome: Tailwind radii and `content`-at-N% fills (UI-SPEC §3-4).
+const MONO_FILL = {
+  rowHover: 0.05,
+  rowSelected: 0.12,
+  chipHover: 0.05,
+  chipSelected: 0.1,
+  floating: 0.02,
+  floatingBorder: 0.1,
+  modalBorder: 0.07,
+  composer: 0.03,
+  composerBorder: 0.1,
+  inlineCode: 0.08,
+  codeBlock: 0.06,
+  sectionLabel: 0.4,
+};
+const MODAL_BASE_ALPHA = 0.55;
+const VEIL_ALPHA = 0.8;
+const MODAL_SCRIM = "rgba(0, 0, 0, 0.4)";
+const FLOATING_BLUR = 24;
+const COMPOSER_BLUR = 8;
+
+function monoChrome(
+  scheme: MonoColorScheme,
+  glass: MonoGlass | null,
+  content: Rgb,
+  background: Rgb,
+): ChromeTokens {
+  const ink = (alpha: number) => toRgba(content, alpha);
+  const dark = scheme === "dark";
+  const base = toHex(background);
+  return {
+    ...DEFAULT_CHROME,
+    glass: glass !== null,
+    fills: glass
+      ? {
+          ...(glass.mainPaneGlass ? { surface0: "transparent" } : {}),
+          surface1: ink(MONO_FILL.chipHover),
+          surface2: ink(MONO_FILL.chipSelected),
+          surfaceSidebar: "transparent",
+          surfaceSidebarHover: ink(MONO_FILL.rowHover),
+          surfaceSidebarSelected: ink(MONO_FILL.rowSelected),
+        }
+      : null,
+    rowRadius: 8,
+    sectionLabelSize: 11,
+    sectionLabelColor: ink(MONO_FILL.sectionLabel),
+    tabHeight: 30,
+    tabRadius: 6,
+    iconButtonSize: 24,
+    floatingRadius: 12,
+    floatingFill: dark ? ink(MONO_FILL.floating) : base,
+    floatingBorder: ink(MONO_FILL.floatingBorder),
+    floatingBlur: dark ? FLOATING_BLUR : 0,
+    menuItemRadius: 8,
+    modalRadius: 16,
+    modalFill: dark ? toRgba(background, MODAL_BASE_ALPHA) : base,
+    modalBorder: ink(MONO_FILL.modalBorder),
+    modalBlur: dark ? FLOATING_BLUR : 0,
+    scrim: MODAL_SCRIM,
+    veil: toRgba(background, VEIL_ALPHA),
+    composerRadius: 8,
+    composerFill: dark ? ink(MONO_FILL.composer) : base,
+    composerBorder: ink(MONO_FILL.composerBorder),
+    composerBlur: dark ? COMPOSER_BLUR : 0,
+    userBubbleRadius: 18,
+    inlineCodeRadius: 6,
+    inlineCodeFill: ink(MONO_FILL.inlineCode),
+    codeBlockRadius: 10,
+    codeBlockFill: ink(MONO_FILL.codeBlock),
+  };
+}
+
 export function buildMonoTheme(input: MonoThemeInput): Theme {
   const { scheme } = input;
   const background = backgroundRgb(input);
@@ -295,9 +370,10 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
   };
   const accent = input.accentColor === null ? null : parseHexColor(input.accentColor);
   const primary = resolvePrimary(scheme, accent, content, background);
+  const glass = scheme === "dark" ? input.glass : null;
   const overrides = {
-    surfaceSidebarHover: ink("rowHover"),
-    surfaceSidebarSelected: ink("rowSelected"),
+    surfaceSidebarHover: glass ? toRgba(content, MONO_FILL.rowHover) : ink("rowHover"),
+    surfaceSidebarSelected: glass ? toRgba(content, MONO_FILL.rowSelected) : ink("rowSelected"),
     surfaceWorkspace: tint.surface0,
     interactionHighlight: toRgba(content, INK[scheme].interaction),
     ...primary,
@@ -310,22 +386,31 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
     ...diffLineColors(diff, MONO_DIFF_BACKGROUND_ALPHA[input.diffPalette]),
-    ...glassLayers(scheme === "dark" ? input.glass : null, tint),
+    ...glassLayers(glass, tint),
   };
+  const chrome = monoChrome(scheme, glass, content, background);
 
   if (scheme === "dark") {
-    return buildDarkTheme({
+    const colors = {
       ...buildDarkSemanticColors({ ...tint, terminalBlack: tint.surfaceSidebar }),
       ...overrides,
-    });
+    };
+    const terminal =
+      glass?.mainPaneGlass === true
+        ? { ...colors.terminal, background: TRANSPARENT_TERMINAL }
+        : colors.terminal;
+    return { ...buildDarkTheme({ ...colors, terminal }), chrome };
   }
-  return buildLightTheme({
-    ...buildLightSemanticColors({
-      ...tint,
-      primary: overrides.primary,
-      primaryForeground: overrides.primaryForeground,
-      terminalBlack: tint.foreground,
+  return {
+    ...buildLightTheme({
+      ...buildLightSemanticColors({
+        ...tint,
+        primary: overrides.primary,
+        primaryForeground: overrides.primaryForeground,
+        terminalBlack: tint.foreground,
+      }),
+      ...overrides,
     }),
-    ...overrides,
-  });
+    chrome,
+  };
 }
