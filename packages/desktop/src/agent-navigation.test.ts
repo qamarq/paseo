@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AgentNavigationInbox, parseAgentDeepLinkFromArgv } from "./agent-navigation.js";
+import { DESKTOP_IDENTITY } from "./identity.js";
 
 describe("desktop agent navigation", () => {
   it("finds an agent deep link among Electron launch arguments", () => {
@@ -7,9 +8,13 @@ describe("desktop agent navigation", () => {
       parseAgentDeepLinkFromArgv([
         "/Applications/Paseo.app/Contents/MacOS/Paseo",
         "--no-sandbox",
-        "paseo://h/server-1/agent/agent-2",
+        `${DESKTOP_IDENTITY.deepLinkScheme}://h/server-1/agent/agent-2`,
       ]),
     ).toEqual({ serverId: "server-1", agentId: "agent-2" });
+  });
+
+  it("ignores agent links registered to the upstream Paseo app", () => {
+    expect(parseAgentDeepLinkFromArgv(["paseo://h/server-1/agent/agent-2"])).toBeNull();
   });
 
   it("holds navigation until the existing renderer is ready", () => {

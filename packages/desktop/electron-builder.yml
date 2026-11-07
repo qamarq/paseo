@@ -1,11 +1,11 @@
 npmRebuild: false
-appId: sh.paseo.desktop
-productName: Paseo
+appId: sh.paseo.desktop.glass
+productName: Paseo Glass
 executableName: Paseo
 protocols:
-  - name: Paseo agent link
+  - name: Paseo Glass agent link
     schemes:
-      - paseo
+      - paseo-glass
 afterPack: ./scripts/after-pack.js
 afterSign: ./scripts/after-sign.js
 directories:
@@ -35,12 +35,10 @@ extraResources:
     to: app-dist
   - from: assets/editor-targets
     to: editor-target-icons
-publish:
-  provider: github
-  owner: getpaseo
-  repo: paseo
+publish: null
 mac:
-  artifactName: "Paseo-${version}-${arch}.${ext}"
+  executableName: Paseo Glass
+  artifactName: "Paseo-Glass-${version}-${arch}.${ext}"
   minimumSystemVersion: "13.0.0"
   category: public.app-category.developer-tools
   icon: assets/icon.icns
