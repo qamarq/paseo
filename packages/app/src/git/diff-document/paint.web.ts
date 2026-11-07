@@ -5,7 +5,7 @@ import {
   fragmentWidthForRange,
   visibleRowRange,
 } from "./model";
-import { codeLineNumberTone, codeTextColor } from "./palette";
+import { codeLineNumberTone, codeTextColor, visibleTint } from "./palette";
 import {
   DIFF_FILE_HEADER_CONTENT_HEIGHT,
   DIFF_FILE_HEADER_HEIGHT,
@@ -395,8 +395,8 @@ function paintSelection(input: PaintWebViewportInput, selection: DiffSelection):
 }
 
 function cellGutterTint(cell: DiffCell, palette: DiffPalette): string | null {
-  if (cell.type === "add") return palette.additionGutter;
-  if (cell.type === "remove") return palette.deletionGutter;
+  if (cell.type === "add") return visibleTint(palette.additionGutter);
+  if (cell.type === "remove") return visibleTint(palette.deletionGutter);
   return null;
 }
 

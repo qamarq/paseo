@@ -284,7 +284,6 @@ function glassLayers(
   };
 }
 
-// MonoCode's chrome: Tailwind radii and `content`-at-N% fills (UI-SPEC §3-4).
 const MONO_FILL = {
   rowHover: 0.05,
   rowSelected: 0.12,
@@ -298,6 +297,7 @@ const MONO_FILL = {
   inlineCode: 0.08,
   codeBlock: 0.06,
   sectionLabel: 0.4,
+  sectionLabelLight: 0.55,
   searchFieldBorder: 0.08,
   pill: 0.1,
   rail: 0.14,
@@ -345,7 +345,7 @@ function monoChrome(
     rowLabelWeight: "500",
     searchFieldBorder: ink(MONO_FILL.searchFieldBorder),
     sectionLabelSize: 11,
-    sectionLabelColor: ink(MONO_FILL.sectionLabel),
+    sectionLabelColor: ink(dark ? MONO_FILL.sectionLabel : MONO_FILL.sectionLabelLight),
     sidebarNavDivider: "transparent",
     tabHeight: 30,
     tabRadius: 6,

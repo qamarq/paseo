@@ -61,7 +61,6 @@ export interface DiffPalette {
   deletion: string;
   additionBackground: string;
   deletionBackground: string;
-  /** Painted over the line fill in the line-number gutter. */
   additionGutter: string;
   deletionGutter: string;
   emptyBackground: string;

@@ -26,15 +26,10 @@ export type SidebarSurfaceBackdrop = Extract<
   "surfaceSidebar" | "surfaceSidebarHover" | "surfaceSidebarSelected" | "surface2"
 >;
 
-/** The fill a chip or row paints for `backdrop`. Desktop glass swaps in translucent fills. */
 export function surfaceFill(theme: Theme, backdrop: SurfaceBackdrop): string {
   return theme.chrome.fills?.[backdrop] ?? theme.colors[backdrop];
 }
 
-/**
- * The colour a knockout paints so it reads as a hole in `backdrop`. Under glass nothing behind the
- * window can be matched, so the knockout paints nothing.
- */
 export function knockoutColor(theme: Theme, backdrop: SurfaceBackdrop): string {
-  return theme.chrome.glass ? "transparent" : theme.colors[backdrop];
+  return theme.chrome.fills?.[backdrop] === undefined ? theme.colors[backdrop] : "transparent";
 }
