@@ -58,7 +58,11 @@ import {
   readLegacySkillSelection,
 } from "../integrations/legacy-skill-selection.js";
 import { tailFile } from "../diagnostics/tail-file.js";
-import { DESKTOP_IDENTITY, seedDesktopDaemonListen } from "../identity.js";
+import {
+  assertDesktopDaemonListen,
+  DESKTOP_IDENTITY,
+  seedDesktopDaemonListen,
+} from "../identity.js";
 
 const DAEMON_LOG_FILENAME = "daemon.log";
 let ownedLaunch: { home: string; instance: DaemonInstance } | null = null;
@@ -312,6 +316,15 @@ async function startDaemon(): Promise<DesktopDaemonStatus> {
       home,
       listen: DESKTOP_IDENTITY.daemonListen,
     });
+  }
+  try {
+    assertDesktopDaemonListen(home);
+  } catch (error) {
+    logDesktopDaemonLifecycle("refused daemon start", {
+      home,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
   const invocation = createNodeEntrypointInvocation({
     entrypoint: resolveDaemonRunnerEntrypoint(),

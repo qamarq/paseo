@@ -3,7 +3,12 @@ import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
-import { DESKTOP_IDENTITY, resolveDesktopPaseoHome, seedDesktopDaemonListen } from "./identity.js";
+import {
+  assertDesktopDaemonListen,
+  DESKTOP_IDENTITY,
+  resolveDesktopPaseoHome,
+  seedDesktopDaemonListen,
+} from "./identity.js";
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ownHome = join(homedir(), ".paseo-glass");
@@ -61,5 +66,43 @@ describe("desktop identity", () => {
 
     expect(seedDesktopDaemonListen(tempHome)).toBe(false);
     expect(readFileSync(join(tempHome, "config.json"), "utf8")).toBe(existing);
+  });
+
+  it("refuses a daemon config that listens on the official Paseo port", () => {
+    tempHome = mkdtempSync(join(tmpdir(), "paseo-glass-home-"));
+    const writeListen = (listen?: string) =>
+      writeFileSync(
+        join(tempHome, "config.json"),
+        JSON.stringify({ version: 1, daemon: listen === undefined ? {} : { listen } }),
+      );
+
+    for (const listen of [
+      "127.0.0.1:6767",
+      "0.0.0.0:6767",
+      "localhost:6767",
+      "[::1]:6767",
+      "6767",
+    ]) {
+      writeListen(listen);
+      expect(() => assertDesktopDaemonListen(tempHome), listen).toThrow(
+        `paseo daemon config set daemon.listen ${DESKTOP_IDENTITY.daemonListen} --home ${tempHome}`,
+      );
+    }
+    writeListen();
+    expect(() => assertDesktopDaemonListen(tempHome)).toThrow(/official Paseo app/);
+  });
+
+  it("accepts its own port, other ports and socket listeners", () => {
+    tempHome = mkdtempSync(join(tmpdir(), "paseo-glass-home-"));
+    expect(seedDesktopDaemonListen(tempHome)).toBe(true);
+    expect(() => assertDesktopDaemonListen(tempHome)).not.toThrow();
+
+    for (const listen of ["127.0.0.1:6768", "/tmp/paseo-glass.sock", "unix:///tmp/paseo.sock"]) {
+      writeFileSync(
+        join(tempHome, "config.json"),
+        JSON.stringify({ version: 1, daemon: { listen } }),
+      );
+      expect(() => assertDesktopDaemonListen(tempHome), listen).not.toThrow();
+    }
   });
 });

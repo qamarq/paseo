@@ -66,6 +66,7 @@ function createFakeMacBundle(options: { includeHelper: boolean }): {
         "#!/bin/sh",
         'printf "helper env=%s/%s cli=%s\\n" "$ELECTRON_RUN_AS_NODE" "$PASEO_NODE_ENV" "$PASEO_CLI"',
         'printf "args=%s\\n" "$*"',
+        'printf "home=%s\\n" "$PASEO_HOME"',
         "",
       ].join("\n"),
     );
@@ -171,6 +172,28 @@ describe("desktop packaging", () => {
       expect(result.stdout).toContain("--version");
       expect(result.stdout).not.toContain("main-executable");
       expect(result.stdout).not.toContain("gpu-helper");
+    } finally {
+      rmSync(bundle.root, { recursive: true, force: true });
+    }
+  });
+
+  it("points the packaged CLI at its own home instead of the official Paseo home", () => {
+    if (process.platform === "win32") return;
+
+    const bundle = createFakeMacBundle({ includeHelper: true });
+    const fakeHome = join(bundle.root, "home");
+    const ownHome = DESKTOP_IDENTITY.paseoHome.replace(/^~/, fakeHome);
+    const runWithHome = (paseoHome: string | undefined) => {
+      const env: NodeJS.ProcessEnv = { ...process.env, HOME: fakeHome };
+      delete env.PASEO_HOME;
+      if (paseoHome !== undefined) env.PASEO_HOME = paseoHome;
+      return spawnSync(bundle.shimPath, ["daemon", "status"], { encoding: "utf8", env }).stdout;
+    };
+    try {
+      expect(runWithHome(undefined)).toContain(`home=${ownHome}\n`);
+      expect(runWithHome("~/.paseo")).toContain(`home=${ownHome}\n`);
+      expect(runWithHome(join(fakeHome, ".paseo"))).toContain(`home=${ownHome}\n`);
+      expect(runWithHome("/tmp/paseo-glass-custom")).toContain("home=/tmp/paseo-glass-custom\n");
     } finally {
       rmSync(bundle.root, { recursive: true, force: true });
     }
