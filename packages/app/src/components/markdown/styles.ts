@@ -1,6 +1,7 @@
 import type { MarkdownStyle } from "react-native-enriched-markdown";
 import type { Theme } from "@/styles/theme";
 import { isWeb } from "@/constants/platform";
+import { surfaceFill } from "@/styles/surface-backdrop";
 
 // iOS Safari needs the prefix to override the gesture host's selection suppression.
 const WEB_CONTAINER = { userSelect: "text", WebkitUserSelect: "text" } as const;
@@ -74,16 +75,16 @@ export function createMarkdownStyles(
         fontFamily: theme.fontFamily.mono === "ui-monospace" && !isWeb ? "" : theme.fontFamily.mono,
         fontScale: theme.fontSize.code / fontSize,
         color: theme.colors.foreground,
-        backgroundColor: theme.colors.surface2,
+        backgroundColor: theme.chrome.inlineCodeFill ?? theme.colors.surface2,
         borderColor: "transparent",
       },
       codeBlock: {
         ...paragraph,
         fontFamily: theme.fontFamily.mono === "ui-monospace" && !isWeb ? "" : theme.fontFamily.mono,
         fontSize: theme.fontSize.code,
-        backgroundColor: theme.colors.surface2,
+        backgroundColor: theme.chrome.codeBlockFill ?? theme.colors.surface2,
         borderColor: theme.colors.border,
-        borderRadius: 8,
+        borderRadius: theme.chrome.codeBlockRadius ?? 8,
         padding: 12,
       },
       table: {
@@ -91,8 +92,8 @@ export function createMarkdownStyles(
         borderColor: theme.colors.border,
         headerBackgroundColor: theme.colors.surface2,
         headerTextColor: theme.colors.foreground,
-        rowEvenBackgroundColor: theme.colors.surface0,
-        rowOddBackgroundColor: theme.colors.surface1,
+        rowEvenBackgroundColor: surfaceFill(theme, "surface0"),
+        rowOddBackgroundColor: surfaceFill(theme, "surface1"),
       },
       taskList: {
         checkedTextColor: theme.colors.foregroundMuted,
