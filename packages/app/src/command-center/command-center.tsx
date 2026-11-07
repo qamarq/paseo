@@ -93,6 +93,7 @@ import {
 } from "./results";
 import { createCommandCenterInteraction, type CommandCenterInteraction } from "./interaction";
 import { useWorkspaceFileSearch } from "./workspace-file-search";
+import { modalSurfaceStyle } from "@/styles/floating-surface";
 
 const ThemedBottomSheetTextInput = withUnistyles(TextInput, (theme) => ({
   placeholderTextColor: theme.colors.foregroundMuted,
@@ -1024,17 +1025,22 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     paddingTop: theme.spacing[12],
   },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.5)" },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: theme.chrome.scrim ?? "rgba(0, 0, 0, 0.5)",
+  },
   panel: {
     width: 640,
     height: 560,
     maxWidth: "92%",
     maxHeight: "80%",
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.lg,
+    ...modalSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface0,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.lg,
+    }),
     overflow: "hidden",
-    backgroundColor: theme.colors.surface0,
     ...theme.shadow.lg,
   },
   header: {
@@ -1093,7 +1099,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.border,
   },
   row: { paddingHorizontal: theme.spacing[4], justifyContent: "center" },
-  activeRow: { backgroundColor: theme.colors.surface1 },
+  activeRow: { backgroundColor: theme.chrome.fills?.surface2 ?? theme.colors.surface1 },
   rowContent: {
     flexDirection: "row",
     alignItems: "center",
