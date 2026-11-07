@@ -228,6 +228,7 @@ describe("applyMonoTheme", () => {
     darkLightness: 6,
     accentColor: null,
     diffPalette: "default",
+    glass: null,
   };
   const registry: Record<string, Theme> = {};
   const activated: Array<{ name: string; theme: Theme | undefined }> = [];

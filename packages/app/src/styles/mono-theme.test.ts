@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonoTheme, type MonoThemeInput } from "./mono-theme";
+import { buildMonoTheme, monoWindowTint, type MonoThemeInput } from "./mono-theme";
 import { darkTheme, lightTheme } from "./theme";
 
 function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
@@ -10,6 +10,7 @@ function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
     darkLightness: 6,
     accentColor: null,
     diffPalette: "default",
+    glass: null,
     ...overrides,
   };
 }
@@ -43,6 +44,10 @@ const OPAQUE_TOKENS = [
   "ring",
   "diffAddition",
   "diffDeletion",
+  "surfaceWindow",
+  "surfaceSidebarGlass",
+  "surfacePaneGlass",
+  "surfaceWorkspaceGlass",
 ] as const;
 
 function stringColors(colors: object): [string, string][] {
@@ -188,5 +193,58 @@ describe("buildMonoTheme", () => {
     expect(buildMonoTheme(input({ hue: 120, saturation: 30 }))).toEqual(
       buildMonoTheme(input({ hue: 120, saturation: 30 })),
     );
+  });
+
+  it("keeps every glass layer opaque when glass is off", () => {
+    const { colors } = buildMonoTheme(input());
+
+    expect(colors.surfaceWindow).toBe(colors.surface0);
+    expect(colors.surfaceSidebarGlass).toBe(colors.surfaceSidebar);
+    expect(colors.surfacePaneGlass).toBe(colors.surface0);
+    expect(colors.surfaceWorkspaceGlass).toBe(colors.surfaceWorkspace);
+  });
+
+  it("clears the window and sidebar layers under glass and leaves menus opaque", () => {
+    const { colors } = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+    const opaque = buildMonoTheme(input()).colors;
+
+    expect(colors.surfaceWindow).toBe("transparent");
+    expect(colors.surfaceSidebarGlass).toBe("transparent");
+    expect(colors.surfacePaneGlass).toBe("transparent");
+    expect(colors.surfaceWorkspaceGlass).toBe("transparent");
+    expect(colors.surface0).toBe(opaque.surface0);
+    expect(colors.popover).toBe(opaque.popover);
+    expect(colors.input).toBe(opaque.input);
+  });
+
+  it("keeps the main pane opaque when main pane glass is off", () => {
+    const { colors } = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(colors.surfaceSidebarGlass).toBe("transparent");
+    expect(colors.surfacePaneGlass).toBe(colors.surface0);
+    expect(colors.surfaceWorkspaceGlass).toBe(colors.surface0);
+  });
+
+  it("never applies glass to the light scheme", () => {
+    const glassy = buildMonoTheme(input({ scheme: "light", glass: { mainPaneGlass: true } }));
+
+    expect(glassy).toEqual(buildMonoTheme(input({ scheme: "light" })));
+  });
+});
+
+describe("monoWindowTint", () => {
+  const tint = { hue: 243, saturation: 0, darkLightness: 6 };
+
+  it("paints the dark base at MonoCode's window alpha", () => {
+    expect(monoWindowTint({ ...tint, sidebarOpacity: 45 })).toBe("rgba(15, 15, 15, 0.67)");
+    expect(monoWindowTint({ ...tint, sidebarOpacity: 85 })).toBe("rgba(15, 15, 15, 0.91)");
+    expect(monoWindowTint({ ...tint, sidebarOpacity: 100 })).toBe("rgba(15, 15, 15, 1)");
+    expect(monoWindowTint({ ...tint, sidebarOpacity: 15 })).toBe("rgba(15, 15, 15, 0.49)");
+  });
+
+  it("follows the tint, not the light scheme", () => {
+    expect(
+      monoWindowTint({ hue: 240, saturation: 50, darkLightness: 10, sidebarOpacity: 45 }),
+    ).toBe("rgba(13, 13, 38, 0.67)");
   });
 });
