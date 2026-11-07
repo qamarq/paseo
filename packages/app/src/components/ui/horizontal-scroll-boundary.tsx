@@ -9,6 +9,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import type { Theme } from "@/styles/theme";
+import { axisMask } from "@/styles/web-effects";
 
 const EDGE_EPSILON = 1;
 const SHADE_WIDTH = 24;
@@ -37,6 +38,11 @@ function ScrollBoundaryShadeSvg({ side, color }: { side: "left" | "right"; color
 const ThemedScrollBoundaryShadeSvg = withUnistyles(ScrollBoundaryShadeSvg);
 const surfaceColorMapping = (theme: Theme) => ({ color: theme.colors.surface0 });
 const sidebarColorMapping = (theme: Theme) => ({ color: theme.colors.surfaceSidebar });
+
+/** The masked fade an overflowing scroller takes under glass, where the shades cannot paint. */
+export function horizontalScrollMask(theme: Theme) {
+  return theme.chrome.glass ? axisMask("horizontal", SHADE_WIDTH, SHADE_WIDTH) : {};
+}
 
 export function useHorizontalScrollBoundary() {
   const offset = useSharedValue(0);
@@ -103,12 +109,14 @@ export function HorizontalScrollBoundaryShades({
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
+  // Under glass the scroller masks its own edges (`horizontalScrollMask`) instead.
   shade: {
     position: "absolute",
     top: 0,
     bottom: 1,
     width: SHADE_WIDTH,
+    display: theme.chrome.glass ? "none" : "flex",
   },
   left: { left: 0 },
   right: { right: 0 },
