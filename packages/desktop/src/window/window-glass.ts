@@ -66,8 +66,13 @@ function sameAppearance(a: WindowGlassAppearance, b: WindowGlassAppearance): boo
 }
 
 export interface WindowGlassController {
-  register(win: GlassWindow, appearance: WindowGlassAppearance): void;
+  register(
+    win: GlassWindow,
+    appearance: WindowGlassAppearance,
+    fallbackBackgroundColor: string,
+  ): void;
   apply(win: GlassWindow, update: WindowGlassUpdate): void;
+  flush(): void;
 }
 
 export function createWindowGlassController(input: {
@@ -76,20 +81,29 @@ export function createWindowGlassController(input: {
 }): WindowGlassController {
   const states = new WeakMap<GlassWindow, WindowGlassAppearance>();
   let persistTimer: ReturnType<typeof setTimeout> | null = null;
+  let pending: WindowGlassAppearance | null = null;
+
+  function persistNow(): void {
+    if (persistTimer !== null) clearTimeout(persistTimer);
+    persistTimer = null;
+    if (pending === null) return;
+    const appearance = pending;
+    pending = null;
+    input.persist(appearance);
+  }
 
   function schedulePersist(appearance: WindowGlassAppearance): void {
     if (persistTimer !== null) clearTimeout(persistTimer);
-    persistTimer = setTimeout(() => {
-      persistTimer = null;
-      input.persist(appearance);
-    }, PERSIST_DELAY_MS);
+    pending = appearance;
+    persistTimer = setTimeout(persistNow, PERSIST_DELAY_MS);
   }
 
   return {
-    register(win, appearance) {
+    register(win, appearance, fallbackBackgroundColor) {
       states.set(win, {
         ...appearance,
         glass: supportsGlass(input.platform) && appearance.glass,
+        backgroundColor: appearance.backgroundColor ?? fallbackBackgroundColor,
       });
     },
 
@@ -111,5 +125,7 @@ export function createWindowGlassController(input: {
       }
       if (!sameAppearance(current, next)) schedulePersist(next);
     },
+
+    flush: persistNow,
   };
 }

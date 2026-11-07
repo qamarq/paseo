@@ -139,6 +139,8 @@ const windowGlass = createWindowGlassController({
       .catch((error) => log.warn("[window] failed to persist window glass", error));
   },
 });
+// Registered before the quit lifecycle so the save is queued ahead of its settings read.
+app.on("before-quit", () => windowGlass.flush());
 const pendingBrowserWindowOpenRequests = new PendingBrowserWindowOpenRequests();
 const agentNavigationInbox = new AgentNavigationInbox();
 
@@ -697,6 +699,7 @@ async function createWindow(
   const iconPath = await getEffectiveAppIconPath();
   const systemTheme = resolveSystemWindowTheme();
   const windowAppearance = await getDesktopSettingsStore().getWindowAppearance();
+  const fallbackBackgroundColor = getWindowBackgroundColor(systemTheme);
 
   // Only the first window of a session restores and persists saved geometry.
   // Additional windows (⌘N, second-instance, "Open in new window") open at the
@@ -719,7 +722,7 @@ async function createWindow(
     ...getGlassWindowOptions({
       platform: process.platform,
       appearance: windowAppearance,
-      fallbackBackgroundColor: getWindowBackgroundColor(systemTheme),
+      fallbackBackgroundColor,
     }),
     ...(iconPath ? { icon: iconPath } : {}),
     ...getMainWindowChromeOptions({
@@ -737,7 +740,7 @@ async function createWindow(
     },
   });
   applyDesktopWindowChromeMode({ win: mainWindow, mode: DESKTOP_WINDOW_CHROME_MODE });
-  windowGlass.register(mainWindow, windowAppearance);
+  windowGlass.register(mainWindow, windowAppearance, fallbackBackgroundColor);
 
   const webContentsId = mainWindow.webContents.id;
   options.onCreated?.(webContentsId);
