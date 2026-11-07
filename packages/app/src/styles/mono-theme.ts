@@ -330,7 +330,7 @@ function monoChrome(
     floatingBorder: ink(MONO_FILL.floatingBorder),
     floatingBlur: dark ? FLOATING_BLUR : 0,
     menuItemRadius: 8,
-    menuItemFill: ink(MONO_FILL.chipSelected),
+    selectionFill: ink(MONO_FILL.chipSelected),
     modalRadius: 16,
     modalFill: dark ? toRgba(background, MODAL_BASE_ALPHA) : base,
     modalBorder: ink(MONO_FILL.modalBorder),

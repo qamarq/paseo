@@ -192,13 +192,13 @@ const styles = StyleSheet.create((theme) => {
       ...geometry.segmentedSegmentMd,
     },
     segmentSelected: {
-      backgroundColor: theme.colors.surface3,
+      backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface3,
     },
     segmentHover: {
-      backgroundColor: theme.colors.surface2,
+      backgroundColor: theme.chrome.fills?.surface1 ?? theme.colors.surface2,
     },
     segmentPressed: {
-      backgroundColor: theme.colors.surface3,
+      backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface3,
     },
     segmentDisabled: {
       opacity: theme.opacity[50],
