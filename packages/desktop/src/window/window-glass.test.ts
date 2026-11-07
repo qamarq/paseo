@@ -17,12 +17,18 @@ const GLASS: WindowGlassAppearance = {
 
 function createFakeWindow() {
   const calls: Array<[string, string | null]> = [];
+  const zoom = { factor: 1 };
   return {
     calls,
+    zoom,
     setVibrancy: (type: "under-window" | null) => calls.push(["vibrancy", type]),
     setBackgroundColor: (color: string) => calls.push(["background", color]),
     webContents: {
-      setZoomFactor: (factor: number) => calls.push(["zoom", String(factor)]),
+      getZoomFactor: () => zoom.factor,
+      setZoomFactor: (factor: number) => {
+        zoom.factor = factor;
+        calls.push(["zoom", String(factor)]);
+      },
     },
   };
 }
@@ -198,5 +204,20 @@ describe("createWindowGlassController", () => {
 
     expect(win.calls).toEqual([["zoom", "1.2"]]);
     expect(persist).toHaveBeenCalledWith({ ...GLASS, glass: false, zoomFactor: 1.2 });
+  });
+
+  it("re-applies a zoom factor that another same-origin window changed", () => {
+    const controller = createWindowGlassController({ platform: "linux", persist: vi.fn() });
+    const win = createFakeWindow();
+    controller.register(win, GLASS, "#181B1A");
+
+    controller.apply(win, { zoomFactor: 1.2 });
+    win.zoom.factor = 1.5;
+    controller.apply(win, { zoomFactor: 1.2 });
+
+    expect(win.calls).toEqual([
+      ["zoom", "1.2"],
+      ["zoom", "1.2"],
+    ]);
   });
 });

@@ -15,7 +15,7 @@ export interface WindowGlassUpdate {
 interface GlassWindow {
   setVibrancy(type: "under-window" | null): void;
   setBackgroundColor(color: string): void;
-  webContents: { setZoomFactor(factor: number): void };
+  webContents: { getZoomFactor(): number; setZoomFactor(factor: number): void };
 }
 
 export const DEFAULT_WINDOW_GLASS_APPEARANCE: WindowGlassAppearance = {
@@ -127,7 +127,10 @@ export function createWindowGlassController(input: {
       };
       states.set(win, next);
 
-      if (next.zoomFactor !== current.zoomFactor) win.webContents.setZoomFactor(next.zoomFactor);
+      // Chromium shares zoom per origin, so another window may have moved this one's zoom.
+      if (update.zoomFactor !== undefined && win.webContents.getZoomFactor() !== next.zoomFactor) {
+        win.webContents.setZoomFactor(next.zoomFactor);
+      }
       const glassChanged = next.glass !== current.glass;
       if (glassChanged) win.setVibrancy(next.glass ? VIBRANCY : null);
       const backgroundColor = next.glass ? TRANSPARENT_BACKGROUND : next.backgroundColor;
