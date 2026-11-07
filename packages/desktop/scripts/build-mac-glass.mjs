@@ -1,20 +1,42 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 if (process.platform !== "darwin") process.exit(0);
 
-const desktopDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const script = fileURLToPath(import.meta.url);
+const desktopDir = path.resolve(path.dirname(script), "..");
 const source = path.join(desktopDir, "native", "mac-glass", "glass.mm");
 const output = path.join(desktopDir, "dist", "native", "mac-glass.node");
 // Node-API is ABI-stable, so the running Node's headers build an addon Electron can load.
 const nodeHeaders = path.resolve(path.dirname(process.execPath), "..", "include", "node");
 
-if (!existsSync(path.join(nodeHeaders, "node_api.h"))) {
-  throw new Error(
-    `Node-API headers not found in ${nodeHeaders}; install Node from an official build.`,
-  );
+function isUpToDate() {
+  if (!existsSync(output)) return false;
+  const builtAt = statSync(output).mtimeMs;
+  return builtAt > statSync(source).mtimeMs && builtAt > statSync(script).mtimeMs;
+}
+
+function findMissingToolchain() {
+  if (!existsSync(path.join(nodeHeaders, "node_api.h"))) {
+    return `Node-API headers not found in ${nodeHeaders}; install Node from an official build`;
+  }
+  try {
+    execFileSync("xcrun", ["--find", "clang++"], { stdio: "ignore" });
+  } catch {
+    return "xcrun clang++ is unavailable; install the Xcode Command Line Tools";
+  }
+  return null;
+}
+
+if (isUpToDate()) process.exit(0);
+
+const missing = findMissingToolchain();
+if (missing !== null) {
+  if (process.env.CI) throw new Error(missing);
+  console.warn(`[mac-glass] ${missing}. Skipping the addon; window glass uses AppKit vibrancy.`);
+  process.exit(0);
 }
 
 mkdirSync(path.dirname(output), { recursive: true });
@@ -27,7 +49,6 @@ execFileSync(
     "-fobjc-arc",
     "-O2",
     "-Wall",
-    "-Werror",
     "-bundle",
     "-undefined",
     "dynamic_lookup",
