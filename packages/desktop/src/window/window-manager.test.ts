@@ -63,6 +63,22 @@ describe("window-manager", () => {
       expect(readWindowChromeUpdate({ trafficLightOffsetY: -11 })).toBeNull();
     });
 
+    it("accepts glass updates with a well-formed tint", () => {
+      expect(readWindowChromeUpdate({ glass: true, glassTint: "rgba(15, 15, 15, 0.67)" })).toEqual({
+        glass: true,
+        glassTint: "rgba(15, 15, 15, 0.67)",
+      });
+      expect(readWindowChromeUpdate({ glass: false })).toEqual({ glass: false });
+    });
+
+    it("drops a malformed glass flag or tint", () => {
+      expect(readWindowChromeUpdate({ glass: "yes" })).toBeNull();
+      expect(readWindowChromeUpdate({ glassTint: "red; background: url(x)" })).toBeNull();
+      expect(
+        readWindowChromeUpdate({ glass: true, glassTint: "rgba(15, 15, 15, 0.67)}html{" }),
+      ).toEqual({ glass: true });
+    });
+
     it("preserves fractional traffic-light offsets", () => {
       expect(readWindowChromeUpdate({ trafficLightOffsetY: 1.5 })).toEqual({
         trafficLightOffsetY: 1.5,
@@ -83,8 +99,8 @@ describe("window-manager", () => {
         update: { trafficLightOffsetY: 0.5 },
       });
 
-      expect(setWindowButtonPosition).toHaveBeenNthCalledWith(1, { x: 16, y: 9 });
-      expect(setWindowButtonPosition).toHaveBeenNthCalledWith(2, { x: 16, y: 14.5 });
+      expect(setWindowButtonPosition).toHaveBeenNthCalledWith(1, { x: 12, y: 8 });
+      expect(setWindowButtonPosition).toHaveBeenNthCalledWith(2, { x: 12, y: 13.5 });
     });
   });
 
@@ -119,7 +135,7 @@ describe("window-manager", () => {
       ).toEqual({
         titleBarStyle: "hidden",
         titleBarOverlay: true,
-        trafficLightPosition: { x: 16, y: 14 },
+        trafficLightPosition: { x: 12, y: 13 },
       });
     });
   });

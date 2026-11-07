@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create((theme) => ({
   root: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: theme.colors.surfaceSidebar,
+    backgroundColor: theme.colors.surfaceSidebarGlass,
   },
   scroll: {
     flex: 1,

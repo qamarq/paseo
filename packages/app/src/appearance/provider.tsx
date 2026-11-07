@@ -20,7 +20,10 @@ import {
   type PluginThemeOption,
 } from "@/plugins/themes";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
-import { applyAppearance } from "./apply";
+import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
+import { useMonoLook } from "./mono-look";
+import { isMonoActive } from "./mono-settings";
+import { usePluginCatalogsSettled } from "./plugin-catalogs-settled";
 import { AppearanceSystemBars } from "./system-bars";
 
 interface ContributedThemes {
@@ -64,11 +67,21 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     if (settings.theme !== PLUGIN_THEME_PREFERENCE) return null;
     return options.find((option) => option.id === settings.pluginThemeId) ?? null;
   }, [options, settings.pluginThemeId, settings.theme]);
+  const { hue, saturation, darkLightness, accentColor, diffPalette, mainPaneGlass } =
+    settings.monoAppearance;
+  const pluginCatalogsSettled = usePluginCatalogsSettled();
+  const monoActive = isMonoActive({
+    themePreference: settings.theme,
+    pluginThemeSelected: selected !== null,
+    pluginCatalogsSettled,
+  });
+  const monoLook = useMonoLook(isLoading ? null : settings.monoAppearance, monoActive);
+  const monoScheme = monoLook?.scheme ?? null;
+  const monoGlass = monoLook?.glass ?? false;
 
   useEffect(() => {
     if (isLoading) return;
-    applyTheme({ preference: settings.theme, contributedTheme: selected });
-    applyAppearance({
+    const appearance: AppearanceInput = {
       uiFontFamily: settings.uiFontFamily,
       monoFontFamily: settings.monoFontFamily,
       uiBaseFontSize: settings.uiBaseFontSize,
@@ -76,12 +89,37 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       codeFontSize: settings.codeFontSize,
       contentMaxWidth: resolveContentMaxWidth({ contentMaxWidth: settings.contentMaxWidth }),
       syntaxTheme: settings.syntaxTheme,
-    });
+    };
+    if (monoScheme) {
+      applyMonoTheme(
+        {
+          scheme: monoScheme,
+          hue,
+          saturation,
+          darkLightness,
+          accentColor,
+          diffPalette,
+          glass: monoGlass ? { mainPaneGlass } : null,
+        },
+        appearance,
+      );
+    } else {
+      applyTheme({ preference: settings.theme, contributedTheme: selected });
+      applyAppearance(appearance);
+    }
     setHasAppliedAppearance(true);
   }, [
     isLoading,
     selected,
     settings.theme,
+    monoScheme,
+    monoGlass,
+    mainPaneGlass,
+    hue,
+    saturation,
+    darkLightness,
+    accentColor,
+    diffPalette,
     settings.uiFontFamily,
     settings.monoFontFamily,
     settings.uiBaseFontSize,

@@ -4,9 +4,11 @@ import {
   DEFAULT_UI_FONT_STACK,
   DEFAULT_MONO_FONT_STACK,
   FONT_SIZE,
+  MONO_THEME_NAMES,
   REGISTERED_THEMES,
   type Theme,
 } from "@/styles/theme";
+import { buildMonoTheme, type MonoThemeInput } from "@/styles/mono-theme";
 import { applyRootUiFont } from "./apply-root-font";
 
 const ALL_THEME_KEYS = Object.keys(REGISTERED_THEMES) as (keyof typeof REGISTERED_THEMES)[];
@@ -19,6 +21,18 @@ export interface AppearanceInput {
   codeFontSize: number; // already clamped
   contentMaxWidth: number; // already clamped, default resolved
   syntaxTheme: SyntaxThemeId;
+}
+
+export interface RebuiltThemeSlot {
+  name: keyof typeof REGISTERED_THEMES;
+  build: () => Theme;
+}
+
+export function applyMonoTheme(mono: MonoThemeInput, appearance: AppearanceInput): void {
+  const name = MONO_THEME_NAMES[mono.scheme];
+  applyAppearance(appearance, { name, build: () => buildMonoTheme(mono) });
+  UnistylesRuntime.setAdaptiveThemes(false);
+  UnistylesRuntime.setTheme(name);
 }
 
 /**
@@ -58,9 +72,10 @@ function scaleFontSize(
  * The updater preserves the active theme wholesale (surfaces, accents,
  * terminal) and only patches the font ramp, content width, and syntax palette.
  * `updateTheme` replaces the stored theme rather than merging, so we spread
- * `...t` first.
+ * `...t` first. A `rebuild` slot is replaced by its builder's theme in the same
+ * update, so it never holds an unpatched theme.
  */
-export function applyAppearance(input: AppearanceInput): void {
+export function applyAppearance(input: AppearanceInput, rebuild?: RebuiltThemeSlot): void {
   const ui = input.uiFontFamily.trim() || DEFAULT_UI_FONT_STACK;
   const mono = input.monoFontFamily.trim() || DEFAULT_MONO_FONT_STACK;
   const diffLineHeight = Math.round(input.codeFontSize * 1.5); // couple to code size
@@ -73,7 +88,8 @@ export function applyAppearance(input: AppearanceInput): void {
     : ALL_THEME_KEYS;
 
   for (const key of themeKeys) {
-    UnistylesRuntime.updateTheme(key, (t) => {
+    UnistylesRuntime.updateTheme(key, (current) => {
+      const t = key === rebuild?.name ? rebuild.build() : current;
       const fontFamily = { ui, mono };
       const fontSize = scaleFontSize(
         input.uiBaseFontSize,

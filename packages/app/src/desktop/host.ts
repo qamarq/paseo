@@ -96,6 +96,8 @@ export interface DesktopMenuBridge {
 export interface DesktopWindowChromeUpdate {
   backgroundColor?: string;
   trafficLightOffsetY?: number;
+  glass?: boolean;
+  glassTint?: string;
 }
 
 export interface DesktopWindowBridge {

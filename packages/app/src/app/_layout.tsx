@@ -673,10 +673,7 @@ function DesktopWindowControlsSync() {
 
   useEffect(() => {
     if (isLoading || isNative) return;
-    void updateDesktopWindowChrome({
-      backgroundColor: surface0,
-      trafficLightOffsetY: -4,
-    }).catch((error) => {
+    void updateDesktopWindowChrome({ backgroundColor: surface0 }).catch((error) => {
       console.warn("[DesktopWindow] Failed to update window controls overlay", error);
     });
   }, [isLoading, surface0]);
@@ -1006,7 +1003,7 @@ export default function RootLayout() {
 const layoutStyles = StyleSheet.create((theme) => ({
   surfaceFill: {
     flex: 1,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfaceWindow,
   },
   windowSidebarToggle: {
     position: "absolute",

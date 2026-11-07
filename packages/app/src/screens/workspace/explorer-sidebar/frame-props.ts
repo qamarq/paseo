@@ -7,4 +7,5 @@ export interface ExplorerFrameProps {
   isOpen: boolean;
   isWorkspaceActive: boolean;
   surfaceColor?: string;
+  dockSurfaceColor?: string;
 }

@@ -363,4 +363,91 @@ describe("desktop-settings", () => {
     expect(persisted.settings.releaseChannel).toBe("stable");
     expect(persisted.settings.tray).toEqual({ enabled: true });
   });
+
+  it("starts new users without window glass", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+
+    expect(await createDesktopSettingsStore({ userDataPath }).getWindowAppearance()).toEqual({
+      glass: false,
+      backgroundColor: null,
+      glassTint: null,
+    });
+  });
+
+  it("keeps the window appearance beside the settings it does not touch", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+    const store = createDesktopSettingsStore({ userDataPath });
+    await store.patch({ releaseChannel: "beta" });
+
+    await store.saveWindowAppearance({
+      glass: true,
+      backgroundColor: "#0f0f0f",
+      glassTint: "rgba(15, 15, 15, 0.67)",
+    });
+    const reloaded = createDesktopSettingsStore({ userDataPath });
+
+    expect(await reloaded.getWindowAppearance()).toEqual({
+      glass: true,
+      backgroundColor: "#0f0f0f",
+      glassTint: "rgba(15, 15, 15, 0.67)",
+    });
+    expect((await reloaded.get()).releaseChannel).toBe("beta");
+  });
+
+  it("drops malformed window appearance values field by field", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+    await writeFile(
+      settingsFilePath(userDataPath),
+      JSON.stringify({
+        version: 1,
+        settings: {},
+        windowAppearance: {
+          glass: true,
+          backgroundColor: "red",
+          glassTint: "rgba(1, 2, 3, 0.5)}body{",
+        },
+      }),
+    );
+
+    expect(await createDesktopSettingsStore({ userDataPath }).getWindowAppearance()).toEqual({
+      glass: true,
+      backgroundColor: null,
+      glassTint: null,
+    });
+  });
+
+  it("opens without glass when the settings file is unreadable", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+    await writeFile(settingsFilePath(userDataPath), "{ not json");
+
+    expect(await createDesktopSettingsStore({ userDataPath }).getWindowAppearance()).toEqual({
+      glass: false,
+      backgroundColor: null,
+      glassTint: null,
+    });
+  });
+
+  it("keeps every update when writes overlap", async () => {
+    const userDataPath = await createTempUserDataDir();
+    directories.add(userDataPath);
+    const store = createDesktopSettingsStore({ userDataPath });
+
+    await Promise.all([
+      store.patch({ releaseChannel: "beta" }),
+      store.saveWindowAppearance({ glass: true, backgroundColor: "#0f0f0f", glassTint: null }),
+      store.patch({ notifications: { playSound: false } }),
+    ]);
+    const reloaded = createDesktopSettingsStore({ userDataPath });
+
+    expect(await reloaded.get()).toEqual({
+      releaseChannel: "beta",
+      notifications: { playSound: false },
+      daemon: { manageBuiltInDaemon: true, keepRunningAfterQuit: false },
+    });
+    expect((await reloaded.getWindowAppearance()).glass).toBe(true);
+  });
 });

@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, ThemeProvider, useTheme } from "expo-router";
 import {
   isValidElement,
   type ComponentProps,
@@ -9,6 +9,7 @@ import {
 } from "react";
 import { withUnistyles } from "react-native-unistyles";
 import { AppearanceStyleBoundary } from "@/components/appearance-style-boundary";
+import { getIsElectron } from "@/constants/platform";
 
 type NativeStackNavigationOptions = Exclude<
   NonNullable<ComponentProps<typeof Stack>["screenOptions"]>,
@@ -59,14 +60,28 @@ function ThemedStackBase({
     },
     [nestedNavigatorScreens, screenOwnedAppearance],
   );
+  const navigationTheme = useTheme();
+  const desktopNavigationTheme = useMemo(
+    () => ({
+      ...navigationTheme,
+      colors: { ...navigationTheme.colors, background: backgroundColor },
+    }),
+    [navigationTheme, backgroundColor],
+  );
 
-  return (
+  const stack = (
     <Stack screenOptions={themedScreenOptions} screenLayout={screenLayout}>
       {children}
     </Stack>
   );
+  // On desktop the stack's screen container paints the navigation theme's background under content.
+  return getIsElectron() ? (
+    <ThemeProvider value={desktopNavigationTheme}>{stack}</ThemeProvider>
+  ) : (
+    stack
+  );
 }
 
 export const ThemedStack = withUnistyles(ThemedStackBase, (theme) => ({
-  backgroundColor: theme.colors.surface0,
+  backgroundColor: theme.colors.surfacePaneGlass,
 }));

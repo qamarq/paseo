@@ -958,7 +958,7 @@ const styles = StyleSheet.create((theme) => ({
   desktopSidebarBorder: (hasDivision: boolean) => ({
     borderRightWidth: hasDivision ? 0 : 1,
     borderRightColor: theme.colors.border,
-    backgroundColor: theme.colors.surfaceSidebar,
+    backgroundColor: theme.colors.surfaceSidebarGlass,
   }),
   sidebarDragArea: {
     position: "relative",
