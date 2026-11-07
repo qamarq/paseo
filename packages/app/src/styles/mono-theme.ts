@@ -300,9 +300,17 @@ const MONO_FILL = {
   sectionLabel: 0.4,
   searchFieldBorder: 0.08,
   pill: 0.1,
+  rail: 0.14,
+  meta: 0.45,
   pillHover: 0.15,
 };
 const MODAL_BASE_ALPHA = 0.55;
+const MONO_PROSE_INK = 0.78;
+const MONO_LINK: Record<MonoColorScheme, string> = {
+  dark: "#7dd3fc",
+  light: toHex(hslToRgb(211, 92, 40)),
+};
+const MONO_HEADING: Record<MonoColorScheme, string> = { dark: "#f9a8c9", light: "#be185d" };
 const VEIL_ALPHA = 0.8;
 const MODAL_SCRIM = "rgba(0, 0, 0, 0.4)";
 const FLOATING_BLUR = 24;
@@ -366,6 +374,12 @@ function monoChrome(
     userBubbleRadius: 18,
     userBubblePaddingX: 12,
     userBubblePaddingY: 8,
+    railColor: ink(MONO_FILL.rail),
+    toolTargetMono: true,
+    metaColor: ink(MONO_FILL.meta),
+    proseColor: toHex(mix(content, background, MONO_PROSE_INK)),
+    linkColor: MONO_LINK[scheme],
+    headingColor: MONO_HEADING[scheme],
     inlineCodeRadius: 6,
     inlineCodeFill: ink(MONO_FILL.inlineCode),
     codeBlockRadius: 10,

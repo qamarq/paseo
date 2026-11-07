@@ -11,6 +11,7 @@ import type { ASTNode } from "react-native-enriched-markdown/src/web/types";
 import { QueryClient } from "@tanstack/react-query";
 import { decodeMarkdownImage, getMarkdownImageStatus } from "./image-decoding";
 import { describe, expect, it } from "vitest";
+import { buildMonoTheme } from "@/styles/mono-theme";
 import { darkTheme, lightTheme } from "@/styles/theme";
 import { createMarkdownStyles } from "./styles";
 import { prepareMarkdownSource, PENDING_MARKDOWN_IMAGE } from "./source";
@@ -791,6 +792,25 @@ it.each([false, true])(
     expect(markdownStyle.inlineImage?.size).toBe(markdownStyle.paragraph?.lineHeight);
   },
 );
+
+it("sets prose at the theme's prose ink with full-ink emphasis, links and headings", () => {
+  const mono = buildMonoTheme({
+    scheme: "dark",
+    hue: 243,
+    saturation: 0,
+    darkLightness: 6,
+    accentColor: null,
+    diffPalette: "default",
+    glass: null,
+  });
+  const { markdownStyle } = createMarkdownStyles(mono, { blockGap: 16 });
+
+  expect(markdownStyle.paragraph?.color).toBe(mono.chrome.proseColor);
+  expect(markdownStyle.strong?.color).toBe(mono.colors.foreground);
+  expect(markdownStyle.link?.color).toBe("#7dd3fc");
+  expect(markdownStyle.h2?.color).toBe("#f9a8c9");
+  expect(createMarkdownStyles(darkTheme, { blockGap: 16 }).markdownStyle.strong).toBeUndefined();
+});
 
 it("shows native SVG badges as alt text without reserving an image box", () => {
   const source = "![P1](https://example.com/p1.svg?v=9) **Finding**";
