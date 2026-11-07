@@ -99,6 +99,7 @@ import {
   HorizontalScrollBoundaryShades,
   horizontalScrollMask,
   useHorizontalScrollBoundary,
+  type ScrollEdges,
 } from "@/components/ui/horizontal-scroll-boundary";
 import { useSessionStore } from "@/stores/session-store";
 import { feedbackTransition } from "@/styles/web-effects";
@@ -1405,10 +1406,10 @@ function ResolvedWorkspaceDesktopTabsRow({
     () => [
       styles.tabsScroll,
       layout.requiresHorizontalScrollFallback
-        ? styles.tabsScrollOverflow
+        ? styles.tabsScrollMask(tabScrollBoundary.edges)
         : styles.tabsScrollFitContent,
     ],
-    [layout.requiresHorizontalScrollFallback],
+    [layout.requiresHorizontalScrollFallback, tabScrollBoundary.edges],
   );
 
   const row = (
@@ -1667,10 +1668,10 @@ const styles = StyleSheet.create((theme) => ({
   tabsScrollFitContent: {
     flex: 1,
   },
-  tabsScrollOverflow: {
+  tabsScrollMask: (edges: ScrollEdges) => ({
     flex: 1,
-    ...horizontalScrollMask(theme),
-  },
+    ...horizontalScrollMask(theme, edges),
+  }),
   tabsContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -1726,7 +1727,6 @@ const styles = StyleSheet.create((theme) => ({
     minWidth: 0,
     userSelect: "none",
   },
-  // The handle stops at the chip's padding, inside the close overlay's span.
   tabHandleMasked: {
     minWidth: 0,
     ...trailingActionMask(theme, SCRIM_WIDTH - TAB_CHIP_HORIZONTAL_PADDING),
