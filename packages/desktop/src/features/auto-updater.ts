@@ -22,6 +22,7 @@ import {
   type AppReleaseChannel,
   type AppUpdateCheckIntent,
 } from "./app-update-rollout.js";
+import { DESKTOP_IDENTITY } from "../identity.js";
 
 export {
   bucketFromStagingUserId,
@@ -224,7 +225,7 @@ class ElectronAppUpdateRuntime implements AppUpdateRuntime {
 
 const appUpdateService = createAppUpdateService({
   runtime: new ElectronAppUpdateRuntime(),
-  isPackaged: () => app.isPackaged,
+  isPackaged: () => app.isPackaged && DESKTOP_IDENTITY.updatesEnabled,
   now: () => Date.now(),
   bucket: async () => bucketFromStagingUserId(await getStagingUserId()),
   reportCheckError: (error) => {
