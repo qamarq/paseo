@@ -79,7 +79,14 @@ export const MONO_DIFF_PALETTES: Record<
   },
 };
 
+const MONO_DIFF_BACKGROUND_ALPHA: Record<MonoDiffPalette, number> = {
+  default: 0.15,
+  colorblind: 0.15,
+  highContrast: 0.28,
+};
+
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
+const USER_ACCENT_BUBBLE_STRENGTH = 0.24;
 const WINDOW_BACKGROUND_OPACITY = 0.4;
 const CONTENT_LIGHTNESS: Record<MonoColorScheme, number> = { dark: 92, light: 18 };
 
@@ -94,6 +101,7 @@ const DARK_INK = {
   stroke: 0.07,
   strongStroke: 0.1,
   interaction: 0.1,
+  userBubble: 0.1,
   muted: 0.5,
   extraMuted: 0.35,
   terminalBrightBlack: 0.2,
@@ -111,7 +119,8 @@ const INK: Record<MonoColorScheme, typeof DARK_INK> = {
     stroke: 0.07,
     strongStroke: 0.1,
     interaction: 0.1,
-    muted: 0.5,
+    userBubble: 0.1,
+    muted: 0.68,
     extraMuted: 0.35,
     terminalBrightBlack: 0.75,
   },
@@ -164,19 +173,54 @@ function contrastForeground(rgb: Rgb): string {
   return relativeLuminance(rgb) > 0.179 ? "#000000" : "#ffffff";
 }
 
+function quantize(rgb: Rgb): Rgb {
+  return [
+    Math.round(rgb[0] * 255) / 255,
+    Math.round(rgb[1] * 255) / 255,
+    Math.round(rgb[2] * 255) / 255,
+  ];
+}
+
+function contrastRatio(a: Rgb, b: Rgb): number {
+  const [light, dark] = [relativeLuminance(quantize(a)), relativeLuminance(quantize(b))].sort(
+    (x, y) => y - x,
+  );
+  return (light + 0.05) / (dark + 0.05);
+}
+
+const MUTED_TEXT_CONTRAST = 4.5;
+const MUTED_TEXT_STEP = 0.02;
+
+function readableInk(content: Rgb, background: Rgb, start: number): Rgb {
+  for (let step = 0; start + step * MUTED_TEXT_STEP < 1; step++) {
+    const color = mix(content, background, start + step * MUTED_TEXT_STEP);
+    if (contrastRatio(color, background) >= MUTED_TEXT_CONTRAST) return color;
+  }
+  return content;
+}
+
 const MONO_ACCENT = toHex(hslToRgb(211, 92, 62));
 const DESTRUCTIVE: Record<MonoColorScheme, string> = { dark: "#c44a4a", light: "#b04138" };
 
 function resolvePrimary(
   scheme: MonoColorScheme,
-  accentColor: string | null,
+  accent: Rgb | null,
   content: Rgb,
   background: Rgb,
 ): { primary: string; primaryForeground: string } {
-  const accent = accentColor === null ? null : parseHexColor(accentColor);
   if (accent) return { primary: toHex(accent), primaryForeground: contrastForeground(accent) };
   if (scheme === "dark") return { primary: "#ffffff", primaryForeground: "#000000" };
   return { primary: toHex(content), primaryForeground: toHex(background) };
+}
+
+function diffLineColors(diff: MonoDiffColors, alpha: number) {
+  const tint = (hex: string) => toRgba(parseHexColor(hex) ?? [0, 0, 0], alpha);
+  return {
+    diffAdditionForeground: diff.additionForeground,
+    diffDeletionForeground: diff.deletionForeground,
+    diffAdditionBackground: tint(diff.addition),
+    diffDeletionBackground: tint(diff.deletion),
+  };
 }
 
 function backgroundRgb(
@@ -237,7 +281,7 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     surfaceDiffEmpty: ink("surface1"),
     surfaceSidebar: toHex(scheme === "dark" ? mix(background, [0, 0, 0], 0.9) : background),
     foreground: toHex(content),
-    foregroundMuted: ink("muted"),
+    foregroundMuted: toHex(readableInk(content, background, INK[scheme].muted)),
     foregroundExtraMuted: ink("extraMuted"),
     border: ink("stroke"),
     borderAccent: ink("strongStroke"),
@@ -248,14 +292,22 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     terminalBrightBlack: ink("terminalBrightBlack"),
     ring: MONO_ACCENT,
   };
+  const accent = input.accentColor === null ? null : parseHexColor(input.accentColor);
+  const primary = resolvePrimary(scheme, accent, content, background);
   const overrides = {
     surfaceSidebarHover: ink("rowHover"),
     surfaceSidebarSelected: ink("rowSelected"),
     surfaceWorkspace: tint.surface0,
     interactionHighlight: toRgba(content, INK[scheme].interaction),
-    ...resolvePrimary(scheme, input.accentColor, content, background),
+    ...primary,
+    actionPrimary: primary.primary,
+    actionPrimaryForeground: primary.primaryForeground,
+    userBubble: accent
+      ? toHex(mix(accent, background, USER_ACCENT_BUBBLE_STRENGTH))
+      : ink("userBubble"),
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
+    ...diffLineColors(diff, MONO_DIFF_BACKGROUND_ALPHA[input.diffPalette]),
     ...glassLayers(scheme === "dark" ? input.glass : null, tint),
   };
 
