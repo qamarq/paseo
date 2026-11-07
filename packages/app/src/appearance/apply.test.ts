@@ -1,15 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { darkHighlightColors, resolveSyntaxColors } from "@getpaseo/highlight";
-import { DEFAULT_UI_FONT_STACK, REGISTERED_THEMES } from "@/styles/theme";
-import { applyAppearance, type AppearanceInput } from "./apply";
+import { buildMonoTheme, type MonoThemeInput } from "@/styles/mono-theme";
+import { DEFAULT_UI_FONT_STACK, MONO_THEME_NAMES, REGISTERED_THEMES } from "@/styles/theme";
+import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
 
 // Override the global react-native-unistyles mock (vitest.setup.ts) so that
 // UnistylesRuntime.updateTheme is a spy that records (themeName, updater) calls.
-const { runtime, updateTheme } = vi.hoisted(() => {
+const { runtime, updateTheme, setTheme, setAdaptiveThemes } = vi.hoisted(() => {
   const updateThemeSpy = vi.fn();
+  const setThemeSpy = vi.fn();
+  const setAdaptiveThemesSpy = vi.fn();
   return {
-    runtime: { themeName: undefined as string | undefined, updateTheme: updateThemeSpy },
+    runtime: {
+      themeName: undefined as string | undefined,
+      updateTheme: updateThemeSpy,
+      setTheme: setThemeSpy,
+      setAdaptiveThemes: setAdaptiveThemesSpy,
+    },
     updateTheme: updateThemeSpy,
+    setTheme: setThemeSpy,
+    setAdaptiveThemes: setAdaptiveThemesSpy,
   };
 });
 vi.mock("react-native-unistyles", () => ({ UnistylesRuntime: runtime }));
@@ -202,5 +212,62 @@ describe("applyAppearance", () => {
     // makeFakeTheme().colorScheme === "dark" -> github resolves to the dark palette.
     expect(runCapturedUpdater().colors.syntax).toEqual(darkHighlightColors);
     expect(runCapturedUpdater().colors.syntax).toEqual(resolveSyntaxColors("github", "dark"));
+  });
+});
+
+describe("applyMonoTheme", () => {
+  const monoInput: MonoThemeInput = {
+    scheme: "dark",
+    hue: 243,
+    saturation: 0,
+    darkLightness: 6,
+    accentColor: null,
+    diffPalette: "default",
+  };
+
+  beforeEach(() => {
+    updateTheme.mockClear();
+    setTheme.mockClear();
+    setAdaptiveThemes.mockClear();
+  });
+
+  function filledSlots(): Record<string, unknown> {
+    return Object.fromEntries(
+      updateTheme.mock.calls.map(([name, updater]) => [name, (updater as () => unknown)()]),
+    );
+  }
+
+  it("fills both Mono slots and activates the requested scheme", () => {
+    applyMonoTheme(monoInput);
+
+    expect(updateTheme.mock.calls.map((call) => call[0])).toEqual([
+      MONO_THEME_NAMES.dark,
+      MONO_THEME_NAMES.light,
+    ]);
+    expect(filledSlots()).toEqual({
+      [MONO_THEME_NAMES.dark]: buildMonoTheme(monoInput),
+      [MONO_THEME_NAMES.light]: buildMonoTheme({ ...monoInput, scheme: "light" }),
+    });
+    expect(setAdaptiveThemes).toHaveBeenCalledWith(false);
+    expect(setTheme).toHaveBeenCalledWith(MONO_THEME_NAMES.dark);
+  });
+
+  it("fills the active slot first when the light scheme is requested", () => {
+    applyMonoTheme({ ...monoInput, scheme: "light", hue: 30, saturation: 40 });
+
+    expect(updateTheme.mock.calls.map((call) => call[0])).toEqual([
+      MONO_THEME_NAMES.light,
+      MONO_THEME_NAMES.dark,
+    ]);
+    expect(filledSlots()[MONO_THEME_NAMES.dark]).toEqual(
+      buildMonoTheme({ ...monoInput, hue: 30, saturation: 40 }),
+    );
+    expect(setTheme).toHaveBeenCalledWith(MONO_THEME_NAMES.light);
+  });
+
+  it("registers the Mono slots so the appearance patch reaches them", () => {
+    expect(ALL_THEME_KEYS).toEqual(
+      expect.arrayContaining([MONO_THEME_NAMES.dark, MONO_THEME_NAMES.light]),
+    );
   });
 });

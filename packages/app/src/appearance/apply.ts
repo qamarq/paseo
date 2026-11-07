@@ -4,9 +4,11 @@ import {
   DEFAULT_UI_FONT_STACK,
   DEFAULT_MONO_FONT_STACK,
   FONT_SIZE,
+  MONO_THEME_NAMES,
   REGISTERED_THEMES,
   type Theme,
 } from "@/styles/theme";
+import { buildMonoTheme, type MonoColorScheme, type MonoThemeInput } from "@/styles/mono-theme";
 import { applyRootUiFont } from "./apply-root-font";
 
 const ALL_THEME_KEYS = Object.keys(REGISTERED_THEMES) as (keyof typeof REGISTERED_THEMES)[];
@@ -19,6 +21,18 @@ export interface AppearanceInput {
   codeFontSize: number; // already clamped
   contentMaxWidth: number; // already clamped, default resolved
   syntaxTheme: SyntaxThemeId;
+}
+
+// Rebuilding a slot drops the font and syntax patch, so run this before `applyAppearance`.
+export function applyMonoTheme(input: MonoThemeInput): void {
+  const active = MONO_THEME_NAMES[input.scheme];
+  const inactiveScheme: MonoColorScheme = input.scheme === "dark" ? "light" : "dark";
+  UnistylesRuntime.updateTheme(active, () => buildMonoTheme(input));
+  UnistylesRuntime.updateTheme(MONO_THEME_NAMES[inactiveScheme], () =>
+    buildMonoTheme({ ...input, scheme: inactiveScheme }),
+  );
+  UnistylesRuntime.setAdaptiveThemes(false);
+  UnistylesRuntime.setTheme(active);
 }
 
 /**
