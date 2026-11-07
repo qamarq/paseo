@@ -20,6 +20,7 @@ export function useMonoLook(appearance: MonoAppearance | null, active: boolean):
   const scheme = appearance ? resolveMonoColorScheme(appearance.scheme, systemScheme) : null;
   const glass = resolveMonoGlass({ active, scheme, isMac: getIsElectronMac() });
   const tint = appearance && glass ? monoWindowTint(appearance) : null;
+  const blurRadius = appearance && glass ? appearance.blurRadius : null;
   const ready = appearance !== null;
 
   useEffect(() => {
@@ -28,10 +29,11 @@ export function useMonoLook(appearance: MonoAppearance | null, active: boolean):
     void updateDesktopWindowChrome({
       glass: tint !== null,
       ...(tint ? { glassTint: tint } : {}),
+      ...(blurRadius !== null ? { blurRadius } : {}),
     }).catch((error) => {
       console.warn("[DesktopWindow] Failed to update window glass", error);
     });
-  }, [ready, tint]);
+  }, [ready, tint, blurRadius]);
 
   return active && scheme ? { scheme, glass } : null;
 }
