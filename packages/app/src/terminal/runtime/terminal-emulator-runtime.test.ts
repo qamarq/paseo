@@ -87,9 +87,21 @@ vi.mock("@xterm/xterm", () => ({
 import {
   createTerminalResizeEvent,
   encodeTerminalOutput,
+  hasTranslucentBackground,
   TerminalEmulatorRuntime,
   type TerminalClipboard,
 } from "./terminal-emulator-runtime";
+
+describe("hasTranslucentBackground", () => {
+  it("turns on xterm transparency only for see-through backgrounds", () => {
+    expect(hasTranslucentBackground({ background: "rgba(0, 0, 0, 0)" })).toBe(true);
+    expect(hasTranslucentBackground({ background: "rgba(10, 10, 10, 0.5)" })).toBe(true);
+    expect(hasTranslucentBackground({ background: "transparent" })).toBe(true);
+    expect(hasTranslucentBackground({ background: "rgba(10, 10, 10, 1)" })).toBe(false);
+    expect(hasTranslucentBackground({ background: "#181B1A" })).toBe(false);
+    expect(hasTranslucentBackground({})).toBe(false);
+  });
+});
 
 interface StubTerminal {
   write: (data: string | Uint8Array, callback?: () => void) => void;

@@ -1267,13 +1267,13 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   outputContainer: {
     flex: 1,
     minHeight: 0,
     position: "relative",
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   terminalGestureContainer: {
     flex: 1,

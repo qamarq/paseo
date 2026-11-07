@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { CircleAlert } from "lucide-react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import type { SidebarStateBucket } from "@/utils/sidebar-agent-state";
-import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
+import { knockoutColor, type SurfaceBackdrop } from "@/styles/surface-backdrop";
 import { getStatusDotColor } from "@/utils/status-dot-color";
 import { StatusRing } from "@/components/status-ring";
 import { getStatusRingOffset } from "@/components/status-ring/geometry";
@@ -99,12 +99,12 @@ const styles = StyleSheet.create((theme) => ({
     right: getStatusRingOffset(DEFAULT_STATUS_DOT_OFFSET, STATUS_INDICATOR_DOT_SIZE),
     bottom: getStatusRingOffset(DEFAULT_STATUS_DOT_OFFSET, STATUS_INDICATOR_DOT_SIZE),
   },
-  surface0: { borderColor: theme.colors.surface0 },
-  surface1: { borderColor: theme.colors.surface1 },
-  surface2: { borderColor: theme.colors.surface2 },
-  surfaceSidebar: { borderColor: theme.colors.surfaceSidebar },
-  surfaceSidebarHover: { borderColor: theme.colors.surfaceSidebarHover },
-  surfaceSidebarSelected: { borderColor: theme.colors.surfaceSidebarSelected },
+  surface0: { borderColor: knockoutColor(theme, "surface0") },
+  surface1: { borderColor: knockoutColor(theme, "surface1") },
+  surface2: { borderColor: knockoutColor(theme, "surface2") },
+  surfaceSidebar: { borderColor: knockoutColor(theme, "surfaceSidebar") },
+  surfaceSidebarHover: { borderColor: knockoutColor(theme, "surfaceSidebarHover") },
+  surfaceSidebarSelected: { borderColor: knockoutColor(theme, "surfaceSidebarSelected") },
   statusAlertOverlay: {
     position: "absolute",
     right: STATUS_ALERT_OFFSET,
