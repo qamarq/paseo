@@ -9,9 +9,9 @@ Electron's `vibrancy` gives AppKit's material as-is. Under our tint it adds a `c
 `packages/desktop/native/mac-glass/glass.mm` inserts its own `NSVisualEffectView` subclass below the web contents and rewrites the private layers after every `updateLayer`: it removes the saturation filter, clears the fills, hides the chameleon layer and sets the backdrop's `gaussianBlur` radius. This is MonoCode's approach (MIT). AppKit rebuilds those layers on appearance changes, so patching once from JS does not hold.
 
 - In fullscreen there is nothing behind the window. AppKit swaps in a material without a blur filter and the window shows the tint over black (`rgb(10, 10, 10)` by default). Leaving fullscreen restores the patched backdrop.
-- Unknown layers are left alone, which falls back to the stock material. If glass turns dark or grey after a macOS update, dump the backdrop's layer tree before touching the tint.
+- Filters the addon does not recognise stay in place, and every layer's background is cleared. If glass turns dark or grey after a macOS update, dump the backdrop's layer tree before touching the tint.
 - If the addon fails to load, `window/native-glass.ts` logs a warning and the glass controller uses Electron vibrancy.
-- `build:main` compiles the addon with `xcrun clang++` as a universal binary against the running Node's Node-API headers, so it needs the Xcode Command Line Tools. It is a no-op on other platforms. The packaged `.node` is unpacked from the asar.
+- `build:main` compiles the addon with `xcrun clang++` as a universal binary against the running Node's Node-API headers, and skips it while the `.node` is newer than its sources. Without the Xcode Command Line Tools or the headers it warns and skips locally, so glass uses Electron vibrancy, and fails in CI. It is a no-op on other platforms. The packaged `.node` is unpacked from the asar.
 
 ## Tint
 
