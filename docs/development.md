@@ -49,6 +49,7 @@ than downloading a published desktop release.
 - The **server itself** (e.g. when launched by the desktop app or `npm run start`) defaults to `~/.paseo` (see `packages/server/src/server/paseo-home.ts`).
 - **Repo dev scripts** default to `$ROOT/.dev/paseo-home`, where `$ROOT` is the current checkout or worktree root. This keeps all dev state scoped to the checkout instead of the packaged desktop app.
 - **`npm run cli -- ...`** runs through the same dev-home wrapper as the dev scripts, so the in-repo CLI automatically targets the current checkout's `.dev/paseo-home` and configured dev daemon endpoint.
+- **An exported `PASEO_HOME` wins over the dev default.** Agents launched by Paseo inherit `PASEO_HOME=~/.paseo`, so `npm run dev:desktop` from an agent attaches to the main daemon on 6767, garbage-collects its `desktop-attachments`, and stops that daemon on quit. Run `env -u PASEO_HOME npm run dev:desktop` and check that the banner's `Home:` is the checkout's `.dev/paseo-home`.
 - **Paseo-created worktrees** seed `$PASEO_WORKTREE_PATH/.dev/paseo-home` from `$PASEO_SOURCE_CHECKOUT_PATH/.dev/paseo-home` by copying durable JSON metadata. Runtime files like pid files, sockets, and logs are not copied.
 - **This repo's worktree setup** also best-effort seeds `packages/app/ios` and the newest `.dev/ios-build` entry from the source checkout so iOS simulator services can reuse native project and Xcode cache state when it is safe enough to do so.
 
