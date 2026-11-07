@@ -1,8 +1,13 @@
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
+import { buildMonoTheme, type MonoThemeInput } from "@/styles/mono-theme";
 import { darkTheme } from "@/styles/theme";
-import { appearanceStyleBoundaryKey } from "./appearance-style-boundary";
+import {
+  appearanceColorKey,
+  appearanceLayoutKey,
+  appearanceStyleBoundaryKey,
+} from "./appearance-style-boundary";
 
 describe("appearanceStyleBoundaryKey", () => {
   it("changes when content size changes without any other appearance token changing", () => {
@@ -14,6 +19,40 @@ describe("appearanceStyleBoundaryKey", () => {
     expect(appearanceStyleBoundaryKey(contentOnlyChange)).not.toBe(
       appearanceStyleBoundaryKey(darkTheme),
     );
+  });
+});
+
+describe("colour-only appearance changes", () => {
+  const mono = (overrides: Partial<MonoThemeInput>) =>
+    buildMonoTheme({
+      scheme: "dark",
+      hue: 243,
+      saturation: 0,
+      darkLightness: 6,
+      accentColor: null,
+      diffPalette: "default",
+      glass: null,
+      ...overrides,
+    });
+
+  it("keep the layout key so in-place subtrees do not remount while a slider drags", () => {
+    const before = mono({});
+    const after = mono({ hue: 120, saturation: 40, darkLightness: 12 });
+
+    expect(appearanceLayoutKey(after)).toBe(appearanceLayoutKey(before));
+    expect(appearanceColorKey(after)).not.toBe(appearanceColorKey(before));
+  });
+
+  it("follow colours in place on desktop settings and the shell", () => {
+    const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8");
+
+    expect(layout).toMatch(
+      /ROOT_STACK_IN_PLACE_COLOR_SCREENS = getIsElectron\(\)\s*\? \(\["settings\/index", "settings\/\[section\]"\] as const\)/,
+    );
+    expect(layout).toContain("inPlaceColorScreens={ROOT_STACK_IN_PLACE_COLOR_SCREENS}");
+    expect(
+      layout.match(/<AppearanceStyleBoundary colorChanges={SHELL_COLOR_CHANGES}>/g),
+    ).toHaveLength(3);
   });
 });
 

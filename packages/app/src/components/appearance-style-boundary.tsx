@@ -1,9 +1,22 @@
-import { Fragment, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { withUnistyles } from "react-native-unistyles";
+import { getIsElectron } from "@/constants/platform";
 import type { Theme } from "@/styles/theme";
+
+/**
+ * How a subtree follows colour-only changes. "remount" re-keys it, for parsed content that bakes
+ * colours in. "inPlace" relies on web CSS variables and themed props, for screens whose own
+ * controls drive the change (a remount mid-drag drops the dragged slider).
+ */
+export type AppearanceColorChanges = "remount" | "inPlace";
+
+// Desktop Mono sliders rebuild the theme several times a second; remount once they settle.
+const DESKTOP_COLOR_SETTLE_MS = 400;
 
 interface AppearanceStyleBoundaryProps {
   appearanceKey?: string;
+  colorKey?: string;
+  colorChanges: AppearanceColorChanges;
   children: ReactNode;
 }
 
@@ -16,11 +29,34 @@ interface AppearanceStyleBoundaryProps {
 // detaches its screen container inside a FragmentManager transaction and crashes Android.
 // `ThemedStack` places one per screen; the app shell places them around the chrome outside the
 // navigators.
-function AppearanceStyleBoundaryBase({ appearanceKey, children }: AppearanceStyleBoundaryProps) {
-  return <Fragment key={appearanceKey}>{children}</Fragment>;
+function AppearanceStyleBoundaryBase({
+  appearanceKey,
+  colorKey,
+  colorChanges,
+  children,
+}: AppearanceStyleBoundaryProps) {
+  const settledColorKey = useSettledValue(colorKey, getIsElectron() ? DESKTOP_COLOR_SETTLE_MS : 0);
+  const key =
+    colorChanges === "inPlace" ? appearanceKey : `${appearanceKey}\u0001${settledColorKey}`;
+  return <Fragment key={key}>{children}</Fragment>;
+}
+
+function useSettledValue<T>(value: T, delayMs: number): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    if (delayMs === 0) return;
+    const timer = setTimeout(() => setSettled(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+  return delayMs === 0 ? value : settled;
 }
 
 export function appearanceStyleBoundaryKey(theme: Theme): string {
+  return [appearanceLayoutKey(theme), appearanceColorKey(theme)].join("\u0001");
+}
+
+/** Fonts and sizes: web bakes numeric tokens into generated classes, so these always remount. */
+export function appearanceLayoutKey(theme: Theme): string {
   return [
     theme.fontFamily.ui,
     theme.fontFamily.mono,
@@ -34,6 +70,11 @@ export function appearanceStyleBoundaryKey(theme: Theme): string {
     theme.fontSize.content,
     theme.fontSize.code,
     theme.lineHeight.diff,
+  ].join("\u0000");
+}
+
+export function appearanceColorKey(theme: Theme): string {
+  return [
     theme.colors.foreground,
     theme.colors.foregroundMuted,
     theme.colors.mutedForeground,
@@ -65,14 +106,23 @@ export function appearanceStyleBoundaryKey(theme: Theme): string {
 }
 
 function appearanceStyleBoundaryMapping(theme: Theme): Partial<AppearanceStyleBoundaryProps> {
-  return { appearanceKey: appearanceStyleBoundaryKey(theme) };
+  return { appearanceKey: appearanceLayoutKey(theme), colorKey: appearanceColorKey(theme) };
 }
 
 const ThemedAppearanceStyleBoundary = withUnistyles(AppearanceStyleBoundaryBase);
 
-export function AppearanceStyleBoundary({ children }: { children: ReactNode }) {
+export function AppearanceStyleBoundary({
+  colorChanges = "remount",
+  children,
+}: {
+  colorChanges?: AppearanceColorChanges;
+  children: ReactNode;
+}) {
   return (
-    <ThemedAppearanceStyleBoundary uniProps={appearanceStyleBoundaryMapping}>
+    <ThemedAppearanceStyleBoundary
+      colorChanges={colorChanges}
+      uniProps={appearanceStyleBoundaryMapping}
+    >
       {children}
     </ThemedAppearanceStyleBoundary>
   );
