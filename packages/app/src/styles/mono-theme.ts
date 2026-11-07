@@ -10,6 +10,10 @@ import {
 export type MonoColorScheme = Theme["colorScheme"];
 export type MonoDiffPalette = "default" | "colorblind" | "highContrast";
 
+export interface MonoGlass {
+  mainPaneGlass: boolean;
+}
+
 export interface MonoThemeInput {
   scheme: MonoColorScheme;
   hue: number;
@@ -17,6 +21,7 @@ export interface MonoThemeInput {
   darkLightness: number;
   accentColor: string | null;
   diffPalette: MonoDiffPalette;
+  glass: MonoGlass | null;
 }
 
 export interface MonoDiffColors {
@@ -75,6 +80,7 @@ export const MONO_DIFF_PALETTES: Record<
 };
 
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
+const WINDOW_BACKGROUND_OPACITY = 0.4;
 const CONTENT_LIGHTNESS: Record<MonoColorScheme, number> = { dark: 92, light: 18 };
 
 // Fractions of `content` over `background`, from MonoCode's opacity-derived fills.
@@ -173,13 +179,51 @@ function resolvePrimary(
   return { primary: toHex(content), primaryForeground: toHex(background) };
 }
 
-export function buildMonoTheme(input: MonoThemeInput): Theme {
-  const { scheme } = input;
-  const background = hslToRgb(
+function backgroundRgb(
+  input: Pick<MonoThemeInput, "scheme" | "hue" | "saturation" | "darkLightness">,
+): Rgb {
+  return hslToRgb(
     input.hue,
     input.saturation,
-    scheme === "dark" ? input.darkLightness : LIGHT_BACKGROUND_LIGHTNESS,
+    input.scheme === "dark" ? input.darkLightness : LIGHT_BACKGROUND_LIGHTNESS,
   );
+}
+
+export function monoWindowTint(input: {
+  hue: number;
+  saturation: number;
+  darkLightness: number;
+  sidebarOpacity: number;
+}): string {
+  const alpha =
+    WINDOW_BACKGROUND_OPACITY + (1 - WINDOW_BACKGROUND_OPACITY) * (input.sidebarOpacity / 100);
+  return toRgba(backgroundRgb({ ...input, scheme: "dark" }), Math.round(alpha * 1000) / 1000);
+}
+
+function glassLayers(
+  glass: MonoGlass | null,
+  opaque: { surface0: string; surfaceSidebar: string },
+) {
+  if (glass === null) {
+    return {
+      surfaceWindow: opaque.surface0,
+      surfaceSidebarGlass: opaque.surfaceSidebar,
+      surfacePaneGlass: opaque.surface0,
+      surfaceWorkspaceGlass: opaque.surface0,
+    };
+  }
+  const pane = glass.mainPaneGlass ? "transparent" : opaque.surface0;
+  return {
+    surfaceWindow: "transparent",
+    surfaceSidebarGlass: "transparent",
+    surfacePaneGlass: pane,
+    surfaceWorkspaceGlass: pane,
+  };
+}
+
+export function buildMonoTheme(input: MonoThemeInput): Theme {
+  const { scheme } = input;
+  const background = backgroundRgb(input);
   const content = hslToRgb(input.hue, input.saturation, CONTENT_LIGHTNESS[scheme]);
   const ink = (key: keyof typeof DARK_INK) => toHex(mix(content, background, INK[scheme][key]));
   const diff = MONO_DIFF_PALETTES[input.diffPalette][scheme];
@@ -212,6 +256,7 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     ...resolvePrimary(scheme, input.accentColor, content, background),
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
+    ...glassLayers(scheme === "dark" ? input.glass : null, tint),
   };
 
   if (scheme === "dark") {

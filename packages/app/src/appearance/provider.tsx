@@ -21,7 +21,7 @@ import {
 } from "@/plugins/themes";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
 import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
-import { useMonoColorScheme } from "./mono-scheme";
+import { useMonoLook } from "./mono-look";
 import { AppearanceSystemBars } from "./system-bars";
 
 interface ContributedThemes {
@@ -65,8 +65,11 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     if (settings.theme !== PLUGIN_THEME_PREFERENCE) return null;
     return options.find((option) => option.id === settings.pluginThemeId) ?? null;
   }, [options, settings.pluginThemeId, settings.theme]);
-  const { hue, saturation, darkLightness, accentColor, diffPalette } = settings.monoAppearance;
-  const monoScheme = useMonoColorScheme(settings.monoAppearance.scheme);
+  const { hue, saturation, darkLightness, accentColor, diffPalette, mainPaneGlass } =
+    settings.monoAppearance;
+  const monoLook = useMonoLook(isLoading ? null : settings.monoAppearance, selected === null);
+  const monoScheme = monoLook?.scheme ?? null;
+  const monoGlass = monoLook?.glass ?? false;
 
   useEffect(() => {
     if (isLoading) return;
@@ -81,7 +84,15 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     };
     if (monoScheme && selected === null) {
       applyMonoTheme(
-        { scheme: monoScheme, hue, saturation, darkLightness, accentColor, diffPalette },
+        {
+          scheme: monoScheme,
+          hue,
+          saturation,
+          darkLightness,
+          accentColor,
+          diffPalette,
+          glass: monoGlass ? { mainPaneGlass } : null,
+        },
         appearance,
       );
     } else {
@@ -94,6 +105,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     selected,
     settings.theme,
     monoScheme,
+    monoGlass,
+    mainPaneGlass,
     hue,
     saturation,
     darkLightness,

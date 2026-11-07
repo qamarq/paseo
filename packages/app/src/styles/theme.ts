@@ -270,6 +270,10 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     surfaceSidebarHover: tint.surface3,
     surfaceSidebarSelected: tint.surface4,
     surfaceWorkspace: tint.surface0,
+    surfaceWindow: tint.surface0,
+    surfaceSidebarGlass: tint.surfaceSidebar,
+    surfacePaneGlass: tint.surface0,
+    surfaceWorkspaceGlass: tint.surface0,
     interactionHighlight: "rgba(0, 0, 0, 0.06)",
 
     foreground: tint.foreground,
@@ -401,6 +405,10 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     surfaceSidebarHover: tint.surface1,
     surfaceSidebarSelected: tint.surface2,
     surfaceWorkspace: tint.surface1,
+    surfaceWindow: tint.surface0,
+    surfaceSidebarGlass: tint.surfaceSidebar,
+    surfacePaneGlass: tint.surface0,
+    surfaceWorkspaceGlass: tint.surface1,
     interactionHighlight: "rgba(255, 255, 255, 0.08)",
 
     foreground,
