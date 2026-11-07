@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_MONO_APPEARANCE,
   INTERFACE_SCALE_OPTIONS,
   isMonoActive,
+  MonoAppearanceSchema,
   nextMonoScheme,
   readInterfaceScaleStep,
   resolveMonoColorScheme,
@@ -76,6 +78,17 @@ describe("isMonoActive", () => {
 });
 
 describe("interface scale", () => {
+  it("snaps stored scales to an offered 10% step", () => {
+    const parse = (interfaceScale: number) =>
+      MonoAppearanceSchema.parse({ ...DEFAULT_MONO_APPEARANCE, interfaceScale }).interfaceScale;
+
+    expect(parse(105)).toBe(110);
+    expect(parse(104)).toBe(100);
+    expect(parse(33)).toBe(50);
+    expect(parse(260)).toBe(200);
+    for (const scale of [105, 133, 199]) expect(INTERFACE_SCALE_OPTIONS).toContain(parse(scale));
+  });
+
   it("offers 50% to 200% in 10% steps", () => {
     expect(INTERFACE_SCALE_OPTIONS[0]).toBe(50);
     expect(INTERFACE_SCALE_OPTIONS.at(-1)).toBe(200);

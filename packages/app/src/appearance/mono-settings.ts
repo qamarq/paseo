@@ -30,12 +30,14 @@ const DIFF_PALETTES = [
   "highContrast",
 ] as const satisfies readonly MonoDiffPalette[];
 
-function clampedInteger(range: { min: number; max: number }, fallback: number) {
+function clampedInteger(range: { min: number; max: number }, fallback: number, step = 1) {
   return z
     .number()
-    .transform((value) => Math.min(range.max, Math.max(range.min, Math.round(value))))
+    .transform((value) => Math.min(range.max, Math.max(range.min, Math.round(value / step) * step)))
     .catch(fallback);
 }
+
+const INTERFACE_SCALE_STEP = 10;
 
 const ranges = MONO_APPEARANCE_RANGES;
 
@@ -54,7 +56,11 @@ const MonoAppearanceFieldsSchema = z.object({
   sidebarOpacity: clampedInteger(ranges.sidebarOpacity, DEFAULTS.sidebarOpacity),
   blurRadius: clampedInteger(ranges.blurRadius, DEFAULTS.blurRadius),
   mainPaneGlass: z.boolean().catch(DEFAULTS.mainPaneGlass),
-  interfaceScale: clampedInteger(ranges.interfaceScale, DEFAULTS.interfaceScale),
+  interfaceScale: clampedInteger(
+    ranges.interfaceScale,
+    DEFAULTS.interfaceScale,
+    INTERFACE_SCALE_STEP,
+  ),
 });
 
 export type MonoAppearance = z.output<typeof MonoAppearanceFieldsSchema>;
@@ -88,8 +94,6 @@ export function resolveMonoGlass(input: {
 }): boolean {
   return input.active && input.scheme === "dark" && input.isMac;
 }
-
-const INTERFACE_SCALE_STEP = 10;
 
 export const INTERFACE_SCALE_OPTIONS: readonly number[] = Array.from(
   {
