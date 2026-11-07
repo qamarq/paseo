@@ -283,6 +283,7 @@ const MONO_FILL = {
   inlineCode: 0.08,
   codeBlock: 0.06,
   sectionLabel: 0.4,
+  searchFieldBorder: 0.08,
 };
 const MODAL_BASE_ALPHA = 0.55;
 const VEIL_ALPHA = 0.8;
@@ -313,6 +314,9 @@ function monoChrome(
         }
       : null,
     rowRadius: 8,
+    navRowHeight: 32,
+    rowLabelWeight: "500",
+    searchFieldBorder: ink(MONO_FILL.searchFieldBorder),
     sectionLabelSize: 11,
     sectionLabelColor: ink(MONO_FILL.sectionLabel),
     tabHeight: 30,

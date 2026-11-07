@@ -161,6 +161,7 @@ function SidebarSearchRow() {
       testID="sidebar-search"
       variant="compact"
       shortcutKeys={shortcutKeys}
+      field
     />
   );
 }

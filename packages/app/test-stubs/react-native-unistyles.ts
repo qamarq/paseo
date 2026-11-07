@@ -1,5 +1,5 @@
 import { lightHighlightColors } from "@getpaseo/highlight";
-import { lightTheme } from "../src/styles/theme";
+import { DEFAULT_CHROME, lightTheme } from "../src/styles/theme";
 
 const testTheme = {
   colorScheme: "light",
@@ -62,6 +62,7 @@ const testTheme = {
   },
   iconSize: { sm: 16, md: 20 },
   opacity: { 50: 0.5 },
+  chrome: DEFAULT_CHROME,
   shadow: {
     sm: {
       shadowColor: "rgba(0, 0, 0, 0.02)",
