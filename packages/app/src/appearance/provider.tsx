@@ -19,9 +19,8 @@ import {
   usePluginThemeCatalog,
   type PluginThemeOption,
 } from "@/plugins/themes";
-import type { MonoThemeInput } from "@/styles/mono-theme";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
-import { applyAppearance, applyMonoTheme } from "./apply";
+import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
 import { useMonoColorScheme } from "./mono-scheme";
 import { AppearanceSystemBars } from "./system-bars";
 
@@ -34,22 +33,16 @@ interface ContributedThemes {
 interface ApplyThemeInput {
   preference: AppSettings["theme"];
   contributedTheme: PluginThemeOption | null;
-  mono: MonoThemeInput | null;
 }
 
 const ContributedThemesContext = createContext<ContributedThemes | null>(null);
 
-function applyTheme({ preference, contributedTheme, mono }: ApplyThemeInput): void {
+function applyTheme({ preference, contributedTheme }: ApplyThemeInput): void {
   if (contributedTheme) {
     const themeName = PLUGIN_THEME_NAMES[contributedTheme.theme.colorScheme];
     UnistylesRuntime.updateTheme(themeName, () => contributedTheme.theme);
     UnistylesRuntime.setAdaptiveThemes(false);
     UnistylesRuntime.setTheme(themeName);
-    return;
-  }
-
-  if (mono) {
-    applyMonoTheme(mono);
     return;
   }
 
@@ -77,14 +70,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isLoading) return;
-    applyTheme({
-      preference: settings.theme,
-      contributedTheme: selected,
-      mono: monoScheme
-        ? { scheme: monoScheme, hue, saturation, darkLightness, accentColor, diffPalette }
-        : null,
-    });
-    applyAppearance({
+    const appearance: AppearanceInput = {
       uiFontFamily: settings.uiFontFamily,
       monoFontFamily: settings.monoFontFamily,
       uiBaseFontSize: settings.uiBaseFontSize,
@@ -92,7 +78,16 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       codeFontSize: settings.codeFontSize,
       contentMaxWidth: resolveContentMaxWidth({ contentMaxWidth: settings.contentMaxWidth }),
       syntaxTheme: settings.syntaxTheme,
-    });
+    };
+    if (monoScheme && selected === null) {
+      applyMonoTheme(
+        { scheme: monoScheme, hue, saturation, darkLightness, accentColor, diffPalette },
+        appearance,
+      );
+    } else {
+      applyTheme({ preference: settings.theme, contributedTheme: selected });
+      applyAppearance(appearance);
+    }
     setHasAppliedAppearance(true);
   }, [
     isLoading,

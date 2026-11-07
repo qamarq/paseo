@@ -1,7 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { darkHighlightColors, resolveSyntaxColors } from "@getpaseo/highlight";
 import { buildMonoTheme, type MonoThemeInput } from "@/styles/mono-theme";
-import { DEFAULT_UI_FONT_STACK, MONO_THEME_NAMES, REGISTERED_THEMES } from "@/styles/theme";
+import {
+  DEFAULT_UI_FONT_STACK,
+  MONO_THEME_NAMES,
+  REGISTERED_THEMES,
+  type Theme,
+} from "@/styles/theme";
 import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
 
 // Override the global react-native-unistyles mock (vitest.setup.ts) so that
@@ -224,45 +229,60 @@ describe("applyMonoTheme", () => {
     accentColor: null,
     diffPalette: "default",
   };
+  const registry: Record<string, Theme> = {};
+  const activated: Array<{ name: string; theme: Theme | undefined }> = [];
 
   beforeEach(() => {
-    updateTheme.mockClear();
-    setTheme.mockClear();
+    Object.assign(registry, REGISTERED_THEMES);
+    activated.length = 0;
+    runtime.themeName = undefined;
+    updateTheme.mockImplementation((name: string, updater: (theme: Theme) => Theme) => {
+      registry[name] = updater(registry[name] as Theme);
+    });
+    setTheme.mockImplementation((name: string) => {
+      activated.push({ name, theme: registry[name] });
+    });
     setAdaptiveThemes.mockClear();
   });
 
-  function filledSlots(): Record<string, unknown> {
-    return Object.fromEntries(
-      updateTheme.mock.calls.map(([name, updater]) => [name, (updater as () => unknown)()]),
-    );
-  }
-
-  it("fills both Mono slots and activates the requested scheme", () => {
-    applyMonoTheme(monoInput);
-
-    expect(updateTheme.mock.calls.map((call) => call[0])).toEqual([
-      MONO_THEME_NAMES.dark,
-      MONO_THEME_NAMES.light,
-    ]);
-    expect(filledSlots()).toEqual({
-      [MONO_THEME_NAMES.dark]: buildMonoTheme(monoInput),
-      [MONO_THEME_NAMES.light]: buildMonoTheme({ ...monoInput, scheme: "light" }),
-    });
-    expect(setAdaptiveThemes).toHaveBeenCalledWith(false);
-    expect(setTheme).toHaveBeenCalledWith(MONO_THEME_NAMES.dark);
+  afterEach(() => {
+    updateTheme.mockReset();
+    setTheme.mockReset();
   });
 
-  it("fills the active slot first when the light scheme is requested", () => {
-    applyMonoTheme({ ...monoInput, scheme: "light", hue: 30, saturation: 40 });
-
-    expect(updateTheme.mock.calls.map((call) => call[0])).toEqual([
-      MONO_THEME_NAMES.light,
-      MONO_THEME_NAMES.dark,
-    ]);
-    expect(filledSlots()[MONO_THEME_NAMES.dark]).toEqual(
-      buildMonoTheme({ ...monoInput, hue: 30, saturation: 40 }),
+  it("activates the Mono slot built from the Mono colours with the appearance patch", () => {
+    applyMonoTheme(
+      monoInput,
+      makeInput({ uiBaseFontSize: 15, contentMaxWidth: 1600, syntaxTheme: "dracula" }),
     );
-    expect(setTheme).toHaveBeenCalledWith(MONO_THEME_NAMES.light);
+
+    expect(setAdaptiveThemes).toHaveBeenCalledWith(false);
+    expect(activated.map(({ name }) => name)).toEqual([MONO_THEME_NAMES.dark]);
+    const theme = activated[0]?.theme;
+    expect(theme?.colors).toEqual({
+      ...buildMonoTheme(monoInput).colors,
+      syntax: resolveSyntaxColors("dracula", "dark"),
+    });
+    expect(theme?.fontSize.base).toBe(15);
+    expect(theme?.contentMaxWidth).toBe(1600);
+  });
+
+  it("activates the light slot for the light scheme", () => {
+    const light: MonoThemeInput = { ...monoInput, scheme: "light", hue: 30, saturation: 40 };
+
+    applyMonoTheme(light, makeInput());
+
+    expect(activated.map(({ name }) => name)).toEqual([MONO_THEME_NAMES.light]);
+    expect(activated[0]?.theme?.colorScheme).toBe("light");
+    expect(activated[0]?.theme?.colors.surface0).toBe(buildMonoTheme(light).colors.surface0);
+  });
+
+  it("builds only the active Mono slot", () => {
+    applyMonoTheme(monoInput, makeInput());
+
+    expect(registry[MONO_THEME_NAMES.light]?.colors.surface0).toBe(
+      REGISTERED_THEMES[MONO_THEME_NAMES.light].colors.surface0,
+    );
   });
 
   it("registers the Mono slots so the appearance patch reaches them", () => {
