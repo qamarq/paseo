@@ -19,8 +19,10 @@ import {
   usePluginThemeCatalog,
   type PluginThemeOption,
 } from "@/plugins/themes";
+import type { MonoThemeInput } from "@/styles/mono-theme";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
-import { applyAppearance } from "./apply";
+import { applyAppearance, applyMonoTheme } from "./apply";
+import { useMonoColorScheme } from "./mono-scheme";
 import { AppearanceSystemBars } from "./system-bars";
 
 interface ContributedThemes {
@@ -32,16 +34,22 @@ interface ContributedThemes {
 interface ApplyThemeInput {
   preference: AppSettings["theme"];
   contributedTheme: PluginThemeOption | null;
+  mono: MonoThemeInput | null;
 }
 
 const ContributedThemesContext = createContext<ContributedThemes | null>(null);
 
-function applyTheme({ preference, contributedTheme }: ApplyThemeInput): void {
+function applyTheme({ preference, contributedTheme, mono }: ApplyThemeInput): void {
   if (contributedTheme) {
     const themeName = PLUGIN_THEME_NAMES[contributedTheme.theme.colorScheme];
     UnistylesRuntime.updateTheme(themeName, () => contributedTheme.theme);
     UnistylesRuntime.setAdaptiveThemes(false);
     UnistylesRuntime.setTheme(themeName);
+    return;
+  }
+
+  if (mono) {
+    applyMonoTheme(mono);
     return;
   }
 
@@ -64,10 +72,18 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     if (settings.theme !== PLUGIN_THEME_PREFERENCE) return null;
     return options.find((option) => option.id === settings.pluginThemeId) ?? null;
   }, [options, settings.pluginThemeId, settings.theme]);
+  const { hue, saturation, darkLightness, accentColor, diffPalette } = settings.monoAppearance;
+  const monoScheme = useMonoColorScheme(settings.monoAppearance.scheme);
 
   useEffect(() => {
     if (isLoading) return;
-    applyTheme({ preference: settings.theme, contributedTheme: selected });
+    applyTheme({
+      preference: settings.theme,
+      contributedTheme: selected,
+      mono: monoScheme
+        ? { scheme: monoScheme, hue, saturation, darkLightness, accentColor, diffPalette }
+        : null,
+    });
     applyAppearance({
       uiFontFamily: settings.uiFontFamily,
       monoFontFamily: settings.monoFontFamily,
@@ -82,6 +98,12 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     isLoading,
     selected,
     settings.theme,
+    monoScheme,
+    hue,
+    saturation,
+    darkLightness,
+    accentColor,
+    diffPalette,
     settings.uiFontFamily,
     settings.monoFontFamily,
     settings.uiBaseFontSize,
