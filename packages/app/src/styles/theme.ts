@@ -299,6 +299,7 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     actionPrimary: tint.accent,
     actionPrimaryForeground: tint.accentForeground ?? tint.surface0,
     userBubble: tint.surface3,
+    userBubbleBorder: tint.surface3,
 
     destructive: tint.destructive,
     destructiveForeground: tint.surface0,
@@ -438,6 +439,7 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     actionPrimary: tint.accent,
     actionPrimaryForeground: tint.accentForeground ?? "#ffffff",
     userBubble: tint.surface3,
+    userBubbleBorder: tint.surface3,
 
     destructive: tint.destructive,
     destructiveForeground: "#ffffff",

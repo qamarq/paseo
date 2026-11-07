@@ -266,6 +266,14 @@ describe("Mono action and message colors", () => {
     expect(buildMonoTheme(input({ accentColor: "#ef4444" })).colors.userBubble).toBe("#451c1c");
   });
 
+  it("edges accent bubbles with the accent at 30% and leaves the neutral bubble borderless", () => {
+    const neutral = buildMonoTheme(input()).colors;
+    const accent = buildMonoTheme(input({ accentColor: "#ef4444" })).colors;
+
+    expect(neutral.userBubbleBorder).toBe(neutral.userBubble);
+    expect(accent.userBubbleBorder).toBe("rgba(239, 68, 68, 0.3)");
+  });
+
   it.each([
     ["default", "rgba(16, 185, 129, 0.15)", "rgba(244, 63, 94, 0.15)"],
     ["colorblind", "rgba(56, 139, 253, 0.15)", "rgba(219, 109, 40, 0.15)"],

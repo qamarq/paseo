@@ -87,6 +87,7 @@ const MONO_DIFF_BACKGROUND_ALPHA: Record<MonoDiffPalette, number> = {
 
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
 const USER_ACCENT_BUBBLE_STRENGTH = 0.24;
+const USER_ACCENT_BORDER_ALPHA = 0.3;
 const WINDOW_BACKGROUND_OPACITY = 0.4;
 const CONTENT_LIGHTNESS: Record<MonoColorScheme, number> = { dark: 92, light: 18 };
 
@@ -305,6 +306,7 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     userBubble: accent
       ? toHex(mix(accent, background, USER_ACCENT_BUBBLE_STRENGTH))
       : ink("userBubble"),
+    userBubbleBorder: accent ? toRgba(accent, USER_ACCENT_BORDER_ALPHA) : ink("userBubble"),
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
     ...diffLineColors(diff, MONO_DIFF_BACKGROUND_ALPHA[input.diffPalette]),
