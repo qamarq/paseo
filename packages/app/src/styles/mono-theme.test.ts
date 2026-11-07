@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildMonoTheme, monoWindowTint, type MonoThemeInput } from "./mono-theme";
+import { knockoutColor } from "./surface-backdrop";
 import { darkTheme, lightTheme } from "./theme";
 
 function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
@@ -271,6 +272,23 @@ describe("buildMonoTheme", () => {
       });
     }
     expect(buildMonoTheme(input()).chrome.glass).toBe(false);
+  });
+
+  it("lifts light section labels above MonoCode's 40% so they stay legible", () => {
+    expect(buildMonoTheme(input()).chrome.sectionLabelColor).toBe("rgba(235, 235, 235, 0.4)");
+    expect(buildMonoTheme(input({ scheme: "light" })).chrome.sectionLabelColor).toBe(
+      "rgba(46, 46, 46, 0.55)",
+    );
+  });
+
+  it("knocks out only the backdrops that glass turned translucent", () => {
+    const paneGlass = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+    const sidebarOnly = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(knockoutColor(paneGlass, "surface0")).toBe("transparent");
+    expect(knockoutColor(sidebarOnly, "surface0")).toBe(sidebarOnly.colors.surface0);
+    expect(knockoutColor(sidebarOnly, "surfaceSidebarHover")).toBe("transparent");
+    expect(knockoutColor(darkTheme, "surface1")).toBe(darkTheme.colors.surface1);
   });
 
   it("frosts floating surfaces in dark and keeps them solid in light", () => {

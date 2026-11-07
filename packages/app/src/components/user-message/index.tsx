@@ -35,7 +35,7 @@ export function MessagePreview({ children }: { children: ReactNode }) {
           {children}
         </View>
         {overflowing && !expanded ? (
-          <EdgeFade edge="bottom" solidFraction={0} backdrop="surface3" style={styles.fade} />
+          <EdgeFade edge="bottom" solidFraction={0} backdrop="userBubble" style={styles.fade} />
         ) : null}
       </View>
       {overflowing ? (

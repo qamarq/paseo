@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { darkTheme, lightTheme } from "@/styles/theme";
 import { hexColorWithAlpha } from "@/utils/color";
-import { codeLineNumberTone, codeTextColor, createDiffPalette, retainDiffPalette } from "./palette";
+import {
+  codeLineNumberTone,
+  codeTextColor,
+  createDiffPalette,
+  retainDiffPalette,
+  visibleTint,
+} from "./palette";
 import type { DiffCell, DiffPalette } from "./types";
 
 describe("diff text color", () => {
@@ -82,3 +88,12 @@ function cell(type: DiffCell["type"]): DiffCell {
     sourceIdentity: { hunkIndex: 0, lineIndex: 1, side: "new" },
   };
 }
+
+describe("visibleTint", () => {
+  it("drops tints that would paint nothing", () => {
+    expect(visibleTint("rgba(0, 0, 0, 0)")).toBeNull();
+    expect(visibleTint("transparent")).toBeNull();
+    expect(visibleTint("rgba(16, 185, 129, 0.118)")).toBe("rgba(16, 185, 129, 0.118)");
+    expect(visibleTint("#10b981")).toBe("#10b981");
+  });
+});

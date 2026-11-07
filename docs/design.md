@@ -328,6 +328,6 @@ Menus, popovers, modals, sheets, inputs, cards and overlays never use a layer to
 Under glass (`theme.chrome.glass`) nothing behind the window can be painted:
 
 - Rows and chips fill through `surfaceFill(theme, backdrop)`, which turns translucent.
-- Knockouts (status rings, badges, status dots) fill through `knockoutColor`, which paints nothing.
-- Painted scrims and edge shades step aside: `TrailingActionScrim` frosts what it covers, and content that can mask itself takes `trailingActionMask` or `horizontalScrollMask` (CSS `mask-image`, `styles/web-effects.ts`).
+- Knockouts (status rings, badges, status dots) fill through `knockoutColor`, which paints nothing on a backdrop that glass made translucent.
+- Painted scrims and edge shades step aside: `TrailingActionScrim` frosts what it covers, and content that can mask itself takes `trailingActionMask` or `horizontalScrollMask` (CSS `mask-image`, `styles/web-effects.ts`). A mask fades only an edge with content scrolled past it.
 - A see-through terminal background turns on xterm's `allowTransparency`, which costs render time.
