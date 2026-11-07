@@ -31,6 +31,7 @@ import {
   type Rect,
   type Size,
 } from "./anchor";
+import { floatingSurfaceStyle } from "@/styles/floating-surface";
 
 const CLOSE_GRACE_MS = 100;
 
@@ -412,10 +413,12 @@ const styles = StyleSheet.create((theme) => ({
     zIndex: 1000,
   },
   surface: {
-    backgroundColor: theme.colors.popover,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
-    borderRadius: theme.borderRadius.xl,
+    ...floatingSurfaceStyle(theme, {
+      backgroundColor: theme.colors.popover,
+      borderColor: theme.colors.borderAccent,
+      borderRadius: theme.borderRadius.xl,
+    }),
     ...theme.shadow.md,
     zIndex: 1000,
   },
