@@ -12,7 +12,11 @@ import {
 
 import type { WindowState, WindowStateStore } from "../settings/window-state.js";
 import type { DesktopWindowChromeMode } from "./chrome.js";
-import { WINDOW_GLASS_TINT_PATTERN, type WindowGlassController } from "./window-glass.js";
+import {
+  WINDOW_GLASS_TINT_PATTERN,
+  WINDOW_ZOOM_FACTOR_RANGE,
+  type WindowGlassController,
+} from "./window-glass.js";
 
 const WINDOW_STATE_SAVE_DEBOUNCE_MS = 400;
 const MAC_TRAFFIC_LIGHT_POSITION = { x: 12, y: 13 } as const;
@@ -32,6 +36,7 @@ export interface WindowChromeUpdate {
   trafficLightOffsetY?: number;
   glass?: boolean;
   glassTint?: string;
+  zoomFactor?: number;
 }
 
 export function readWindowTheme(input: unknown): WindowTheme | null {
@@ -119,6 +124,12 @@ function readGlassTint(input: unknown): string | null {
   return typeof input === "string" && WINDOW_GLASS_TINT_PATTERN.test(input) ? input : null;
 }
 
+function readZoomFactor(input: unknown): number | null {
+  if (typeof input !== "number" || !Number.isFinite(input)) return null;
+  const { min, max } = WINDOW_ZOOM_FACTOR_RANGE;
+  return input >= min && input <= max ? input : null;
+}
+
 export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | null {
   if (!input || typeof input !== "object") {
     return null;
@@ -129,12 +140,14 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
   const trafficLightOffsetY = readTrafficLightOffsetY(candidate.trafficLightOffsetY);
   const glass = typeof candidate.glass === "boolean" ? candidate.glass : null;
   const glassTint = readGlassTint(candidate.glassTint);
+  const zoomFactor = readZoomFactor(candidate.zoomFactor);
 
   if (
     backgroundColor === null &&
     trafficLightOffsetY === null &&
     glass === null &&
-    glassTint === null
+    glassTint === null &&
+    zoomFactor === null
   ) {
     return null;
   }
@@ -144,6 +157,7 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
     ...(trafficLightOffsetY !== null ? { trafficLightOffsetY } : {}),
     ...(glass !== null ? { glass } : {}),
     ...(glassTint !== null ? { glassTint } : {}),
+    ...(zoomFactor !== null ? { zoomFactor } : {}),
   };
 }
 

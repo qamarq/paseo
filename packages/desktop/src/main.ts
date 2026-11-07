@@ -737,6 +737,7 @@ async function createWindow(
       contextIsolation: true,
       nodeIntegration: false,
       webviewTag: true,
+      zoomFactor: windowAppearance.zoomFactor,
     },
   });
   applyDesktopWindowChromeMode({ win: mainWindow, mode: DESKTOP_WINDOW_CHROME_MODE });

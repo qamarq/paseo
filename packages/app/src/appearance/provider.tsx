@@ -21,6 +21,7 @@ import {
 } from "@/plugins/themes";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
 import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
+import { useDesktopInterfaceScale } from "./desktop-interface-scale";
 import { useMonoLook } from "./mono-look";
 import { isMonoActive } from "./mono-settings";
 import { usePluginCatalogsSettled } from "./plugin-catalogs-settled";
@@ -77,6 +78,10 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   });
   const monoLook = useMonoLook(isLoading ? null : settings.monoAppearance, monoActive);
   const monoScheme = monoLook?.scheme ?? null;
+  useDesktopInterfaceScale(
+    isLoading ? null : settings.monoAppearance.interfaceScale,
+    updateSettings,
+  );
   const monoGlass = monoLook?.glass ?? false;
 
   useEffect(() => {
