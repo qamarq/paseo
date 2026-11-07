@@ -8,6 +8,7 @@ import {
   TOUCH_ICON_SIZE,
   type SizingValue,
 } from "@/components/ui/control-geometry";
+import { withChromeSize } from "@/styles/density";
 import { ICON_SIZE } from "@/styles/theme";
 
 export { extraMutedIconColorMapping, mutedIconColorMapping } from "@/components/ui/icon-color";
@@ -108,8 +109,8 @@ export function smallIconButtonChromeFrameSize(compact = false): number {
 
 const styles = StyleSheet.create((theme) => ({
   large: {
-    width: bySizing(ICON_BUTTON_SIZES.large),
-    height: bySizing(ICON_BUTTON_SIZES.large),
+    width: withChromeSize(bySizing(ICON_BUTTON_SIZES.large), theme.chrome.iconButtonSize),
+    height: withChromeSize(bySizing(ICON_BUTTON_SIZES.large), theme.chrome.iconButtonSize),
     padding: 0,
     borderRadius: theme.borderRadius.md,
     alignItems: "center",
