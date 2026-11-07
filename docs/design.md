@@ -44,7 +44,7 @@ Foreground is for the thing being acted on: row titles, section headings, the se
 
 `foregroundExtraMuted` is reserved for passive chrome that must sit behind muted text, such as an always-visible window control. Use the solid token instead of lowering SVG opacity; per-path opacity makes overlapping icon strokes render unevenly. Interactive hover and pressed states return to `foreground`.
 
-Accent is the one CTA per surface. A `<Button variant="default">` filled with `accent` appears at most once on a page. Most pages have zero — settings is mostly toggles and text, the workspace pane is mostly content, the chat composer is the input itself.
+Accent is the one CTA per surface. A `<Button variant="default">` filled with `actionPrimary` appears at most once on a page. Most pages have zero — settings is mostly toggles and text, the workspace pane is mostly content, the chat composer is the input itself.
 
 Destructive is a color, not a click. Restart-daemon and remove-host are `<Button variant="outline">` in the row trailing slot; the destructive surface only appears inside the `confirmDialog` (`packages/app/src/screens/settings/host-page.tsx:541-547`). Workspace archive opens a confirm dialog before any red appears (`packages/app/src/components/sidebar-workspace-list.tsx`). Red appears after the user has indicated intent.
 
@@ -54,7 +54,7 @@ Destructive is a color, not a click. Restart-daemon and remove-host are `<Button
 
 The button is `<Button>` (`packages/app/src/components/ui/button.tsx`). It has five variants. Each has one job.
 
-`default` is the one primary action on a surface — filled with `accent`. At most one per page. The primary slot inside an `<AdaptiveModalSheet>` and the highlighted action on the welcome screen are the canonical uses.
+`default` is the one primary action on a surface — filled with `actionPrimary`, which is `accent` in every theme except the desktop Mono look, where it follows the user's accent color and toggles keep `accent`. At most one per page. The primary slot inside an `<AdaptiveModalSheet>` and the highlighted action on the welcome screen are the canonical uses.
 
 `secondary` is the paired action when two actions carry equal weight — filled with `surface3`. The component default is `secondary`, which matches its frequency in the codebase.
 
