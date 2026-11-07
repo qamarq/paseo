@@ -608,6 +608,8 @@ const styles = StyleSheet.create((theme) => ({
       borderColor: theme.colors.borderAccent,
       borderRadius: theme.borderRadius.xl,
     }),
+    borderRadius:
+      theme.chrome.tooltipRadius ?? theme.chrome.floatingRadius ?? theme.borderRadius.xl,
     ...theme.shadow.md,
     zIndex: 1000,
   },

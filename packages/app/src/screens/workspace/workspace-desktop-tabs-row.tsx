@@ -101,6 +101,7 @@ import {
   useHorizontalScrollBoundary,
 } from "@/components/ui/horizontal-scroll-boundary";
 import { useSessionStore } from "@/stores/session-store";
+import { feedbackTransition } from "@/styles/web-effects";
 
 const DROPDOWN_WIDTH = 220;
 const DEFAULT_INLINE_ADD_BUTTON_RESERVED_WIDTH = 36;
@@ -1704,6 +1705,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     gap: theme.spacing[1],
     userSelect: "none",
+    ...feedbackTransition(theme.chrome.feedbackMs),
   },
   tabFill: (backdrop: SurfaceBackdrop) => ({
     backgroundColor: surfaceFill(theme, backdrop),

@@ -315,6 +315,7 @@ const VEIL_ALPHA = 0.8;
 const MODAL_SCRIM = "rgba(0, 0, 0, 0.4)";
 const FLOATING_BLUR = 24;
 const COMPOSER_BLUR = 8;
+const FEEDBACK_MS = 120;
 
 function monoChrome(
   scheme: MonoColorScheme,
@@ -328,6 +329,7 @@ function monoChrome(
   return {
     ...DEFAULT_CHROME,
     glass: glass !== null,
+    feedbackMs: FEEDBACK_MS,
     fills: glass
       ? {
           ...(glass.mainPaneGlass ? { surface0: "transparent" } : {}),
@@ -350,6 +352,7 @@ function monoChrome(
     tabLabelSize: 13,
     iconButtonSize: 24,
     floatingRadius: 12,
+    tooltipRadius: 8,
     floatingFill: dark ? ink(MONO_FILL.floating) : base,
     floatingBorder: ink(MONO_FILL.floatingBorder),
     floatingBlur: dark ? FLOATING_BLUR : 0,
