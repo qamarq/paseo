@@ -1,6 +1,7 @@
 import { useUnistyles } from "react-native-unistyles";
 import { bySizing, TOUCH_TARGET } from "@/components/ui/control-sizing";
 import { isWeb } from "@/constants/platform";
+import { DESKTOP_TITLE_BAR_HEIGHT } from "@/constants/title-bar";
 
 export const FOOTER_HEIGHT = 75;
 
@@ -10,7 +11,7 @@ const BAR_HEIGHT = { touch: TOUCH_TARGET, pointer: 36 };
 // Shared header inner height from `md` up (excluding safe area insets and border).
 // Used by both agent header (ScreenHeader) and explorer sidebar header
 // This ensures both headers have the same visual height
-export const HEADER_INNER_HEIGHT = bySizing(BAR_HEIGHT).md;
+export const HEADER_INNER_HEIGHT = DESKTOP_TITLE_BAR_HEIGHT ?? bySizing(BAR_HEIGHT).md;
 export const HEADER_INNER_HEIGHT_MOBILE = 56;
 /** The tab rail and pane toolbars under the header. A breakpoint value for stylesheets. */
 export const WORKSPACE_SECONDARY_HEADER_HEIGHT = bySizing(BAR_HEIGHT);

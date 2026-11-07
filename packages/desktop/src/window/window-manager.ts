@@ -15,7 +15,7 @@ import type { DesktopWindowChromeMode } from "./chrome.js";
 import { WINDOW_GLASS_TINT_PATTERN, type WindowGlassController } from "./window-glass.js";
 
 const WINDOW_STATE_SAVE_DEBOUNCE_MS = 400;
-const MAC_TRAFFIC_LIGHT_POSITION = { x: 16, y: 14 } as const;
+const MAC_TRAFFIC_LIGHT_POSITION = { x: 12, y: 13 } as const;
 const MAX_TRAFFIC_LIGHT_OFFSET_Y = 10;
 
 export function readBadgeCount(input: unknown): number {
