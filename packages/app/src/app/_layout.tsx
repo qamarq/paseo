@@ -127,7 +127,8 @@ import {
 import { getDaemonStartService } from "@/runtime/daemon-start-service";
 import { usePanelStore, type LeftSidebarPresentation } from "@/stores/panel-store";
 import { flushDraftPersistStorage } from "@/stores/draft-store";
-import { getNextThemePreference, ICON_STROKE_WIDTH } from "@/styles/theme";
+import { getNextThemePreference } from "@/styles/theme";
+import { APP_ICON_STROKE_WIDTH } from "@/constants/app-icon-stroke";
 import { useSessionStore } from "@/stores/session-store";
 import { WorkspaceLayoutModePublisher } from "@/workspace-tabs/layout-mode-publisher";
 import { installWebScrollbarStyles } from "@/styles/install-web-scrollbar-styles";
@@ -987,7 +988,7 @@ function RootAppTree() {
   return (
     <GestureHandlerRootView style={flexStyle}>
       <View style={layoutStyles.surfaceFill}>
-        <LucideProvider strokeWidth={ICON_STROKE_WIDTH}>
+        <LucideProvider strokeWidth={APP_ICON_STROKE_WIDTH}>
           <AddHostProvider>
             <RootProviders>
               <RuntimeProviders>

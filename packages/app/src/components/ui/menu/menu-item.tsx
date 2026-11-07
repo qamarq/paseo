@@ -464,7 +464,7 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: theme.borderWidth[1],
     borderColor: theme.colors.border,
     borderRadius: theme.chrome.menuItemRadius ?? theme.borderRadius.md,
-    backgroundColor: theme.chrome.menuItemFill ?? theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   fieldFocused: {
     borderColor: theme.colors.borderAccent,
@@ -478,14 +478,14 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: 0,
   },
   itemHovered: {
-    backgroundColor: theme.chrome.menuItemFill ?? theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   itemPressed: {
-    backgroundColor: theme.chrome.menuItemFill ?? theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   // The row you are inside, not the value you chose. A chosen value is marked by its check.
   itemActive: {
-    backgroundColor: theme.chrome.menuItemFill ?? theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   itemDisabled: {
     opacity: 0.5,

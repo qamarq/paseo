@@ -703,7 +703,7 @@ export interface ChromeTokens {
   floatingBorder: string | null;
   floatingBlur: number;
   menuItemRadius: number | null;
-  menuItemFill: string | null;
+  selectionFill: string | null;
   modalRadius: number | null;
   modalFill: string | null;
   modalBorder: string | null;
@@ -748,7 +748,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   floatingBorder: null,
   floatingBlur: 0,
   menuItemRadius: null,
-  menuItemFill: null,
+  selectionFill: null,
   modalRadius: null,
   modalFill: null,
   modalBorder: null,
