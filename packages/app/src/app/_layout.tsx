@@ -72,7 +72,8 @@ import {
   resolveSidebarActivity,
   resolveLeftSidebarPresentation,
 } from "@/components/desktop-sidebar-layout";
-import { isNative, isWeb } from "@/constants/platform";
+import { getIsElectron, isNative, isWeb } from "@/constants/platform";
+import { cycleMonoScheme } from "@/appearance/mono-scheme-selection";
 import { HorizontalScrollProvider } from "@/contexts/horizontal-scroll-context";
 import { SessionProvider } from "@/contexts/session-context";
 import { SidebarCalloutProvider } from "@/contexts/sidebar-callout-context";
@@ -408,6 +409,10 @@ function AppContainer({ children, chromeEnabled: chromeEnabledOverride }: AppCon
   });
 
   const cycleTheme = useCallback(() => {
+    if (getIsElectron()) {
+      void updateSettings(cycleMonoScheme);
+      return;
+    }
     void updateSettings({ theme: getNextThemePreference(settings.theme) });
   }, [settings.theme, updateSettings]);
 
