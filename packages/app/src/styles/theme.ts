@@ -713,7 +713,15 @@ export interface ChromeTokens {
   composerFill: string | null;
   composerBorder: string | null;
   composerBlur: number;
+  sendButtonRadius: number | null;
+  /** Composer toolbar pickers (model, mode). */
+  pillFill: string | null;
+  pillHoverFill: string | null;
+  pillRadius: number | null;
+  pillTextSize: number | null;
   userBubbleRadius: number | null;
+  userBubblePaddingX: number | null;
+  userBubblePaddingY: number | null;
   inlineCodeRadius: number | null;
   inlineCodeFill: string | null;
   codeBlockRadius: number | null;
@@ -747,7 +755,14 @@ export const DEFAULT_CHROME: ChromeTokens = {
   composerFill: null,
   composerBorder: null,
   composerBlur: 0,
+  sendButtonRadius: null,
+  pillFill: null,
+  pillHoverFill: null,
+  pillRadius: null,
+  pillTextSize: null,
   userBubbleRadius: null,
+  userBubblePaddingX: null,
+  userBubblePaddingY: null,
   inlineCodeRadius: null,
   inlineCodeFill: null,
   codeBlockRadius: null,

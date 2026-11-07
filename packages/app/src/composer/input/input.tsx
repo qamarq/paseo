@@ -119,6 +119,9 @@ import {
   runMessageInputKeyboardAction,
   stopRealtimeVoice,
 } from "./state";
+import { withChromeSize } from "@/styles/density";
+import { surfaceFill } from "@/styles/surface-backdrop";
+import { backdropBlur } from "@/styles/web-effects";
 
 const DEFAULT_SEND_KEYS: ShortcutKey[][] = [["Enter"]];
 const MOD_ENTER_SEND_KEYS: ShortcutKey[][] = [["mod", "Enter"]];
@@ -2359,10 +2362,11 @@ const styles = StyleSheet.create((theme: Theme) => ({
     flexShrink: 1,
     flexDirection: "column",
     gap: theme.spacing[3],
-    backgroundColor: theme.colors.surface1,
+    backgroundColor: theme.chrome.composerFill ?? theme.colors.surface1,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
-    borderRadius: COMPOSER_CORNER_RADIUS,
+    borderColor: theme.chrome.composerBorder ?? theme.colors.borderAccent,
+    borderRadius: withChromeSize(COMPOSER_CORNER_RADIUS, theme.chrome.composerRadius),
+    ...backdropBlur(theme.chrome.composerBlur),
     paddingTop: COMPOSER_PADDING_TOP,
     paddingBottom: COMPOSER_PADDING_BOTTOM,
     paddingHorizontal: COMPOSER_PADDING_HORIZONTAL,
@@ -2500,7 +2504,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
   sendButtonDisc: {
     width: TOOLBAR_DISC_SIZE,
     height: TOOLBAR_DISC_SIZE,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.chrome.sendButtonRadius ?? theme.borderRadius.full,
     backgroundColor: theme.colors.actionPrimary,
     alignItems: "center",
     justifyContent: "center",
@@ -2509,7 +2513,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
     minWidth: TOOLBAR_DISC_SIZE,
     height: TOOLBAR_DISC_SIZE,
     paddingHorizontal: theme.spacing[3],
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.chrome.sendButtonRadius ?? theme.borderRadius.full,
     backgroundColor: theme.colors.actionPrimary,
     alignItems: "center",
     justifyContent: "center",
@@ -2520,7 +2524,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
     color: theme.colors.actionPrimaryForeground,
   },
   iconButtonHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   discPressed: {
     opacity: 0.7,

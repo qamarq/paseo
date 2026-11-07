@@ -284,6 +284,8 @@ const MONO_FILL = {
   codeBlock: 0.06,
   sectionLabel: 0.4,
   searchFieldBorder: 0.08,
+  pill: 0.1,
+  pillHover: 0.15,
 };
 const MODAL_BASE_ALPHA = 0.55;
 const VEIL_ALPHA = 0.8;
@@ -337,7 +339,14 @@ function monoChrome(
     composerFill: dark ? ink(MONO_FILL.composer) : base,
     composerBorder: ink(MONO_FILL.composerBorder),
     composerBlur: dark ? COMPOSER_BLUR : 0,
+    sendButtonRadius: 6,
+    pillFill: ink(MONO_FILL.pill),
+    pillHoverFill: ink(MONO_FILL.pillHover),
+    pillRadius: 6,
+    pillTextSize: 12,
     userBubbleRadius: 18,
+    userBubblePaddingX: 12,
+    userBubblePaddingY: 8,
     inlineCodeRadius: 6,
     inlineCodeFill: ink(MONO_FILL.inlineCode),
     codeBlockRadius: 10,
