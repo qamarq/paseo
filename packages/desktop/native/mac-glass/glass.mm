@@ -1,15 +1,16 @@
 #import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
+#include <cmath>
 #include <node_api.h>
 
-static NSString* const kBackdropIdentifier = @"paseo.window-glass-backdrop";
+static const double kMinBlurRadius = 1;
+static const double kMaxBlurRadius = 64;
 
 @interface PaseoGlassBackdrop : NSVisualEffectView
 @property(nonatomic) CGFloat blurRadius;
 - (void)configureLayers;
 @end
 
-// Keeps AppKit's backdrop blur but drops its saturation, fills and chameleon tint; the page paints our own tint.
 static void ConfigureBackdropLayer(CALayer* layer, CGFloat radius) {
   layer.backgroundColor = nil;
   if ([NSStringFromClass([layer class]) isEqualToString:@"CAChameleonLayer"]) {
@@ -81,7 +82,6 @@ static PaseoGlassBackdrop* FindBackdrop(NSView* content) {
 
 static PaseoGlassBackdrop* InstallBackdrop(NSView* content) {
   PaseoGlassBackdrop* backdrop = [[PaseoGlassBackdrop alloc] initWithFrame:content.bounds];
-  backdrop.identifier = kBackdropIdentifier;
   backdrop.material = NSVisualEffectMaterialUnderWindowBackground;
   backdrop.blendingMode = NSVisualEffectBlendingModeBehindWindow;
   backdrop.state = NSVisualEffectStateActive;
@@ -119,7 +119,11 @@ static napi_value Apply(napi_env env, napi_callback_info info) {
   if (radiusType == napi_number) {
     double value = 0;
     napi_get_value_double(env, argv[1], &value);
-    radius = @(value);
+    if (!std::isfinite(value)) {
+      napi_throw_range_error(env, nullptr, "apply expects a finite blur radius");
+      return nullptr;
+    }
+    radius = @(std::fmin(kMaxBlurRadius, std::fmax(kMinBlurRadius, value)));
   }
   ApplyGlass(content, radius);
   return nullptr;
