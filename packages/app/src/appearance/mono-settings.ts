@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { MonoColorScheme, MonoDiffPalette } from "@/styles/mono-theme";
+import { PLUGIN_THEME_PREFERENCE, type ThemePreference } from "@/styles/theme";
 
 export const MONO_APPEARANCE_RANGES = {
   hue: { min: 0, max: 360 },
@@ -69,4 +70,21 @@ export function resolveMonoColorScheme(
 ): MonoColorScheme {
   if (preference !== "system") return preference;
   return systemScheme === "light" ? "light" : "dark";
+}
+
+export function isMonoActive(input: {
+  themePreference: ThemePreference;
+  pluginThemeSelected: boolean;
+  pluginCatalogsSettled: boolean;
+}): boolean {
+  if (input.pluginThemeSelected) return false;
+  return input.themePreference !== PLUGIN_THEME_PREFERENCE || input.pluginCatalogsSettled;
+}
+
+export function resolveMonoGlass(input: {
+  active: boolean;
+  scheme: MonoColorScheme | null;
+  isMac: boolean;
+}): boolean {
+  return input.active && input.scheme === "dark" && input.isMac;
 }

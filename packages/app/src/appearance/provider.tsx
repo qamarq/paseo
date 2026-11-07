@@ -22,6 +22,8 @@ import {
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
 import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
 import { useMonoLook } from "./mono-look";
+import { isMonoActive } from "./mono-settings";
+import { usePluginCatalogsSettled } from "./plugin-catalogs-settled";
 import { AppearanceSystemBars } from "./system-bars";
 
 interface ContributedThemes {
@@ -67,7 +69,13 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   }, [options, settings.pluginThemeId, settings.theme]);
   const { hue, saturation, darkLightness, accentColor, diffPalette, mainPaneGlass } =
     settings.monoAppearance;
-  const monoLook = useMonoLook(isLoading ? null : settings.monoAppearance, selected === null);
+  const pluginCatalogsSettled = usePluginCatalogsSettled();
+  const monoActive = isMonoActive({
+    themePreference: settings.theme,
+    pluginThemeSelected: selected !== null,
+    pluginCatalogsSettled,
+  });
+  const monoLook = useMonoLook(isLoading ? null : settings.monoAppearance, monoActive);
   const monoScheme = monoLook?.scheme ?? null;
   const monoGlass = monoLook?.glass ?? false;
 
@@ -82,7 +90,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       contentMaxWidth: resolveContentMaxWidth({ contentMaxWidth: settings.contentMaxWidth }),
       syntaxTheme: settings.syntaxTheme,
     };
-    if (monoScheme && selected === null) {
+    if (monoScheme) {
       applyMonoTheme(
         {
           scheme: monoScheme,

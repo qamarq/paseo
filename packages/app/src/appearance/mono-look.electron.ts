@@ -4,7 +4,7 @@ import { getIsElectronMac } from "@/constants/platform";
 import { updateDesktopWindowChrome } from "@/desktop/electron/window";
 import { monoWindowTint } from "@/styles/mono-theme";
 import type { MonoLook } from "./mono-look";
-import { resolveMonoColorScheme, type MonoAppearance } from "./mono-settings";
+import { resolveMonoColorScheme, resolveMonoGlass, type MonoAppearance } from "./mono-settings";
 
 const WINDOW_TINT_PROPERTY = "--paseo-window-tint";
 
@@ -18,7 +18,7 @@ function paintWindowTint(tint: string | null): void {
 export function useMonoLook(appearance: MonoAppearance | null, active: boolean): MonoLook | null {
   const systemScheme = useColorScheme();
   const scheme = appearance ? resolveMonoColorScheme(appearance.scheme, systemScheme) : null;
-  const glass = active && scheme === "dark" && getIsElectronMac();
+  const glass = resolveMonoGlass({ active, scheme, isMac: getIsElectronMac() });
   const tint = appearance && glass ? monoWindowTint(appearance) : null;
   const ready = appearance !== null;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveMonoColorScheme } from "./mono-settings";
+import { isMonoActive, resolveMonoColorScheme, resolveMonoGlass } from "./mono-settings";
 
 describe("resolveMonoColorScheme", () => {
   it.each([
@@ -15,5 +15,54 @@ describe("resolveMonoColorScheme", () => {
   it("keeps an explicit scheme whatever the OS reports", () => {
     expect(resolveMonoColorScheme("dark", "light")).toBe("dark");
     expect(resolveMonoColorScheme("light", "dark")).toBe("light");
+  });
+});
+
+describe("resolveMonoGlass", () => {
+  it("turns glass on only for the active dark look on macOS", () => {
+    expect(resolveMonoGlass({ active: true, scheme: "dark", isMac: true })).toBe(true);
+    expect(resolveMonoGlass({ active: true, scheme: "light", isMac: true })).toBe(false);
+    expect(resolveMonoGlass({ active: true, scheme: "dark", isMac: false })).toBe(false);
+    expect(resolveMonoGlass({ active: false, scheme: "dark", isMac: true })).toBe(false);
+    expect(resolveMonoGlass({ active: true, scheme: null, isMac: true })).toBe(false);
+  });
+});
+
+describe("isMonoActive", () => {
+  it("yields to a selected plugin theme", () => {
+    expect(
+      isMonoActive({
+        themePreference: "plugin",
+        pluginThemeSelected: true,
+        pluginCatalogsSettled: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("waits for plugin catalogs before replacing a plugin theme preference", () => {
+    expect(
+      isMonoActive({
+        themePreference: "plugin",
+        pluginThemeSelected: false,
+        pluginCatalogsSettled: false,
+      }),
+    ).toBe(false);
+    expect(
+      isMonoActive({
+        themePreference: "plugin",
+        pluginThemeSelected: false,
+        pluginCatalogsSettled: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("applies to every built-in preference right away", () => {
+    expect(
+      isMonoActive({
+        themePreference: "dark",
+        pluginThemeSelected: false,
+        pluginCatalogsSettled: false,
+      }),
+    ).toBe(true);
   });
 });

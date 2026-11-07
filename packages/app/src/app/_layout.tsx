@@ -673,10 +673,7 @@ function DesktopWindowControlsSync() {
 
   useEffect(() => {
     if (isLoading || isNative) return;
-    void updateDesktopWindowChrome({
-      backgroundColor: surface0,
-      trafficLightOffsetY: 0,
-    }).catch((error) => {
+    void updateDesktopWindowChrome({ backgroundColor: surface0 }).catch((error) => {
       console.warn("[DesktopWindow] Failed to update window controls overlay", error);
     });
   }, [isLoading, surface0]);
