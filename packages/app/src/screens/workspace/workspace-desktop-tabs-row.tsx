@@ -69,6 +69,7 @@ import {
 import type { WorkspaceTabDescriptor } from "@/screens/workspace/workspace-tabs-types";
 import type { PaneHost } from "@/panels/panel-manifest";
 import type { WorkspaceTabLaunchPurpose } from "@/workspace-tabs/launcher";
+import { withChromeSize } from "@/styles/density";
 import { surfaceFill, type SurfaceBackdrop } from "@/styles/surface-backdrop";
 import {
   resolveWorkspaceTabChipBackdrop,
@@ -1696,9 +1697,9 @@ const styles = StyleSheet.create((theme) => ({
     marginRight: PANE_SPLIT_ACTIONS_OUTER_MARGIN,
   },
   tab: {
-    height: CONTROL_HEIGHTS.sm,
+    height: withChromeSize(CONTROL_HEIGHTS.sm, theme.chrome.tabHeight),
     paddingHorizontal: TAB_CHIP_HORIZONTAL_PADDING,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing[1],
@@ -1757,7 +1758,7 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 1,
     minWidth: 0,
     color: theme.colors.foregroundMuted,
-    fontSize: theme.fontSize.base,
+    fontSize: theme.chrome.tabLabelSize ?? theme.fontSize.base,
     fontWeight: theme.fontWeight.normal,
     userSelect: "none",
   },
@@ -1791,8 +1792,8 @@ const styles = StyleSheet.create((theme) => ({
     right: 0,
     bottom: 0,
     width: 48,
-    borderTopRightRadius: theme.borderRadius.md,
-    borderBottomRightRadius: theme.borderRadius.md,
+    borderTopRightRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
+    borderBottomRightRadius: theme.chrome.tabRadius ?? theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,

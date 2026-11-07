@@ -323,6 +323,7 @@ function monoChrome(
     sectionLabelColor: ink(MONO_FILL.sectionLabel),
     tabHeight: 30,
     tabRadius: 6,
+    tabLabelSize: 13,
     iconButtonSize: 24,
     floatingRadius: 12,
     floatingFill: dark ? ink(MONO_FILL.floating) : base,

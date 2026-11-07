@@ -696,6 +696,7 @@ export interface ChromeTokens {
   sectionLabelColor: string | null;
   tabHeight: number | null;
   tabRadius: number | null;
+  tabLabelSize: number | null;
   iconButtonSize: number | null;
   floatingRadius: number | null;
   floatingFill: string | null;
@@ -739,6 +740,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   sectionLabelColor: null,
   tabHeight: null,
   tabRadius: null,
+  tabLabelSize: null,
   iconButtonSize: null,
   floatingRadius: null,
   floatingFill: null,
