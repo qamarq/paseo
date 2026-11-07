@@ -51,6 +51,8 @@ export interface NativePaints {
   deletion: SkPaint;
   additionBackground: SkPaint;
   deletionBackground: SkPaint;
+  additionGutter: SkPaint;
+  deletionGutter: SkPaint;
   headerSurface: SkPaint;
   headerBorder: SkPaint;
   statusSuccess: SkPaint;
@@ -70,6 +72,8 @@ export function createNativePaints(palette: DiffPalette): NativePaints {
     deletion: paint(palette.deletion),
     additionBackground: paint(palette.additionBackground),
     deletionBackground: paint(palette.deletionBackground),
+    additionGutter: paint(palette.additionGutter),
+    deletionGutter: paint(palette.deletionGutter),
     headerSurface: paint(palette.headerSurface),
     headerBorder: paint(palette.headerBorder),
     statusSuccess: paint(palette.statusSuccess),
@@ -467,6 +471,12 @@ function paintsNativeContentCell(
   return input.contentCell === (cellIndex === 0 ? "left" : "right");
 }
 
+function nativeGutterTint(cell: DiffCell, paints: NativePaints): SkPaint | null {
+  if (cell.type === "add") return paints.additionGutter;
+  if (cell.type === "remove") return paints.deletionGutter;
+  return null;
+}
+
 function paintNativeFixedCell(input: {
   input: PaintNativeRangeInput;
   row: DiffLineRow;
@@ -494,6 +504,18 @@ function paintNativeFixedCell(input: {
     reviewBackgroundPaint(input.input.paints.surface),
   );
   if (!input.cell) return;
+  const gutterTint = nativeGutterTint(input.cell, input.input.paints);
+  if (gutterTint) {
+    input.input.canvas.drawRect(
+      Skia.XYWHRect(
+        input.columnX,
+        input.y,
+        input.file.gutterWidth,
+        reviewDividerHeight(input.row.height),
+      ),
+      gutterTint,
+    );
+  }
   input.input.canvas.drawRect(
     Skia.XYWHRect(
       input.columnX + input.file.gutterWidth,

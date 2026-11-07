@@ -180,6 +180,54 @@ describe("web diff text shaping", () => {
     expect(fills).toContainEqual({ color: "border", x: 20, y: 0, width: 1, height: 58 });
   });
 
+  it("tints the line-number gutter of an added line over its line fill", () => {
+    const fills: Array<{ color: string; x: number; y: number; width: number; height: number }> = [];
+    let fillStyle = "";
+    const context = {
+      setTransform() {},
+      clearRect() {},
+      fillRect(x: number, y: number, width: number, height: number) {
+        fills.push({ color: fillStyle, x, y, width, height });
+      },
+      save() {},
+      restore() {},
+      beginPath() {},
+      rect() {},
+      clip() {},
+      fillText() {},
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string | CanvasGradient | CanvasPattern) {
+        fillStyle = String(value);
+      },
+      globalAlpha: 1,
+      font: "",
+      textBaseline: "alphabetic",
+    } as unknown as CanvasRenderingContext2D;
+
+    paintWebViewport({
+      context,
+      model,
+      palette: { ...palette, additionGutter: "green-gutter" },
+      typography: { family: "monospace", size: 12, lineHeight: 18 },
+      headerTypography,
+      measureText: { measure: () => 0 },
+      scrollTop: 0,
+      viewportWidth: 200,
+      viewportHeight: 100,
+      horizontalOffsets: new Map(),
+      selection: null,
+      activeHeaderPath: null,
+      devicePixelRatio: 1,
+    });
+
+    const lineFill = fills.findIndex((fill) => fill.color === "green-bg");
+    const gutterFill = fills.findIndex((fill) => fill.color === "green-gutter");
+    expect(fills[gutterFill]).toEqual({ color: "green-gutter", x: 0, y: 0, width: 20, height: 18 });
+    expect(gutterFill).toBeGreaterThan(lineFill);
+  });
+
   it("paints every expanded file body's bottom border", () => {
     const fills: Array<{ color: string; x: number; y: number; width: number; height: number }> = [];
     let fillStyle = "";
@@ -455,6 +503,8 @@ const palette: DiffPalette = {
   deletion: "red",
   additionBackground: "green-bg",
   deletionBackground: "red-bg",
+  additionGutter: "transparent",
+  deletionGutter: "transparent",
   emptyBackground: "empty",
   selection: "selection",
   headerActiveSurface: "active-header",

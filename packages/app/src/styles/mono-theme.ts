@@ -87,6 +87,12 @@ const MONO_DIFF_BACKGROUND_ALPHA: Record<MonoDiffPalette, number> = {
   highContrast: 0.28,
 };
 
+const MONO_DIFF_GUTTER_ALPHA: Record<MonoDiffPalette, number> = {
+  default: 0.25,
+  colorblind: 0.25,
+  highContrast: 0.45,
+};
+
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
 const TRANSPARENT_TERMINAL = "rgba(0, 0, 0, 0)";
 const USER_ACCENT_BUBBLE_STRENGTH = 0.24;
@@ -217,13 +223,22 @@ function resolvePrimary(
   return { primary: toHex(content), primaryForeground: toHex(background) };
 }
 
-function diffLineColors(diff: MonoDiffColors, alpha: number) {
-  const tint = (hex: string) => toRgba(parseHexColor(hex) ?? [0, 0, 0], alpha);
+// The gutter overlay lands on the line fill, so its alpha composes up to MonoCode's gutter strength.
+function gutterOverlayAlpha(line: number, gutter: number): number {
+  return Math.round((1 - (1 - gutter) / (1 - line)) * 1000) / 1000;
+}
+
+function diffLineColors(diff: MonoDiffColors, palette: MonoDiffPalette) {
+  const alpha = MONO_DIFF_BACKGROUND_ALPHA[palette];
+  const gutter = gutterOverlayAlpha(alpha, MONO_DIFF_GUTTER_ALPHA[palette]);
+  const tint = (hex: string, value: number) => toRgba(parseHexColor(hex) ?? [0, 0, 0], value);
   return {
     diffAdditionForeground: diff.additionForeground,
     diffDeletionForeground: diff.deletionForeground,
-    diffAdditionBackground: tint(diff.addition),
-    diffDeletionBackground: tint(diff.deletion),
+    diffAdditionBackground: tint(diff.addition, alpha),
+    diffDeletionBackground: tint(diff.deletion, alpha),
+    diffAdditionGutter: tint(diff.addition, gutter),
+    diffDeletionGutter: tint(diff.deletion, gutter),
   };
 }
 
@@ -400,7 +415,7 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     userBubbleBorder: accent ? toRgba(accent, USER_ACCENT_BORDER_ALPHA) : ink("userBubble"),
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
-    ...diffLineColors(diff, MONO_DIFF_BACKGROUND_ALPHA[input.diffPalette]),
+    ...diffLineColors(diff, input.diffPalette),
     ...glassLayers(glass, tint),
   };
   const chrome = monoChrome(scheme, glass, content, background);
