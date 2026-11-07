@@ -641,7 +641,7 @@ function MobileSidebar({
             {navRows}
           </ScrollView>
         )}
-        <SidebarSeparator />
+        <SidebarSeparator nav />
 
         <SidebarViewSlot dismiss={handleWorkspacePress}>
           {isInitialLoad && !hasActiveHostFilter ? (
@@ -931,7 +931,7 @@ const styles = StyleSheet.create((theme) => ({
     gap: 2,
     paddingBottom: theme.spacing[1.5],
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: theme.chrome.sidebarNavDivider ?? theme.colors.border,
   },
   sidebarHeaderGroupBelowChrome: {
     paddingTop: 0,

@@ -336,6 +336,7 @@ function monoChrome(
     searchFieldBorder: ink(MONO_FILL.searchFieldBorder),
     sectionLabelSize: 11,
     sectionLabelColor: ink(MONO_FILL.sectionLabel),
+    sidebarNavDivider: "transparent",
     tabHeight: 30,
     tabRadius: 6,
     tabLabelSize: 13,
@@ -357,6 +358,7 @@ function monoChrome(
     composerBorder: ink(MONO_FILL.composerBorder),
     composerBlur: dark ? COMPOSER_BLUR : 0,
     sendButtonRadius: 6,
+    secondaryButtonFill: ink(MONO_FILL.pill),
     pillFill: ink(MONO_FILL.pill),
     pillHoverFill: ink(MONO_FILL.pillHover),
     pillRadius: 6,
@@ -404,6 +406,13 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
   const overrides = {
     surfaceSidebarHover: glass ? toRgba(content, MONO_FILL.rowHover) : ink("rowHover"),
     surfaceSidebarSelected: glass ? toRgba(content, MONO_FILL.rowSelected) : ink("rowSelected"),
+    // An opaque hairline reads as a dark seam over glass; a translucent one stays a hairline.
+    ...(glass
+      ? {
+          border: toRgba(content, INK.dark.stroke),
+          borderAccent: toRgba(content, INK.dark.strongStroke),
+        }
+      : {}),
     surfaceWorkspace: tint.surface0,
     interactionHighlight: toRgba(content, INK[scheme].interaction),
     ...primary,

@@ -698,6 +698,8 @@ export interface ChromeTokens {
   searchFieldBorder: string | null;
   sectionLabelSize: number | null;
   sectionLabelColor: string | null;
+  /** The line under the sidebar's navigation rows. */
+  sidebarNavDivider: string | null;
   tabHeight: number | null;
   tabRadius: number | null;
   tabLabelSize: number | null;
@@ -720,6 +722,7 @@ export interface ChromeTokens {
   composerBorder: string | null;
   composerBlur: number;
   sendButtonRadius: number | null;
+  secondaryButtonFill: string | null;
   /** Composer toolbar pickers (model, mode). */
   pillFill: string | null;
   pillHoverFill: string | null;
@@ -743,6 +746,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   searchFieldBorder: null,
   sectionLabelSize: null,
   sectionLabelColor: null,
+  sidebarNavDivider: null,
   tabHeight: null,
   tabRadius: null,
   tabLabelSize: null,
@@ -764,6 +768,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   composerBorder: null,
   composerBlur: 0,
   sendButtonRadius: null,
+  secondaryButtonFill: null,
   pillFill: null,
   pillHoverFill: null,
   pillRadius: null,
