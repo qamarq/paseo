@@ -244,6 +244,14 @@ describe("buildMonoTheme", () => {
     expect(colors.terminal.background).toBe("rgba(0, 0, 0, 0)");
   });
 
+  it("draws hairlines translucent under glass so they do not read as dark seams", () => {
+    const glassy = buildMonoTheme(input({ glass: { mainPaneGlass: true } })).colors;
+
+    expect(glassy.border).toBe("rgba(235, 235, 235, 0.07)");
+    expect(glassy.borderAccent).toBe("rgba(235, 235, 235, 0.1)");
+    expect(buildMonoTheme(input()).colors.border).toMatch(OPAQUE_HEX);
+  });
+
   it("keeps the main pane fill and terminal opaque when main pane glass is off", () => {
     const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
 

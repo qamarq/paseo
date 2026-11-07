@@ -111,8 +111,8 @@ const styles = StyleSheet.create((theme) => {
       borderColor: theme.colors.actionPrimary,
     },
     secondary: {
-      backgroundColor: theme.colors.surface3,
-      borderColor: theme.colors.surface3,
+      backgroundColor: theme.chrome.secondaryButtonFill ?? theme.colors.surface3,
+      borderColor: theme.chrome.secondaryButtonFill ?? theme.colors.surface3,
     },
     outline: {
       backgroundColor: "transparent",
