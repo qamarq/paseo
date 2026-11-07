@@ -5,6 +5,11 @@ import path from "node:path";
 import { z } from "zod";
 
 import type { AppReleaseChannel } from "../features/auto-updater.js";
+import {
+  DEFAULT_WINDOW_GLASS_APPEARANCE,
+  WINDOW_GLASS_TINT_PATTERN,
+  type WindowGlassAppearance,
+} from "../window/window-glass.js";
 
 export interface DesktopSettings {
   releaseChannel: AppReleaseChannel;
@@ -27,6 +32,8 @@ export interface DesktopSettingsStore {
   get(): Promise<DesktopSettings>;
   patch(patch: unknown): Promise<DesktopSettings>;
   migrateLegacyRendererSettings(legacySettings: unknown): Promise<DesktopSettings>;
+  getWindowAppearance(): Promise<WindowGlassAppearance>;
+  saveWindowAppearance(appearance: WindowGlassAppearance): Promise<void>;
 }
 
 export const DEFAULT_DESKTOP_SETTINGS: DesktopSettings = {
@@ -75,11 +82,28 @@ const MigrationsSchema = z
     daemonStopOnQuitDefaultApplied: false,
   }));
 
+const WindowAppearanceSchema = z
+  .looseObject({
+    glass: z.boolean().catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glass),
+    backgroundColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .nullable()
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.backgroundColor),
+    glassTint: z
+      .string()
+      .regex(WINDOW_GLASS_TINT_PATTERN)
+      .nullable()
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glassTint),
+  })
+  .catch(() => ({ ...DEFAULT_WINDOW_GLASS_APPEARANCE }));
+
 const PersistedDocumentSchema = z
   .looseObject({
     version: z.literal(1).catch(1),
     settings: DesktopSettingsSchema,
     migrations: MigrationsSchema,
+    windowAppearance: WindowAppearanceSchema,
   })
   .catch(() => buildDefaultDocument());
 
@@ -119,6 +143,7 @@ function buildDefaultDocument(): PersistedDesktopSettingsDocument {
       legacyRendererSettingsImported: false,
       daemonStopOnQuitDefaultApplied: true,
     },
+    windowAppearance: { ...DEFAULT_WINDOW_GLASS_APPEARANCE },
   };
 }
 
@@ -320,6 +345,23 @@ export function createDesktopSettingsStore({
         },
       });
       return toDesktopSettings(next);
+    },
+
+    async getWindowAppearance(): Promise<WindowGlassAppearance> {
+      try {
+        const { glass, backgroundColor, glassTint } = (await loadDocument()).windowAppearance;
+        return { glass, backgroundColor, glassTint };
+      } catch {
+        return { ...DEFAULT_WINDOW_GLASS_APPEARANCE };
+      }
+    },
+
+    async saveWindowAppearance(appearance: WindowGlassAppearance): Promise<void> {
+      const current = await loadDocument();
+      await persistDocument({
+        ...current,
+        windowAppearance: WindowAppearanceSchema.parse(appearance),
+      });
     },
   };
 }

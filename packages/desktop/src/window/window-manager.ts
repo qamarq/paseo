@@ -12,6 +12,7 @@ import {
 
 import type { WindowState, WindowStateStore } from "../settings/window-state.js";
 import type { DesktopWindowChromeMode } from "./chrome.js";
+import { WINDOW_GLASS_TINT_PATTERN, type WindowGlassController } from "./window-glass.js";
 
 const WINDOW_STATE_SAVE_DEBOUNCE_MS = 400;
 const MAC_TRAFFIC_LIGHT_POSITION = { x: 16, y: 14 } as const;
@@ -29,6 +30,8 @@ export type WindowTheme = "light" | "dark";
 export interface WindowChromeUpdate {
   backgroundColor?: string;
   trafficLightOffsetY?: number;
+  glass?: boolean;
+  glassTint?: string;
 }
 
 export function readWindowTheme(input: unknown): WindowTheme | null {
@@ -112,6 +115,10 @@ function readTrafficLightOffsetY(input: unknown): number | null {
   return Math.abs(input) <= MAX_TRAFFIC_LIGHT_OFFSET_Y ? input : null;
 }
 
+function readGlassTint(input: unknown): string | null {
+  return typeof input === "string" && WINDOW_GLASS_TINT_PATTERN.test(input) ? input : null;
+}
+
 export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | null {
   if (!input || typeof input !== "object") {
     return null;
@@ -120,14 +127,23 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
   const candidate = input as Record<string, unknown>;
   const backgroundColor = readOverlayColor(candidate.backgroundColor);
   const trafficLightOffsetY = readTrafficLightOffsetY(candidate.trafficLightOffsetY);
+  const glass = typeof candidate.glass === "boolean" ? candidate.glass : null;
+  const glassTint = readGlassTint(candidate.glassTint);
 
-  if (backgroundColor === null && trafficLightOffsetY === null) {
+  if (
+    backgroundColor === null &&
+    trafficLightOffsetY === null &&
+    glass === null &&
+    glassTint === null
+  ) {
     return null;
   }
 
   return {
     ...(backgroundColor !== null ? { backgroundColor } : {}),
     ...(trafficLightOffsetY !== null ? { trafficLightOffsetY } : {}),
+    ...(glass !== null ? { glass } : {}),
+    ...(glassTint !== null ? { glassTint } : {}),
   };
 }
 
@@ -145,7 +161,10 @@ export function applyMacWindowControlsUpdate(input: {
   });
 }
 
-export function registerWindowManager(input: { mode: DesktopWindowChromeMode }): void {
+export function registerWindowManager(input: {
+  mode: DesktopWindowChromeMode;
+  windowGlass: WindowGlassController;
+}): void {
   ipcMain.handle("paseo:window:minimize", (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();
   });
@@ -204,9 +223,7 @@ export function registerWindowManager(input: { mode: DesktopWindowChromeMode }):
       return;
     }
 
-    if (nextUpdate.backgroundColor) {
-      win.setBackgroundColor(nextUpdate.backgroundColor);
-    }
+    input.windowGlass.apply(win, nextUpdate);
 
     if (input.mode === "native-mac") {
       applyMacWindowControlsUpdate({ win, update: nextUpdate });
