@@ -3,7 +3,7 @@ import { Text, View, type ViewStyle } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { CircleAlert, Folder, FolderGit2, Monitor } from "lucide-react-native";
 import { ProjectStatusIndicator } from "@/components/sidebar/project-leading-visual";
-import type { SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
+import { knockoutColor, type SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
 import {
   WorkspaceMetaRow,
   type WorkspaceServiceSummary,
@@ -554,7 +554,7 @@ const styles = StyleSheet.create((theme) => ({
   workspaceBranchText: {
     color: theme.colors.foreground,
     fontSize: theme.fontSize.base,
-    fontWeight: "400",
+    fontWeight: theme.chrome.rowLabelWeight ?? "400",
     lineHeight: TITLE_LINE_HEIGHT,
     opacity: 0.76,
     flex: 1,
@@ -568,18 +568,18 @@ const styles = StyleSheet.create((theme) => ({
   },
   statusDotNeedsInput: {
     backgroundColor: getStatusDotColor({ theme, bucket: "needs_input" }) ?? undefined,
-    borderColor: theme.colors.surface0,
+    borderColor: knockoutColor(theme, "surface0"),
   },
   statusDotFailed: {
     backgroundColor: getStatusDotColor({ theme, bucket: "failed" }) ?? undefined,
-    borderColor: theme.colors.surface0,
+    borderColor: knockoutColor(theme, "surface0"),
   },
   statusDotRunning: {
     backgroundColor: getStatusDotColor({ theme, bucket: "running" }) ?? undefined,
-    borderColor: theme.colors.surface0,
+    borderColor: knockoutColor(theme, "surface0"),
   },
   statusDotAttention: {
     backgroundColor: getStatusDotColor({ theme, bucket: "attention" }) ?? undefined,
-    borderColor: theme.colors.surface0,
+    borderColor: knockoutColor(theme, "surface0"),
   },
 }));

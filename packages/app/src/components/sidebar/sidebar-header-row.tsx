@@ -4,7 +4,8 @@ import { StyleSheet } from "react-native-unistyles";
 import { HEADER_INNER_HEIGHT, HEADER_INNER_HEIGHT_MOBILE } from "@/constants/layout";
 import { DensityIcon } from "@/components/ui/density-icon";
 import { Shortcut } from "@/components/ui/shortcut";
-import { density, densityIconBox } from "@/styles/density";
+import { density, densityIconBox, withChromeSize } from "@/styles/density";
+import { surfaceFill } from "@/styles/surface-backdrop";
 import type { ShortcutKey } from "@/utils/format-shortcut";
 
 type SidebarHeaderRowVariant = "header" | "compact" | "inline";
@@ -36,6 +37,8 @@ interface SidebarHeaderRowProps {
    */
   trailing?: ReactNode;
   rowRef?: Ref<View>;
+  /** Opens a search: drawn as a field, with its shortcut always shown, where the theme has one. */
+  field?: boolean;
 }
 
 export function SidebarHeaderRow({
@@ -50,6 +53,7 @@ export function SidebarHeaderRow({
   shortcutKeys = null,
   trailing,
   rowRef,
+  field = false,
 }: SidebarHeaderRowProps) {
   const [isHovered, setIsHovered] = useState(false);
   const handlePointerEnter = useCallback(() => setIsHovered(true), []);
@@ -61,15 +65,17 @@ export function SidebarHeaderRow({
   const isHighlighted = isHovered || isActive;
   const iconSize = variant === "header" ? "md" : "sm";
 
-  let right = trailing ?? null;
-  if (right === null && shortcutKeys && isHovered) {
-    right = <Shortcut chord={shortcutKeys} />;
-  }
+  const right = trailing ?? renderShortcut({ shortcutKeys, isHovered, field });
 
   return (
     <View ref={rowRef} collapsable={false} style={getContainerStyle(variant)}>
       <View
-        style={[styles.row, isHighlighted && styles.rowHighlighted, isPressed && styles.rowPressed]}
+        style={[
+          styles.row,
+          field && styles.rowField,
+          isHighlighted && styles.rowHighlighted,
+          isPressed && styles.rowPressed,
+        ]}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
       >
@@ -114,6 +120,25 @@ export function SidebarHeaderRow({
   );
 }
 
+function renderShortcut({
+  shortcutKeys,
+  isHovered,
+  field,
+}: {
+  shortcutKeys: ShortcutKey[][] | null;
+  isHovered: boolean;
+  field: boolean;
+}): ReactNode {
+  if (!shortcutKeys) return null;
+  if (isHovered) return <Shortcut chord={shortcutKeys} />;
+  if (!field) return null;
+  return (
+    <View style={styles.restingShortcut}>
+      <Shortcut chord={shortcutKeys} />
+    </View>
+  );
+}
+
 const SELECTED_STATE = { selected: true } as const;
 
 const styles = StyleSheet.create((theme) => ({
@@ -143,15 +168,21 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     // Same row geometry as the settings sidebar items. Shorter than the header
     // strip so the hover highlight clears the strip's bottom separator.
-    minHeight: density.tightRowHeight,
-    borderRadius: theme.borderRadius.lg,
+    minHeight: withChromeSize(density.tightRowHeight, theme.chrome.navRowHeight),
+    borderRadius: theme.chrome.rowRadius ?? theme.borderRadius.lg,
+  },
+  // A row that opens a search reads as a field where the theme draws one.
+  rowField: {
+    borderWidth: theme.chrome.searchFieldBorder ? 1 : 0,
+    borderColor: theme.chrome.searchFieldBorder ?? "transparent",
+    ...(theme.chrome.searchFieldBorder ? theme.shadow.sm : {}),
   },
   rowHighlighted: {
     backgroundColor: theme.colors.surfaceSidebarHover,
   },
   // The workspace rows' pressed fill.
   rowPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   button: {
     flex: 1,
@@ -159,7 +190,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing[2],
-    minHeight: density.tightRowHeight,
+    minHeight: withChromeSize(density.tightRowHeight, theme.chrome.navRowHeight),
     paddingVertical: theme.spacing[1],
     // Match the project rows' inner padding so the icons align on one vertical
     // edge with the list below.
@@ -170,7 +201,7 @@ const styles = StyleSheet.create((theme) => ({
   label: {
     flexShrink: 1,
     fontSize: theme.fontSize.base,
-    fontWeight: theme.fontWeight.normal,
+    fontWeight: theme.chrome.rowLabelWeight ?? theme.fontWeight.normal,
     color: theme.colors.foregroundMuted,
   },
   labelHighlighted: {
@@ -181,6 +212,11 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     gap: theme.spacing[1],
     paddingRight: theme.spacing[2],
+  },
+  // A field keeps its shortcut on show where the theme draws the field; otherwise it is hover-only.
+  restingShortcut: {
+    display: theme.chrome.searchFieldBorder ? "flex" : "none",
+    opacity: 0.6,
   },
 }));
 

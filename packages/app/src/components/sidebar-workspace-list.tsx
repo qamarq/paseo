@@ -2697,7 +2697,7 @@ const styles = StyleSheet.create((theme) => ({
   projectTitle: {
     color: theme.colors.foregroundMuted,
     fontSize: theme.fontSize.base,
-    fontWeight: "400",
+    fontWeight: theme.chrome.rowLabelWeight ?? "400",
     minWidth: 0,
     flexShrink: 1,
   },

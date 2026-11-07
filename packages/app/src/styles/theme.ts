@@ -689,6 +689,9 @@ export interface ChromeTokens {
   /** Fills for chips and rows named by the surface they would paint, e.g. translucent under glass. */
   fills: Partial<Record<SurfaceBackdrop, string>> | null;
   rowRadius: number | null;
+  navRowHeight: number | null;
+  rowLabelWeight: "500" | null;
+  searchFieldBorder: string | null;
   sectionLabelSize: number | null;
   sectionLabelColor: string | null;
   tabHeight: number | null;
@@ -721,6 +724,9 @@ export const DEFAULT_CHROME: ChromeTokens = {
   glass: false,
   fills: null,
   rowRadius: null,
+  navRowHeight: null,
+  rowLabelWeight: null,
+  searchFieldBorder: null,
   sectionLabelSize: null,
   sectionLabelColor: null,
   tabHeight: null,
