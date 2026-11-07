@@ -68,7 +68,6 @@ export function createMarkdownStyles(
           caution: { color: theme.colors.statusDanger, backgroundColor: theme.colors.surface2 },
         },
       },
-      // Prose sits below full ink on the desktop Mono look; emphasis keeps full ink.
       ...(theme.chrome.proseColor && !muted
         ? { strong: { color: theme.colors.foreground }, em: { color: theme.colors.foreground } }
         : {}),

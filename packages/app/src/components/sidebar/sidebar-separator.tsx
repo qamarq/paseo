@@ -11,7 +11,6 @@ export function SidebarSeparator({
   nav = false,
 }: {
   testID?: string;
-  /** The line under the navigation rows, which the desktop Mono look leaves out. */
   nav?: boolean;
 } = {}) {
   return <View style={[styles.line, nav && styles.navLine]} testID={testID} />;
