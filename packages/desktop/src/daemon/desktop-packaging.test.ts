@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { DESKTOP_IDENTITY } from "../identity.js";
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -24,19 +25,28 @@ function createFakeMacBundle(options: { includeHelper: boolean }): {
   root: string;
   shimPath: string;
 } {
+  const name = DESKTOP_IDENTITY.productName;
   const root = mkdtempSync(join(tmpdir(), "paseo-cli-shim-test-"));
-  const appPath = join(root, "Paseo.app");
+  const appPath = join(root, `${name}.app`);
   const contentsPath = join(appPath, "Contents");
   const resourcesPath = join(contentsPath, "Resources");
   const shimPath = join(resourcesPath, "bin", "paseo");
-  const mainPath = join(contentsPath, "MacOS", "Paseo");
+  const mainPath = join(contentsPath, "MacOS", name);
   const helperPath = join(
     contentsPath,
     "Frameworks",
-    "Paseo Helper.app",
+    `${name} Helper.app`,
     "Contents",
     "MacOS",
-    "Paseo Helper",
+    `${name} Helper`,
+  );
+  const gpuHelperPath = join(
+    contentsPath,
+    "Frameworks",
+    `${name} Helper (GPU).app`,
+    "Contents",
+    "MacOS",
+    `${name} Helper (GPU)`,
   );
 
   mkdirSync(dirname(shimPath), { recursive: true });
@@ -45,6 +55,8 @@ function createFakeMacBundle(options: { includeHelper: boolean }): {
   chmodSync(shimPath, 0o755);
 
   writeExecutable(mainPath, "#!/bin/sh\necho main-executable\n");
+  mkdirSync(dirname(gpuHelperPath), { recursive: true });
+  writeExecutable(gpuHelperPath, "#!/bin/sh\necho gpu-helper\n");
 
   if (options.includeHelper) {
     mkdirSync(dirname(helperPath), { recursive: true });
@@ -54,6 +66,7 @@ function createFakeMacBundle(options: { includeHelper: boolean }): {
         "#!/bin/sh",
         'printf "helper env=%s/%s cli=%s\\n" "$ELECTRON_RUN_AS_NODE" "$PASEO_NODE_ENV" "$PASEO_CLI"',
         'printf "args=%s\\n" "$*"',
+        'printf "home=%s\\n" "$PASEO_HOME"',
         "",
       ].join("\n"),
     );
@@ -119,11 +132,12 @@ describe("desktop packaging", () => {
     expect(runtimeTrace).toContain('"packages/server/dist/server/skills/**"');
   });
 
-  it("registers Paseo agent links with the operating system", () => {
+  it("registers its own agent link scheme with the operating system", () => {
     const config = readFileSync(join(packageRoot, "electron-builder.yml"), "utf8");
 
-    expect(config).toContain("name: Paseo agent link");
-    expect(config).toContain("- paseo");
+    expect(config).toContain(`name: ${DESKTOP_IDENTITY.productName} agent link`);
+    expect(config).toContain(`- ${DESKTOP_IDENTITY.deepLinkScheme}\n`);
+    expect(config).not.toMatch(/^\s+- paseo$/m);
   });
 
   // electron-builder packs production dependencies declared in package.json into
@@ -157,6 +171,29 @@ describe("desktop packaging", () => {
       expect(result.stdout).toContain("@getpaseo/cli/dist/index.js");
       expect(result.stdout).toContain("--version");
       expect(result.stdout).not.toContain("main-executable");
+      expect(result.stdout).not.toContain("gpu-helper");
+    } finally {
+      rmSync(bundle.root, { recursive: true, force: true });
+    }
+  });
+
+  it("points the packaged CLI at its own home instead of the official Paseo home", () => {
+    if (process.platform === "win32") return;
+
+    const bundle = createFakeMacBundle({ includeHelper: true });
+    const fakeHome = join(bundle.root, "home");
+    const ownHome = DESKTOP_IDENTITY.paseoHome.replace(/^~/, fakeHome);
+    const runWithHome = (paseoHome: string | undefined) => {
+      const env: NodeJS.ProcessEnv = { ...process.env, HOME: fakeHome };
+      delete env.PASEO_HOME;
+      if (paseoHome !== undefined) env.PASEO_HOME = paseoHome;
+      return spawnSync(bundle.shimPath, ["daemon", "status"], { encoding: "utf8", env }).stdout;
+    };
+    try {
+      expect(runWithHome(undefined)).toContain(`home=${ownHome}\n`);
+      expect(runWithHome("~/.paseo")).toContain(`home=${ownHome}\n`);
+      expect(runWithHome(join(fakeHome, ".paseo"))).toContain(`home=${ownHome}\n`);
+      expect(runWithHome("/tmp/paseo-glass-custom")).toContain("home=/tmp/paseo-glass-custom\n");
     } finally {
       rmSync(bundle.root, { recursive: true, force: true });
     }

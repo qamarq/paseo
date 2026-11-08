@@ -3,9 +3,10 @@ import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { app } from "electron";
+import { DESKTOP_IDENTITY } from "../identity.js";
 import { tailFile } from "./tail-file.js";
 
-const SHIPIT_DIRECTORY_NAME = "sh.paseo.desktop.ShipIt";
+const SHIPIT_DIRECTORY_NAME = `${DESKTOP_IDENTITY.appId}.ShipIt`;
 const SHIPIT_LOG_TAIL_LINES = 100;
 
 export interface DesktopUpdaterDiagnosticFile {

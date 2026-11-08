@@ -20,8 +20,16 @@ done
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
 RESOURCES_DIR=$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)
 
+# Same rule as resolveDesktopPaseoHome in src/identity.ts: never target the official app's home.
+case "${PASEO_HOME:-}" in
+  "" | "~/.paseo" | "~/.paseo/" | "${HOME}/.paseo" | "${HOME}/.paseo/") PASEO_HOME="${HOME}/.paseo-glass" ;;
+esac
+export PASEO_HOME
+
 MACOS_DIR="${RESOURCES_DIR}/../MacOS"
-MACOS_HELPER_EXECUTABLE="${RESOURCES_DIR}/../Frameworks/Paseo Helper.app/Contents/MacOS/Paseo Helper"
+for MACOS_HELPER_APP in "${RESOURCES_DIR}/../Frameworks/"*" Helper.app"; do break; done
+MACOS_HELPER_NAME=$(basename "${MACOS_HELPER_APP}" .app)
+MACOS_HELPER_EXECUTABLE="${MACOS_HELPER_APP}/Contents/MacOS/${MACOS_HELPER_NAME}"
 
 # macOS CLI invocations must enter Electron through the agent Helper. Launching
 # the main APPL executable here makes later daemon supervision inherit app UI

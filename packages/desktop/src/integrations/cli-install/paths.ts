@@ -3,14 +3,15 @@ import { createRequire } from "node:module";
 import { resolveCliShimPath } from "./path.js";
 import os from "node:os";
 import { app } from "electron";
+import { DESKTOP_IDENTITY } from "../../identity.js";
 
 export function getLocalBinDir(): string {
   return path.join(os.homedir(), ".local", "bin");
 }
 
 export function getCliTargetPath(): string {
-  const filename = process.platform === "win32" ? "paseo.cmd" : "paseo";
-  return path.join(getLocalBinDir(), filename);
+  const name = DESKTOP_IDENTITY.cliName;
+  return path.join(getLocalBinDir(), process.platform === "win32" ? `${name}.cmd` : name);
 }
 
 export function getBundledCliShimPath(): string {

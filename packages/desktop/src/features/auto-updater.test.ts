@@ -36,6 +36,10 @@ vi.mock("electron-updater", () => ({
   autoUpdater: autoUpdaterMock,
 }));
 
+const { identityMock } = vi.hoisted(() => ({ identityMock: { updatesEnabled: true } }));
+
+vi.mock("../identity.js", () => ({ DESKTOP_IDENTITY: identityMock }));
+
 import {
   bucketFromStagingUserId,
   checkForAppUpdate,
@@ -47,6 +51,26 @@ import {
 } from "./auto-updater";
 
 describe("checkForAppUpdate", () => {
+  it("never contacts the update feed when the shipped identity disables updates", async () => {
+    const shipped = await vi.importActual<typeof import("../identity.js")>("../identity.js");
+    identityMock.updatesEnabled = shipped.DESKTOP_IDENTITY.updatesEnabled;
+    autoUpdaterMock.checkForUpdates.mockClear();
+    try {
+      const result = await checkForAppUpdate({
+        currentVersion: "1.2.3",
+        releaseChannel: "stable",
+        intent: "manual",
+      });
+
+      expect(shipped.DESKTOP_IDENTITY.updatesEnabled).toBe(false);
+      expect(result.hasUpdate).toBe(false);
+      expect(result.errorMessage).toBe("Updates are disabled in this build.");
+      expect(autoUpdaterMock.checkForUpdates).not.toHaveBeenCalled();
+    } finally {
+      identityMock.updatesEnabled = true;
+    }
+  });
+
   it("treats an unpublished channel manifest as an unavailable update", async () => {
     const error = Object.assign(new Error("Cannot find latest-mac.yml"), {
       code: "ERR_UPDATER_CHANNEL_FILE_NOT_FOUND",

@@ -1,8 +1,15 @@
 import { parseAgentDeepLink, type AgentDeepLinkTarget } from "@getpaseo/protocol/agent-deep-link";
+import { DESKTOP_IDENTITY } from "./identity.js";
+
+export function parseDesktopAgentDeepLink(input: string): AgentDeepLinkTarget | null {
+  const prefix = `${DESKTOP_IDENTITY.deepLinkScheme}:`;
+  if (input.slice(0, prefix.length).toLowerCase() !== prefix) return null;
+  return parseAgentDeepLink(`paseo:${input.slice(prefix.length)}`);
+}
 
 export function parseAgentDeepLinkFromArgv(argv: string[]): AgentDeepLinkTarget | null {
   for (const arg of argv) {
-    const target = parseAgentDeepLink(arg);
+    const target = parseDesktopAgentDeepLink(arg);
     if (target) {
       return target;
     }

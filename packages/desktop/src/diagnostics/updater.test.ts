@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { DESKTOP_IDENTITY } from "../identity.js";
 import { collectDesktopUpdaterDiagnostics } from "./updater";
 
 let testDirectory = "";
@@ -17,7 +18,7 @@ afterEach(() => {
 describe("desktop updater diagnostics", () => {
   it("collects the staged version and existing ShipIt evidence", () => {
     testDirectory = mkdtempSync(path.join(tmpdir(), "paseo-updater-diagnostics-"));
-    const shipItDirectory = path.join(testDirectory, "sh.paseo.desktop.ShipIt");
+    const shipItDirectory = path.join(testDirectory, `${DESKTOP_IDENTITY.appId}.ShipIt`);
     const updateBundlePath = path.join(shipItDirectory, "update.test", "Paseo.app");
     mkdirSync(shipItDirectory, { recursive: true });
     writeFileSync(
@@ -55,7 +56,7 @@ describe("desktop updater diagnostics", () => {
 
   it("reports malformed ShipIt state without hiding other evidence", () => {
     testDirectory = mkdtempSync(path.join(tmpdir(), "paseo-updater-diagnostics-"));
-    const shipItDirectory = path.join(testDirectory, "sh.paseo.desktop.ShipIt");
+    const shipItDirectory = path.join(testDirectory, `${DESKTOP_IDENTITY.appId}.ShipIt`);
     mkdirSync(shipItDirectory, { recursive: true });
     writeFileSync(path.join(shipItDirectory, "ShipItState.plist"), "not JSON");
     writeFileSync(path.join(shipItDirectory, "ShipIt_stderr.log"), "installer evidence\n");
@@ -74,7 +75,7 @@ describe("desktop updater diagnostics", () => {
 
   it("reports bundle version lookup failures", () => {
     testDirectory = mkdtempSync(path.join(tmpdir(), "paseo-updater-diagnostics-"));
-    const shipItDirectory = path.join(testDirectory, "sh.paseo.desktop.ShipIt");
+    const shipItDirectory = path.join(testDirectory, `${DESKTOP_IDENTITY.appId}.ShipIt`);
     mkdirSync(shipItDirectory, { recursive: true });
     writeFileSync(
       path.join(shipItDirectory, "ShipItState.plist"),
@@ -96,7 +97,7 @@ describe("desktop updater diagnostics", () => {
 
   it("keeps readable ShipIt evidence when another file cannot be read", () => {
     testDirectory = mkdtempSync(path.join(tmpdir(), "paseo-updater-diagnostics-"));
-    const shipItDirectory = path.join(testDirectory, "sh.paseo.desktop.ShipIt");
+    const shipItDirectory = path.join(testDirectory, `${DESKTOP_IDENTITY.appId}.ShipIt`);
     mkdirSync(path.join(shipItDirectory, "ShipIt_stdout.log"), { recursive: true });
     writeFileSync(path.join(shipItDirectory, "ShipIt_stderr.log"), "installer evidence\n");
 

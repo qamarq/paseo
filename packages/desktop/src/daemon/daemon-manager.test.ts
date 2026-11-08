@@ -108,6 +108,38 @@ describe("daemon-manager commands", () => {
     rmSync(fixtureRoot, { recursive: true, force: true });
   });
 
+  function writeDaemonListen(listen: string): void {
+    mkdirSync(mocks.paseoHome, { recursive: true });
+    writeFileSync(
+      path.join(mocks.paseoHome, "config.json"),
+      JSON.stringify({ version: 1, daemon: { listen } }),
+    );
+  }
+
+  it("refuses to restart a daemon whose config listens on the official Paseo port", async () => {
+    writeDaemonListen("127.0.0.1:6767");
+
+    await expect(createDaemonCommandHandlers().restart_desktop_daemon()).rejects.toThrow(
+      `paseo daemon config set daemon.listen 127.0.0.1:6777 --home ${mocks.paseoHome}`,
+    );
+    expect(mocks.runExternalCliJsonCommand).not.toHaveBeenCalled();
+  });
+
+  it("restarts through the CLI when the config uses its own port", async () => {
+    writeDaemonListen("127.0.0.1:6777");
+    mocks.runExternalCliJsonCommand.mockResolvedValue({});
+
+    await createDaemonCommandHandlers().restart_desktop_daemon();
+
+    expect(mocks.runExternalCliJsonCommand).toHaveBeenCalledWith([
+      "daemon",
+      "restart",
+      "--home",
+      mocks.paseoHome,
+      "--json",
+    ]);
+  });
+
   it("returns the Electron main-process log tail from electron-log", () => {
     writeFileSync(
       mocks.appLogPath,
