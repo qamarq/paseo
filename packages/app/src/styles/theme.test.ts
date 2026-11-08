@@ -107,3 +107,14 @@ describe("Glass layer tokens", () => {
     },
   );
 });
+
+describe("Action, message and diff line tokens", () => {
+  it.each(Object.entries(REGISTERED_THEMES))("keep the built-in colors in %s", (_name, theme) => {
+    expect(theme.colors.actionPrimary).toBe(theme.colors.accent);
+    expect(theme.colors.actionPrimaryForeground).toBe(theme.colors.accentForeground);
+    expect(theme.colors.userBubble).toBe(theme.colors.surface3);
+    expect(theme.colors.userBubbleBorder).toBe(theme.colors.userBubble);
+    expect(theme.colors.diffAdditionForeground).toBe(theme.colors.statusSuccess);
+    expect(theme.colors.diffDeletionForeground).toBe(theme.colors.statusDanger);
+  });
+});

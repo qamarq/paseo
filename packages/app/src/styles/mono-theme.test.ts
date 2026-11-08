@@ -44,6 +44,11 @@ const OPAQUE_TOKENS = [
   "ring",
   "diffAddition",
   "diffDeletion",
+  "actionPrimary",
+  "actionPrimaryForeground",
+  "userBubble",
+  "diffAdditionForeground",
+  "diffDeletionForeground",
   "surfaceWindow",
   "surfaceSidebarGlass",
   "surfacePaneGlass",
@@ -229,6 +234,70 @@ describe("buildMonoTheme", () => {
     const glassy = buildMonoTheme(input({ scheme: "light", glass: { mainPaneGlass: true } }));
 
     expect(glassy).toEqual(buildMonoTheme(input({ scheme: "light" })));
+  });
+});
+
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((offset) => {
+    const channel = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: string, b: string): number {
+  const [light, dark] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+describe("Mono action and message colors", () => {
+  it("fills primary actions with the primary color, never the toggle accent", () => {
+    for (const accentColor of [null, "#ef4444"]) {
+      const { colors } = buildMonoTheme(input({ accentColor }));
+
+      expect(colors.actionPrimary).toBe(colors.primary);
+      expect(colors.actionPrimaryForeground).toBe(colors.primaryForeground);
+      expect(colors.actionPrimary).not.toBe(colors.accent);
+    }
+  });
+
+  it("tints user bubbles with ink by default and with the user accent when set", () => {
+    expect(buildMonoTheme(input()).colors.userBubble).toBe("#252525");
+    expect(buildMonoTheme(input({ accentColor: "#ef4444" })).colors.userBubble).toBe("#451c1c");
+  });
+
+  it("edges accent bubbles with the accent at 30% and leaves the neutral bubble borderless", () => {
+    const neutral = buildMonoTheme(input()).colors;
+    const accent = buildMonoTheme(input({ accentColor: "#ef4444" })).colors;
+
+    expect(neutral.userBubbleBorder).toBe(neutral.userBubble);
+    expect(accent.userBubbleBorder).toBe("rgba(239, 68, 68, 0.3)");
+  });
+
+  it.each([
+    ["default", "rgba(16, 185, 129, 0.15)", "rgba(244, 63, 94, 0.15)"],
+    ["colorblind", "rgba(56, 139, 253, 0.15)", "rgba(219, 109, 40, 0.15)"],
+    ["highContrast", "rgba(88, 166, 255, 0.28)", "rgba(240, 136, 62, 0.28)"],
+  ] as const)("tints %s diff lines with the palette's marker hue", (palette, add, del) => {
+    const { colors } = buildMonoTheme(input({ diffPalette: palette }));
+
+    expect(colors.diffAdditionBackground).toBe(add);
+    expect(colors.diffDeletionBackground).toBe(del);
+    expect(colors.diffAdditionForeground).toBe(colors.diffAddition);
+  });
+
+  it("keeps light muted text readable at 4.5:1 across tints", () => {
+    for (const [hue, saturation] of [
+      [243, 0],
+      [0, 100],
+      [120, 60],
+      [210, 100],
+      [300, 40],
+    ]) {
+      const { colors } = buildMonoTheme(input({ scheme: "light", hue, saturation }));
+
+      expect(contrast(colors.foregroundMuted, colors.surface0)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 

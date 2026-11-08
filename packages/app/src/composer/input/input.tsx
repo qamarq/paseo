@@ -2501,7 +2501,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
     width: TOOLBAR_DISC_SIZE,
     height: TOOLBAR_DISC_SIZE,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.actionPrimary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2510,14 +2510,14 @@ const styles = StyleSheet.create((theme: Theme) => ({
     height: TOOLBAR_DISC_SIZE,
     paddingHorizontal: theme.spacing[3],
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.actionPrimary,
     alignItems: "center",
     justifyContent: "center",
   },
   sendButtonLabel: {
     fontSize: theme.fontSize.base,
     fontWeight: theme.fontWeight.medium,
-    color: theme.colors.accentForeground,
+    color: theme.colors.actionPrimaryForeground,
   },
   iconButtonHovered: {
     backgroundColor: theme.colors.surface2,
@@ -2560,4 +2560,6 @@ const ThemedLoadingSpinner = withUnistyles(LoadingSpinner);
 
 const iconForegroundMapping = (theme: Theme) => ({ color: theme.colors.foreground });
 const iconForegroundMutedMapping = (theme: Theme) => ({ color: theme.colors.foregroundMuted });
-const iconAccentForegroundMapping = (theme: Theme) => ({ color: theme.colors.accentForeground });
+const iconAccentForegroundMapping = (theme: Theme) => ({
+  color: theme.colors.actionPrimaryForeground,
+});

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { isMonoActive, resolveMonoColorScheme, resolveMonoGlass } from "./mono-settings";
+import {
+  DEFAULT_MONO_APPEARANCE,
+  INTERFACE_SCALE_OPTIONS,
+  isMonoActive,
+  MonoAppearanceSchema,
+  nextMonoScheme,
+  readInterfaceScaleStep,
+  resolveMonoColorScheme,
+  resolveMonoGlass,
+  stepInterfaceScale,
+} from "./mono-settings";
 
 describe("resolveMonoColorScheme", () => {
   it.each([
@@ -64,5 +74,50 @@ describe("isMonoActive", () => {
         pluginCatalogsSettled: false,
       }),
     ).toBe(true);
+  });
+});
+
+describe("interface scale", () => {
+  it("snaps stored scales to an offered 10% step", () => {
+    const parse = (interfaceScale: number) =>
+      MonoAppearanceSchema.parse({ ...DEFAULT_MONO_APPEARANCE, interfaceScale }).interfaceScale;
+
+    expect(parse(105)).toBe(110);
+    expect(parse(104)).toBe(100);
+    expect(parse(33)).toBe(50);
+    expect(parse(260)).toBe(200);
+    for (const scale of [105, 133, 199]) expect(INTERFACE_SCALE_OPTIONS).toContain(parse(scale));
+  });
+
+  it("offers 50% to 200% in 10% steps", () => {
+    expect(INTERFACE_SCALE_OPTIONS[0]).toBe(50);
+    expect(INTERFACE_SCALE_OPTIONS.at(-1)).toBe(200);
+    expect(INTERFACE_SCALE_OPTIONS).toHaveLength(16);
+  });
+
+  it("steps by 10% inside the range and resets to 100%", () => {
+    expect(stepInterfaceScale(100, 1)).toBe(110);
+    expect(stepInterfaceScale(100, -1)).toBe(90);
+    expect(stepInterfaceScale(105, 1)).toBe(110);
+    expect(stepInterfaceScale(105, -1)).toBe(100);
+    expect(stepInterfaceScale(200, 1)).toBe(200);
+    expect(stepInterfaceScale(50, -1)).toBe(50);
+    expect(stepInterfaceScale(170, 0)).toBe(100);
+  });
+
+  it("reads only the menu's step payloads", () => {
+    expect(readInterfaceScaleStep({ step: 1 })).toBe(1);
+    expect(readInterfaceScaleStep({ step: 0 })).toBe(0);
+    expect(readInterfaceScaleStep({ step: 2 })).toBeNull();
+    expect(readInterfaceScaleStep("in")).toBeNull();
+    expect(readInterfaceScaleStep(null)).toBeNull();
+  });
+});
+
+describe("nextMonoScheme", () => {
+  it("cycles system, dark and light", () => {
+    expect(nextMonoScheme("system")).toBe("dark");
+    expect(nextMonoScheme("dark")).toBe("light");
+    expect(nextMonoScheme("light")).toBe("system");
   });
 });

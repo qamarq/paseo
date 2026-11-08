@@ -28,11 +28,11 @@ const styles = StyleSheet.create((theme) => ({
   additions: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.normal,
-    color: theme.colors.statusSuccess,
+    color: theme.colors.diffAdditionForeground,
   },
   deletions: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.normal,
-    color: theme.colors.statusDanger,
+    color: theme.colors.diffDeletionForeground,
   },
 }));

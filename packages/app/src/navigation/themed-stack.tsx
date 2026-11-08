@@ -25,6 +25,8 @@ interface ThemedStackBaseProps {
   nestedNavigatorScreens?: readonly string[];
   /** Screens with retained lifetime owners update appearance at their own leaves. */
   screenOwnedAppearance?: readonly string[];
+  /** Screens that follow colour-only changes in place instead of remounting. */
+  inPlaceColorScreens?: readonly string[];
 }
 
 interface ScreenContent {
@@ -38,6 +40,7 @@ function ThemedStackBase({
   screenOptions,
   nestedNavigatorScreens,
   screenOwnedAppearance,
+  inPlaceColorScreens,
 }: ThemedStackBaseProps) {
   const themedScreenOptions = useMemo<NativeStackNavigationOptions>(
     () => ({
@@ -56,9 +59,15 @@ function ThemedStackBase({
         isValidElement(content)
       )
         return content;
-      return <AppearanceStyleBoundary>{content}</AppearanceStyleBoundary>;
+      return (
+        <AppearanceStyleBoundary
+          colorChanges={inPlaceColorScreens?.includes(route.name) ? "inPlace" : "remount"}
+        >
+          {content}
+        </AppearanceStyleBoundary>
+      );
     },
-    [nestedNavigatorScreens, screenOwnedAppearance],
+    [inPlaceColorScreens, nestedNavigatorScreens, screenOwnedAppearance],
   );
   const navigationTheme = useTheme();
   const desktopNavigationTheme = useMemo(
