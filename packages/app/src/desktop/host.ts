@@ -98,6 +98,7 @@ export interface DesktopWindowChromeUpdate {
   trafficLightOffsetY?: number;
   glass?: boolean;
   glassTint?: string;
+  blurRadius?: number;
   zoomFactor?: number;
 }
 

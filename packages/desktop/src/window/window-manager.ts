@@ -13,6 +13,7 @@ import {
 import type { WindowState, WindowStateStore } from "../settings/window-state.js";
 import type { DesktopWindowChromeMode } from "./chrome.js";
 import {
+  WINDOW_BLUR_RADIUS_RANGE,
   WINDOW_GLASS_TINT_PATTERN,
   WINDOW_ZOOM_FACTOR_RANGE,
   type WindowGlassController,
@@ -36,6 +37,7 @@ export interface WindowChromeUpdate {
   trafficLightOffsetY?: number;
   glass?: boolean;
   glassTint?: string;
+  blurRadius?: number;
   zoomFactor?: number;
 }
 
@@ -124,6 +126,12 @@ function readGlassTint(input: unknown): string | null {
   return typeof input === "string" && WINDOW_GLASS_TINT_PATTERN.test(input) ? input : null;
 }
 
+function readBlurRadius(input: unknown): number | null {
+  if (typeof input !== "number" || !Number.isInteger(input)) return null;
+  const { min, max } = WINDOW_BLUR_RADIUS_RANGE;
+  return input >= min && input <= max ? input : null;
+}
+
 function readZoomFactor(input: unknown): number | null {
   if (typeof input !== "number" || !Number.isFinite(input)) return null;
   const { min, max } = WINDOW_ZOOM_FACTOR_RANGE;
@@ -140,6 +148,7 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
   const trafficLightOffsetY = readTrafficLightOffsetY(candidate.trafficLightOffsetY);
   const glass = typeof candidate.glass === "boolean" ? candidate.glass : null;
   const glassTint = readGlassTint(candidate.glassTint);
+  const blurRadius = readBlurRadius(candidate.blurRadius);
   const zoomFactor = readZoomFactor(candidate.zoomFactor);
 
   if (
@@ -147,6 +156,7 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
     trafficLightOffsetY === null &&
     glass === null &&
     glassTint === null &&
+    blurRadius === null &&
     zoomFactor === null
   ) {
     return null;
@@ -157,6 +167,7 @@ export function readWindowChromeUpdate(input: unknown): WindowChromeUpdate | nul
     ...(trafficLightOffsetY !== null ? { trafficLightOffsetY } : {}),
     ...(glass !== null ? { glass } : {}),
     ...(glassTint !== null ? { glassTint } : {}),
+    ...(blurRadius !== null ? { blurRadius } : {}),
     ...(zoomFactor !== null ? { zoomFactor } : {}),
   };
 }
