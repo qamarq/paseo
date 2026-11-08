@@ -317,10 +317,11 @@ describe("buildMonoTheme", () => {
     });
   });
 
-  it("gives every Mono floating surface MonoCode's shadow", () => {
+  it("gives every Mono floating surface MonoCode's shadow and inset menu dividers", () => {
     for (const scheme of ["dark", "light"] as const) {
       expect(buildMonoTheme(input({ scheme })).chrome).toMatchObject({
         floatingShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        menuSeparatorInset: 4,
       });
     }
   });

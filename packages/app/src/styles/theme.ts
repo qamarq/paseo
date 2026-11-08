@@ -705,6 +705,7 @@ export interface ChromeTokens {
   floatingShadow: string | null;
   frostBase: string | null;
   menuItemRadius: number | null;
+  menuSeparatorInset: number | null;
   selectionFill: string | null;
   modalRadius: number | null;
   modalFill: string | null;
@@ -760,6 +761,7 @@ export const DEFAULT_CHROME: ChromeTokens = {
   floatingShadow: null,
   frostBase: null,
   menuItemRadius: null,
+  menuSeparatorInset: null,
   selectionFill: null,
   modalRadius: null,
   modalFill: null,

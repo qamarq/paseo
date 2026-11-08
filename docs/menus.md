@@ -182,8 +182,9 @@ and a column of icons there is decoration competing with the values you actually
   out of it; at the current gap of zero there is nothing to lose, but anything above zero wants that
   wrapper to carry the page style too.
 - The separator is the one row-level thing that asks for vertical space of its own, and now that
-  rows carry none, that is still one number controlling one gap. It takes no horizontal margin and
-  the page has no horizontal padding, so the rule runs the full width of the surface.
+  rows carry none, that is still one number controlling one gap. The page has no horizontal
+  padding, so by default the rule runs the full width of the surface; Mono insets it to the row
+  chips' edge through `theme.chrome.menuSeparatorInset`, as MonoCode does.
 - Separators use `borderAccent`, the same colour the surface outlines itself with. `border` sits
   between `surface1` and `surface2`, which put it within a hair of the hover fill and made
   separators disappear against a hovered row.

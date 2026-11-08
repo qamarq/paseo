@@ -308,6 +308,7 @@ const MONO_FILL = {
 const MODAL_BASE_ALPHA = 0.55;
 const FROST_ALPHA = 0.6;
 const FLOATING_SHADOW = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)";
+const MENU_SEPARATOR_INSET = 4;
 const MONO_PROSE_INK = 0.78;
 const MONO_LINK: Record<MonoColorScheme, string> = {
   dark: "#7dd3fc",
@@ -363,6 +364,7 @@ function monoChrome(
     floatingShadow: FLOATING_SHADOW,
     frostBase: glass ? base : null,
     menuItemRadius: 8,
+    menuSeparatorInset: MENU_SEPARATOR_INSET,
     selectionFill: ink(MONO_FILL.chipSelected),
     modalRadius: 16,
     modalFill: frost ?? (dark ? toRgba(background, MODAL_BASE_ALPHA) : base),
