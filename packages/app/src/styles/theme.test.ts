@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  REGISTERED_THEMES,
   darkPureBlackTheme,
   darkTheme,
   FONT_SIZE,
@@ -93,4 +94,16 @@ describe("Built-in light theme", () => {
       },
     });
   });
+});
+
+describe("Glass layer tokens", () => {
+  it.each(Object.entries(REGISTERED_THEMES))(
+    "match the opaque surfaces they replace in %s",
+    (_name, theme) => {
+      expect(theme.colors.surfaceWindow).toBe(theme.colors.surface0);
+      expect(theme.colors.surfaceSidebarGlass).toBe(theme.colors.surfaceSidebar);
+      expect(theme.colors.surfacePaneGlass).toBe(theme.colors.surface0);
+      expect(theme.colors.surfaceWorkspaceGlass).toBe(theme.colors.surfaceWorkspace);
+    },
+  );
 });

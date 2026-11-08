@@ -5,6 +5,11 @@ import path from "node:path";
 import { z } from "zod";
 
 import type { AppReleaseChannel } from "../features/auto-updater.js";
+import {
+  DEFAULT_WINDOW_GLASS_APPEARANCE,
+  WINDOW_GLASS_TINT_PATTERN,
+  type WindowGlassAppearance,
+} from "../window/window-glass.js";
 
 export interface DesktopSettings {
   releaseChannel: AppReleaseChannel;
@@ -27,6 +32,8 @@ export interface DesktopSettingsStore {
   get(): Promise<DesktopSettings>;
   patch(patch: unknown): Promise<DesktopSettings>;
   migrateLegacyRendererSettings(legacySettings: unknown): Promise<DesktopSettings>;
+  getWindowAppearance(): Promise<WindowGlassAppearance>;
+  saveWindowAppearance(appearance: WindowGlassAppearance): Promise<void>;
 }
 
 export const DEFAULT_DESKTOP_SETTINGS: DesktopSettings = {
@@ -75,11 +82,28 @@ const MigrationsSchema = z
     daemonStopOnQuitDefaultApplied: false,
   }));
 
+const WindowAppearanceSchema = z
+  .looseObject({
+    glass: z.boolean().catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glass),
+    backgroundColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .nullable()
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.backgroundColor),
+    glassTint: z
+      .string()
+      .regex(WINDOW_GLASS_TINT_PATTERN)
+      .nullable()
+      .catch(DEFAULT_WINDOW_GLASS_APPEARANCE.glassTint),
+  })
+  .catch(() => ({ ...DEFAULT_WINDOW_GLASS_APPEARANCE }));
+
 const PersistedDocumentSchema = z
   .looseObject({
     version: z.literal(1).catch(1),
     settings: DesktopSettingsSchema,
     migrations: MigrationsSchema,
+    windowAppearance: WindowAppearanceSchema,
   })
   .catch(() => buildDefaultDocument());
 
@@ -119,6 +143,7 @@ function buildDefaultDocument(): PersistedDesktopSettingsDocument {
       legacyRendererSettingsImported: false,
       daemonStopOnQuitDefaultApplied: true,
     },
+    windowAppearance: { ...DEFAULT_WINDOW_GLASS_APPEARANCE },
   };
 }
 
@@ -232,19 +257,20 @@ export function createDesktopSettingsStore({
 }): DesktopSettingsStore {
   const filePath = path.join(userDataPath, DESKTOP_SETTINGS_FILENAME);
   let cachedDocument: PersistedDesktopSettingsDocument | null = null;
-  let persistQueue: Promise<void> = Promise.resolve();
+  let queue: Promise<unknown> = Promise.resolve();
 
-  async function persistDocument(document: PersistedDesktopSettingsDocument): Promise<void> {
-    const write = async () => {
-      await mkdir(userDataPath, { recursive: true });
-      const tempFilePath = `${filePath}.tmp.${process.pid}.${randomUUID()}`;
-      await writeFile(tempFilePath, `${JSON.stringify(document, null, 2)}\n`, "utf8");
-      await rename(tempFilePath, filePath);
-      cachedDocument = document;
-    };
-    const queued = persistQueue.then(write, write);
-    persistQueue = queued.catch(() => undefined);
-    await queued;
+  function serialize<T>(task: () => Promise<T>): Promise<T> {
+    const run = queue.then(task, task);
+    queue = run.catch(() => undefined);
+    return run;
+  }
+
+  async function writeDocument(document: PersistedDesktopSettingsDocument): Promise<void> {
+    await mkdir(userDataPath, { recursive: true });
+    const tempFilePath = `${filePath}.tmp.${process.pid}.${randomUUID()}`;
+    await writeFile(tempFilePath, `${JSON.stringify(document, null, 2)}\n`, "utf8");
+    await rename(tempFilePath, filePath);
+    cachedDocument = document;
   }
 
   async function loadDocument(): Promise<PersistedDesktopSettingsDocument> {
@@ -260,7 +286,7 @@ export function createDesktopSettingsStore({
         throw error;
       }
       const document = buildDefaultDocument();
-      await persistDocument(document);
+      await writeDocument(document);
       return document;
     }
     const document = coerceDocument(JSON.parse(raw));
@@ -268,58 +294,82 @@ export function createDesktopSettingsStore({
     return document;
   }
 
-  async function initializeLegacyRendererMigration(): Promise<PersistedDesktopSettingsDocument> {
+  async function loadOrResetDocument(): Promise<PersistedDesktopSettingsDocument> {
     try {
       return await loadDocument();
     } catch {
       const document = buildDefaultDocument();
-      await persistDocument(document);
+      await writeDocument(document);
       return document;
     }
   }
 
   return {
-    async get(): Promise<DesktopSettings> {
-      const document = await loadDocument();
-      return toDesktopSettings(document.settings);
+    get(): Promise<DesktopSettings> {
+      return serialize(async () => toDesktopSettings((await loadDocument()).settings));
     },
 
-    async patch(patch: unknown): Promise<DesktopSettings> {
-      const current = await loadDocument();
-      const coercedPatch = coerceDesktopSettingsPatch(patch);
-      const next = mergeDesktopSettings(current.settings, coercedPatch);
-      await persistDocument({
-        ...current,
-        settings: next,
-        migrations: {
-          ...current.migrations,
-          legacyRendererSettingsImported:
-            current.migrations.legacyRendererSettingsImported ||
-            hasLegacyRendererOwnedPatch(coercedPatch),
-        },
+    patch(patch: unknown): Promise<DesktopSettings> {
+      return serialize(async () => {
+        const current = await loadDocument();
+        const coercedPatch = coerceDesktopSettingsPatch(patch);
+        const next = mergeDesktopSettings(current.settings, coercedPatch);
+        await writeDocument({
+          ...current,
+          settings: next,
+          migrations: {
+            ...current.migrations,
+            legacyRendererSettingsImported:
+              current.migrations.legacyRendererSettingsImported ||
+              hasLegacyRendererOwnedPatch(coercedPatch),
+          },
+        });
+        return toDesktopSettings(next);
       });
-      return toDesktopSettings(next);
     },
 
-    async migrateLegacyRendererSettings(legacySettings: unknown): Promise<DesktopSettings> {
-      const current = await initializeLegacyRendererMigration();
-      if (current.migrations.legacyRendererSettingsImported) {
-        return toDesktopSettings(current.settings);
-      }
+    migrateLegacyRendererSettings(legacySettings: unknown): Promise<DesktopSettings> {
+      return serialize(async () => {
+        const current = await loadOrResetDocument();
+        if (current.migrations.legacyRendererSettingsImported) {
+          return toDesktopSettings(current.settings);
+        }
 
-      const next = mergeDesktopSettings(
-        current.settings,
-        pickDesktopSettingsFromLegacyRendererSettings(legacySettings),
-      );
-      await persistDocument({
-        ...current,
-        settings: next,
-        migrations: {
-          ...current.migrations,
-          legacyRendererSettingsImported: true,
-        },
+        const next = mergeDesktopSettings(
+          current.settings,
+          pickDesktopSettingsFromLegacyRendererSettings(legacySettings),
+        );
+        await writeDocument({
+          ...current,
+          settings: next,
+          migrations: {
+            ...current.migrations,
+            legacyRendererSettingsImported: true,
+          },
+        });
+        return toDesktopSettings(next);
       });
-      return toDesktopSettings(next);
+    },
+
+    getWindowAppearance(): Promise<WindowGlassAppearance> {
+      return serialize(async () => {
+        try {
+          const { glass, backgroundColor, glassTint } = (await loadDocument()).windowAppearance;
+          return { glass, backgroundColor, glassTint };
+        } catch {
+          return { ...DEFAULT_WINDOW_GLASS_APPEARANCE };
+        }
+      });
+    },
+
+    saveWindowAppearance(appearance: WindowGlassAppearance): Promise<void> {
+      return serialize(async () => {
+        const current = await loadDocument();
+        await writeDocument({
+          ...current,
+          windowAppearance: WindowAppearanceSchema.parse(appearance),
+        });
+      });
     },
   };
 }

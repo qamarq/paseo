@@ -301,3 +301,22 @@ New status pills use `<StatusBadge>`. Identity, shortcut, and interactive link b
 | Trigger-anchored menu                               | `packages/app/src/components/ui/dropdown-menu.tsx` (used in `sidebar-workspace-list.tsx`, theme picker)                                                                                                                                                                                                  |
 | Right-click / long-press menu                       | `packages/app/src/components/ui/context-menu.tsx` (used in `sidebar-workspace-list.tsx`)                                                                                                                                                                                                                 |
 | Headers (back, screen, menu)                        | `packages/app/src/components/headers/back-header.tsx`, `screen-header.tsx`, `menu-header.tsx`                                                                                                                                                                                                            |
+
+---
+
+## 16. Desktop glass
+
+On macOS desktop the Mono dark look makes the window translucent. The tint is painted once, on `html`, by `packages/app/src/appearance/mono-look.electron.ts`; a tint on every layer would stack and darken nested panes.
+
+Layer containers take a glass token instead of the surface they sit on:
+
+| Token                   | Replaces           | Used by                                                                     |
+| ----------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `surfaceWindow`         | `surface0`         | App shell fills in `app/_layout.tsx`                                        |
+| `surfaceSidebarGlass`   | `surfaceSidebar`   | Left sidebar, explorer sidebar, division gap, sidebar tab rails and headers |
+| `surfacePaneGlass`      | `surface0`         | Stack screens, workspace panes, pane headers and toolbars, page layouts     |
+| `surfaceWorkspaceGlass` | `surfaceWorkspace` | The workspace screen background                                             |
+
+Every theme sets them to the surface they replace, so mobile, web and the opaque desktop look do not change. Only the Mono dark slot turns them `transparent`; the pane tokens stay opaque when Main pane glass is off.
+
+Menus, popovers, modals, sheets, inputs, cards and overlays never use a glass token. They keep opaque surfaces so content behind them does not show through.

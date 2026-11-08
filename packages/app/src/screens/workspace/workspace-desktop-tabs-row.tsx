@@ -1638,13 +1638,13 @@ const styles = StyleSheet.create((theme) => ({
     height: WORKSPACE_SECONDARY_HEADER_HEIGHT,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
     flexDirection: "row",
     alignItems: "center",
     overflow: "visible",
   },
   tabsContainerSidebar: {
-    backgroundColor: theme.colors.surfaceSidebar,
+    backgroundColor: theme.colors.surfaceSidebarGlass,
   },
   tabsScroll: {
     minWidth: 0,
