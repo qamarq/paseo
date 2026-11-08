@@ -3,6 +3,9 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { useTranslation } from "react-i18next";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { Theme } from "@/styles/theme";
+import { backdropBlur } from "@/styles/web-effects";
+
+const LOADING_FROST_BLUR = 24;
 
 const ThemedLoadingSpinner = withUnistyles(LoadingSpinner);
 const foregroundMutedColorMapping = (theme: Theme) => ({ color: theme.colors.foregroundMuted });
@@ -25,7 +28,9 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     gap: theme.spacing[3],
     padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface0,
+    // Under glass the pane is see-through, so the overlay frosts the panel mounting beneath it.
+    backgroundColor: theme.colors.surfacePaneGlass,
+    ...backdropBlur(theme.chrome.glass ? LOADING_FROST_BLUR : 0),
   },
   text: {
     marginTop: theme.spacing[2],

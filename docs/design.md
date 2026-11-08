@@ -319,4 +319,15 @@ Layer containers take a glass token instead of the surface they sit on:
 
 Every theme sets them to the surface they replace, so mobile, web and the opaque desktop look do not change. Only the Mono dark slot turns them `transparent`; the pane tokens stay opaque when Main pane glass is off.
 
-Menus, popovers, modals, sheets, inputs, cards and overlays never use a glass token. They keep opaque surfaces so content behind them does not show through.
+Menus, popovers, modals, sheets, inputs, cards and overlays never use a layer token. Their look comes from chrome tokens instead.
+
+### Chrome tokens
+
+`theme.chrome` (`packages/app/src/styles/theme.ts`) holds the desktop Mono look's geometry and surface effects: tab, row and icon-button sizes, radii, frosted fills for menus, modals and the composer, and their backdrop blur. Every built-in theme sets `DEFAULT_CHROME`, where `null` and `0` mean "keep the component's own value", and `theme.test.ts` holds them to it. Read a token as `theme.chrome.x ?? <today's value>` inside `StyleSheet.create`; use `withChromeSize` for breakpoint sizes and `floatingSurfaceStyle` / `modalSurfaceStyle` for floating surfaces. Do not gate these with `getIsElectron()`: the theme is the gate.
+
+Under glass (`theme.chrome.glass`) nothing behind the window can be painted:
+
+- Rows and chips fill through `surfaceFill(theme, backdrop)`, which turns translucent.
+- Knockouts (status rings, badges, status dots) fill through `knockoutColor`, which paints nothing on a backdrop that glass made translucent.
+- Painted scrims and edge shades step aside: `TrailingActionScrim` frosts what it covers, and content that can mask itself takes `trailingActionMask` or `horizontalScrollMask` (CSS `mask-image`, `styles/web-effects.ts`). A mask fades only an edge with content scrolled past it.
+- A see-through terminal background turns on xterm's `allowTransparency`, which costs render time.

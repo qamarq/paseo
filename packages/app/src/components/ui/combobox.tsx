@@ -67,6 +67,7 @@ import { getOverlayRoot, OverlayLayerProvider, useOverlayLayer } from "@/lib/ove
 import { density, densityIconBox } from "@/styles/density";
 import { DensityIcon } from "@/components/ui/density-icon";
 import { buildDesktopFrameStyle } from "./combobox-frame-style";
+import { floatingSurfaceStyle } from "@/styles/floating-surface";
 
 export { buildDesktopFrameStyle } from "./combobox-frame-style";
 
@@ -1786,10 +1787,12 @@ const styles = StyleSheet.create((theme) => ({
     left: 0,
   },
   desktopContainer: {
-    backgroundColor: theme.colors.surface0,
-    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    ...floatingSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface0,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.lg,
+    }),
     ...theme.shadow.md,
     maxHeight: 400,
     overflow: "hidden",

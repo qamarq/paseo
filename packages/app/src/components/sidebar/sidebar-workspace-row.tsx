@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native-unistyles";
 import type { HostBadgeModel } from "@/hosts/appearance";
 import type { SidebarWorkspaceEntry } from "@/hooks/use-sidebar-workspaces-list";
 import { density } from "@/styles/density";
-import type { SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
+import { surfaceFill, type SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
 import type { DraggableListDragHandleProps } from "@/components/draggable-list.types";
 import type { ShortcutKey } from "@/utils/format-shortcut";
 import { WorkspaceRenameModal } from "@/components/workspace-rename-modal";
@@ -40,6 +40,7 @@ import {
   useSidebarWorkspaceTrailing,
   type SidebarWorkspaceTrailing,
 } from "@/components/sidebar/workspace-trailing";
+import { feedbackTransition } from "@/styles/web-effects";
 
 interface SidebarWorkspaceRowProps {
   workspace: SidebarWorkspaceEntry;
@@ -498,12 +499,13 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     gap: theme.spacing[1],
     userSelect: "none",
+    ...feedbackTransition(theme.chrome.feedbackMs),
   },
   workspaceRowHovered: {
     backgroundColor: theme.colors.surfaceSidebarHover,
   },
   workspaceRowPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: surfaceFill(theme, "surface2"),
   },
   workspaceRowDragging: {
     backgroundColor: theme.colors.surface2,

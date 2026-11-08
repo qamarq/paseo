@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { darkHighlightColors, lightHighlightColors } from "@getpaseo/highlight";
 import { hexColorWithAlpha } from "@/utils/color";
+import type { SurfaceBackdrop } from "./surface-backdrop";
 
 export const baseColors = {
   // Base colors
@@ -174,12 +175,16 @@ function statusTints(colors: typeof lightStatusColors, alphaHex: string) {
 const lightStatusTints = statusTints(lightStatusColors, "1f"); // 12%
 const darkStatusTints = statusTints(darkStatusColors, "29"); // 16%
 
+const NO_GUTTER_TINT = "rgba(0, 0, 0, 0)";
+
 function diffLineColors(colors: typeof lightStatusColors) {
   return {
     diffAdditionForeground: colors.statusSuccess,
     diffDeletionForeground: colors.statusDanger,
     diffAdditionBackground: hexColorWithAlpha(colors.statusSuccess, 0.15),
     diffDeletionBackground: hexColorWithAlpha(colors.statusDanger, 0.1),
+    diffAdditionGutter: NO_GUTTER_TINT,
+    diffDeletionGutter: NO_GUTTER_TINT,
   };
 }
 
@@ -677,6 +682,112 @@ export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
 // Chat and markdown content column; the appearance updater patches the user's width in.
 export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 
+export interface ChromeTokens {
+  glass: boolean;
+  feedbackMs: number;
+  fills: Partial<Record<SurfaceBackdrop, string>> | null;
+  rowRadius: number | null;
+  navRowHeight: number | null;
+  rowLabelWeight: "500" | null;
+  searchFieldBorder: string | null;
+  sectionLabelSize: number | null;
+  sectionLabelColor: string | null;
+  sidebarNavDivider: string | null;
+  tabHeight: number | null;
+  tabRadius: number | null;
+  tabLabelSize: number | null;
+  iconButtonSize: number | null;
+  floatingRadius: number | null;
+  tooltipRadius: number | null;
+  floatingFill: string | null;
+  floatingBorder: string | null;
+  floatingBlur: number;
+  menuItemRadius: number | null;
+  selectionFill: string | null;
+  modalRadius: number | null;
+  modalFill: string | null;
+  modalBorder: string | null;
+  modalBlur: number;
+  scrim: string | null;
+  veil: string | null;
+  composerRadius: number | null;
+  composerFill: string | null;
+  composerBorder: string | null;
+  composerBlur: number;
+  sendButtonRadius: number | null;
+  secondaryButtonFill: string | null;
+  pillFill: string | null;
+  pillHoverFill: string | null;
+  pillRadius: number | null;
+  pillTextSize: number | null;
+  userBubbleRadius: number | null;
+  userBubblePaddingX: number | null;
+  userBubblePaddingY: number | null;
+  railColor: string | null;
+  toolTargetMono: boolean;
+  metaColor: string | null;
+  proseColor: string | null;
+  linkColor: string | null;
+  headingColor: string | null;
+  inlineCodeRadius: number | null;
+  inlineCodeFill: string | null;
+  codeBlockRadius: number | null;
+  codeBlockFill: string | null;
+}
+
+export const DEFAULT_CHROME: ChromeTokens = {
+  glass: false,
+  feedbackMs: 0,
+  fills: null,
+  rowRadius: null,
+  navRowHeight: null,
+  rowLabelWeight: null,
+  searchFieldBorder: null,
+  sectionLabelSize: null,
+  sectionLabelColor: null,
+  sidebarNavDivider: null,
+  tabHeight: null,
+  tabRadius: null,
+  tabLabelSize: null,
+  iconButtonSize: null,
+  floatingRadius: null,
+  tooltipRadius: null,
+  floatingFill: null,
+  floatingBorder: null,
+  floatingBlur: 0,
+  menuItemRadius: null,
+  selectionFill: null,
+  modalRadius: null,
+  modalFill: null,
+  modalBorder: null,
+  modalBlur: 0,
+  scrim: null,
+  veil: null,
+  composerRadius: null,
+  composerFill: null,
+  composerBorder: null,
+  composerBlur: 0,
+  sendButtonRadius: null,
+  secondaryButtonFill: null,
+  pillFill: null,
+  pillHoverFill: null,
+  pillRadius: null,
+  pillTextSize: null,
+  userBubbleRadius: null,
+  userBubblePaddingX: null,
+  userBubblePaddingY: null,
+  railColor: null,
+  toolTargetMono: false,
+  metaColor: null,
+  proseColor: null,
+  linkColor: null,
+  headingColor: null,
+  inlineCodeRadius: null,
+  inlineCodeFill: null,
+  codeBlockRadius: null,
+  codeBlockFill: null,
+};
+
 // `fontSize`, `fontFamily`, `lineHeight`, and `contentMaxWidth` are deliberately widened to plain
 // `number`/`string` (not narrowed by `as const`) so the appearance updater can patch
 // them at runtime via `UnistylesRuntime.updateTheme`. The remaining tokens keep their
@@ -692,6 +803,7 @@ interface CommonTheme {
   borderRadius: typeof BORDER_RADIUS;
   borderWidth: typeof BORDER_WIDTH;
   opacity: typeof OPACITY;
+  chrome: ChromeTokens;
 }
 
 const commonTheme: CommonTheme = {
@@ -705,6 +817,7 @@ const commonTheme: CommonTheme = {
   borderRadius: BORDER_RADIUS,
   borderWidth: BORDER_WIDTH,
   opacity: OPACITY,
+  chrome: DEFAULT_CHROME,
 };
 
 const darkShadow = {

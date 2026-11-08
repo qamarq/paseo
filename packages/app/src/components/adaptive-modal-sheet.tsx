@@ -28,6 +28,7 @@ import { isWeb } from "@/constants/platform";
 import { useKeyboardVisibility } from "@/hooks/use-keyboard-visibility";
 import { SafeAreaInsetsContext, useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdaptiveTextInput } from "@/components/adaptive-text-input";
+import { modalSurfaceStyle } from "@/styles/floating-surface";
 export { AdaptiveTextInput, type AdaptiveTextInputProps } from "@/components/adaptive-text-input";
 
 // Horizontal indent token shared by the sheet header (title, back arrow,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   desktopOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: theme.chrome.scrim ?? "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
     padding: theme.spacing[6],
@@ -95,10 +96,12 @@ const styles = StyleSheet.create((theme) => ({
     maxHeight: "85%",
     flexShrink: 1,
     minHeight: 0,
-    backgroundColor: theme.colors.surface0,
-    borderRadius: theme.borderRadius.xl,
     borderWidth: 1,
-    borderColor: theme.colors.surface2,
+    ...modalSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface0,
+      borderColor: theme.colors.surface2,
+      borderRadius: theme.borderRadius.xl,
+    }),
   },
   headerContainer: {
     borderBottomWidth: 1,

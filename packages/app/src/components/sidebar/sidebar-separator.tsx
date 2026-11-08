@@ -6,13 +6,22 @@ import { StyleSheet } from "react-native-unistyles";
  * padded container so the line runs the full sidebar width — matching the
  * separator beneath the workspace sidebar's "New agent" header.
  */
-export function SidebarSeparator({ testID }: { testID?: string } = {}) {
-  return <View style={styles.line} testID={testID} />;
+export function SidebarSeparator({
+  testID,
+  nav = false,
+}: {
+  testID?: string;
+  nav?: boolean;
+} = {}) {
+  return <View style={[styles.line, nav && styles.navLine]} testID={testID} />;
 }
 
 const styles = StyleSheet.create((theme) => ({
   line: {
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  navLine: {
+    borderBottomColor: theme.chrome.sidebarNavDivider ?? theme.colors.border,
   },
 }));

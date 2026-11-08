@@ -1,3 +1,5 @@
+import type { Theme } from "./theme";
+
 /**
  * The surface something is drawn on top of.
  *
@@ -23,3 +25,11 @@ export type SidebarSurfaceBackdrop = Extract<
   SurfaceBackdrop,
   "surfaceSidebar" | "surfaceSidebarHover" | "surfaceSidebarSelected" | "surface2"
 >;
+
+export function surfaceFill(theme: Theme, backdrop: SurfaceBackdrop): string {
+  return theme.chrome.fills?.[backdrop] ?? theme.colors[backdrop];
+}
+
+export function knockoutColor(theme: Theme, backdrop: SurfaceBackdrop): string {
+  return theme.chrome.fills?.[backdrop] === undefined ? theme.colors[backdrop] : "transparent";
+}

@@ -1,6 +1,7 @@
 import {
   bySizing,
   iconSizeFor,
+  type LayoutValue,
   TOOLBAR_CONTROL_HEIGHT,
   TOUCH_TARGET,
   type IconSize,
@@ -56,4 +57,8 @@ export function densityIconProps<P extends object>(
     ...mapping(theme),
     size: densityIconSize(rt, size),
   });
+}
+
+export function withChromeSize(value: LayoutValue, override: number | null): LayoutValue {
+  return override === null ? value : { xs: value.xs, md: override };
 }

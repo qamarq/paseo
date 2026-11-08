@@ -3,7 +3,7 @@ import { CalendarClock, History, Plus, Search } from "lucide-react-native";
 import { memo, useCallback, useMemo, useRef, type ComponentType, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { View, type StyleProp, type ViewStyle } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { SidebarHeaderRow } from "@/components/sidebar/sidebar-header-row";
 import { useShortcutKeys } from "@/hooks/use-shortcut-keys";
 import { PluginSidebarItem } from "@/plugins/sidebar-items";
@@ -18,6 +18,7 @@ import { useSidebarNavItems } from "@/sidebar-nav/use-sidebar-nav-items";
 import { useKeyboardShortcutsStore } from "@/stores/keyboard-shortcuts-store";
 import { useActiveWorkspaceSelection } from "@/stores/navigation-active-workspace-store";
 import { useWorkspace } from "@/stores/session-store-hooks";
+import type { Theme } from "@/styles/theme";
 import {
   buildNewWorkspaceRoute,
   buildSchedulesRoute,
@@ -145,6 +146,9 @@ function SidebarHistoryRow({ onBeforeNavigate }: SidebarNavRowProps) {
   );
 }
 
+const ThemedSidebarHeaderRow = withUnistyles(SidebarHeaderRow);
+const searchFieldMapping = (theme: Theme) => ({ field: theme.chrome.searchFieldBorder !== null });
+
 function SidebarSearchRow() {
   const { t } = useTranslation();
   const shortcutKeys = useShortcutKeys(builtinSidebarNavShortcutAction("search"));
@@ -154,13 +158,14 @@ function SidebarSearchRow() {
   }, [setCommandCenterOpen]);
 
   return (
-    <SidebarHeaderRow
+    <ThemedSidebarHeaderRow
       icon={Search}
       label={t(builtinSidebarNavLabelKey("search"))}
       onPress={handlePress}
       testID="sidebar-search"
       variant="compact"
       shortcutKeys={shortcutKeys}
+      uniProps={searchFieldMapping}
     />
   );
 }

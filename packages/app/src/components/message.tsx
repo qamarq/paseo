@@ -88,6 +88,7 @@ import { getCompactionMarkerLabel } from "./message-compaction-label";
 import { PlanCard } from "./plan-card";
 import { ToolCallDetailsContent } from "./tool-call-details";
 import { useToolCallSheet } from "./tool-call-sheet";
+import { surfaceFill } from "@/styles/surface-backdrop";
 export type { InlinePathTarget } from "@/assistant-file-links";
 export type { AssistantForkTarget };
 
@@ -319,10 +320,12 @@ const userMessageStylesheet = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.userBubble,
     borderWidth: USER_BUBBLE_BORDER_WIDTH,
     borderColor: theme.colors.userBubbleBorder,
-    borderRadius: theme.borderRadius["2xl"],
-    borderTopRightRadius: theme.borderRadius.sm,
-    paddingHorizontal: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
-    paddingVertical: theme.spacing[4] - USER_BUBBLE_BORDER_WIDTH,
+    borderRadius: theme.chrome.userBubbleRadius ?? theme.borderRadius["2xl"],
+    borderTopRightRadius: theme.chrome.userBubbleRadius ?? theme.borderRadius.sm,
+    paddingHorizontal:
+      (theme.chrome.userBubblePaddingX ?? theme.spacing[4]) - USER_BUBBLE_BORDER_WIDTH,
+    paddingVertical:
+      (theme.chrome.userBubblePaddingY ?? theme.spacing[4]) - USER_BUBBLE_BORDER_WIDTH,
     minWidth: 0,
     flexShrink: 1,
   },
@@ -585,7 +588,7 @@ const assistantTurnFooterStylesheet = StyleSheet.create((theme) => ({
     position: "absolute",
     top: 0,
     left: 0,
-    color: theme.colors.foregroundMuted,
+    color: theme.chrome.metaColor ?? theme.colors.foregroundMuted,
     fontSize: STREAM_METADATA_FONT_SIZE,
   },
 }));
@@ -799,7 +802,7 @@ const turnCopyButtonStylesheet = StyleSheet.create((theme) => ({
     marginTop: theme.spacing[2],
   },
   iconColor: {
-    color: theme.colors.foregroundMuted,
+    color: theme.chrome.metaColor ?? theme.colors.foregroundMuted,
   },
   iconHoveredColor: {
     color: theme.colors.foreground,
@@ -880,6 +883,8 @@ export const TurnCopyButton = memo(function TurnCopyButton({
   );
 });
 
+const TOOL_TARGET_MONO_SIZE = 13;
+
 const expandableBadgeStylesheet = StyleSheet.create((theme) => ({
   container: {
     marginHorizontal: -13,
@@ -937,7 +942,8 @@ const expandableBadgeStylesheet = StyleSheet.create((theme) => ({
     flexShrink: 1,
     minWidth: 0,
     color: theme.colors.foregroundMuted,
-    fontSize: theme.fontSize.base,
+    fontSize: theme.chrome.toolTargetMono ? TOOL_TARGET_MONO_SIZE : theme.fontSize.base,
+    ...(theme.chrome.toolTargetMono ? { fontFamily: theme.fontFamily.mono } : {}),
     fontWeight: theme.fontWeight.normal,
     marginLeft: theme.spacing[2],
   },
@@ -979,7 +985,7 @@ const expandableBadgeStylesheet = StyleSheet.create((theme) => ({
     ...(isWeb ? { cursor: "auto" as const, userSelect: "text" as const } : {}),
   },
   pressableExpanded: {
-    backgroundColor: theme.colors.surface1,
+    backgroundColor: surfaceFill(theme, "surface1"),
   },
   pressableExpandedAttached: {
     borderColor: theme.colors.border,

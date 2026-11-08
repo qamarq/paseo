@@ -187,7 +187,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: theme.colors.surfacePaneGlass,
   },
   unavailableText: {
     color: theme.colors.foregroundMuted,

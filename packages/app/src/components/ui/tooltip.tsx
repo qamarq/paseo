@@ -30,6 +30,7 @@ import { FloatingSurface } from "@/components/ui/floating";
 import { useRetainedPanelActive } from "@/components/retained-panel";
 import { isNative, isWeb } from "@/constants/platform";
 import { getOverlayRoot, OVERLAY_Z } from "@/lib/overlay-root";
+import { floatingSurfaceStyle } from "@/styles/floating-surface";
 
 type Side = "top" | "bottom" | "left" | "right";
 type Align = "start" | "center" | "end";
@@ -601,10 +602,14 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     paddingVertical: theme.spacing[1],
     paddingHorizontal: theme.spacing[2],
-    borderRadius: theme.borderRadius.xl,
-    backgroundColor: theme.colors.popover,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
+    ...floatingSurfaceStyle(theme, {
+      backgroundColor: theme.colors.popover,
+      borderColor: theme.colors.borderAccent,
+      borderRadius: theme.borderRadius.xl,
+    }),
+    borderRadius:
+      theme.chrome.tooltipRadius ?? theme.chrome.floatingRadius ?? theme.borderRadius.xl,
     ...theme.shadow.md,
     zIndex: 1000,
   },

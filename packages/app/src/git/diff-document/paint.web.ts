@@ -5,7 +5,7 @@ import {
   fragmentWidthForRange,
   visibleRowRange,
 } from "./model";
-import { codeLineNumberTone, codeTextColor } from "./palette";
+import { codeLineNumberTone, codeTextColor, visibleTint } from "./palette";
 import {
   DIFF_FILE_HEADER_CONTENT_HEIGHT,
   DIFF_FILE_HEADER_HEIGHT,
@@ -284,6 +284,11 @@ function paintLine(
       );
     }
     if (!cell) return;
+    const gutterTint = cellGutterTint(cell, input.palette);
+    if (gutterTint) {
+      input.context.fillStyle = gutterTint;
+      input.context.fillRect(x, input.y, file.gutterWidth, reviewDividerHeight(input.row.height));
+    }
     input.context.fillStyle = input.palette.border;
     input.context.fillRect(x + file.gutterWidth, input.y, 1, reviewDividerHeight(input.row.height));
     if (cell.lineNumber !== null) {
@@ -387,6 +392,12 @@ function paintSelection(input: PaintWebViewportInput, selection: DiffSelection):
     input.context.restore();
   }
   input.context.restore();
+}
+
+function cellGutterTint(cell: DiffCell, palette: DiffPalette): string | null {
+  if (cell.type === "add") return visibleTint(palette.additionGutter);
+  if (cell.type === "remove") return visibleTint(palette.deletionGutter);
+  return null;
 }
 
 function cellBackground(cell: DiffCell | null, palette: DiffPalette): string {

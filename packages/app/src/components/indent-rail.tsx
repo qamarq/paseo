@@ -26,6 +26,6 @@ const styles = StyleSheet.create((theme) => ({
     marginLeft: RAIL_LEFT,
     paddingLeft: INDENT_RAIL_CONTENT_OFFSET - RAIL_LEFT - RAIL_WIDTH,
     borderLeftWidth: RAIL_WIDTH,
-    borderLeftColor: theme.colors.border,
+    borderLeftColor: theme.chrome.railColor ?? theme.colors.border,
   },
 }));

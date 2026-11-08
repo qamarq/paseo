@@ -61,6 +61,8 @@ export interface DiffPalette {
   deletion: string;
   additionBackground: string;
   deletionBackground: string;
+  additionGutter: string;
+  deletionGutter: string;
   emptyBackground: string;
   selection: string;
   headerActiveSurface: string;

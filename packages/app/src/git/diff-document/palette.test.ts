@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { darkTheme, lightTheme } from "@/styles/theme";
 import { hexColorWithAlpha } from "@/utils/color";
-import { codeLineNumberTone, codeTextColor, createDiffPalette, retainDiffPalette } from "./palette";
+import {
+  codeLineNumberTone,
+  codeTextColor,
+  createDiffPalette,
+  retainDiffPalette,
+  visibleTint,
+} from "./palette";
 import type { DiffCell, DiffPalette } from "./types";
 
 describe("diff text color", () => {
@@ -44,6 +50,8 @@ describe.each([lightTheme, darkTheme])("semantic diff colors", (theme) => {
     expect(created.deletion).toBe(theme.colors.statusDanger);
     expect(created.additionBackground).toBe(hexColorWithAlpha(theme.colors.statusSuccess, 0.15));
     expect(created.deletionBackground).toBe(hexColorWithAlpha(theme.colors.statusDanger, 0.1));
+    expect(created.additionGutter).toBe("rgba(0, 0, 0, 0)");
+    expect(created.deletionGutter).toBe("rgba(0, 0, 0, 0)");
   });
 });
 
@@ -57,6 +65,8 @@ const palette: DiffPalette = {
   deletion: "red",
   additionBackground: "green-bg",
   deletionBackground: "red-bg",
+  additionGutter: "transparent",
+  deletionGutter: "transparent",
   emptyBackground: "empty",
   selection: "selection",
   headerActiveSurface: "active-header",
@@ -78,3 +88,12 @@ function cell(type: DiffCell["type"]): DiffCell {
     sourceIdentity: { hunkIndex: 0, lineIndex: 1, side: "new" },
   };
 }
+
+describe("visibleTint", () => {
+  it("drops tints that would paint nothing", () => {
+    expect(visibleTint("rgba(0, 0, 0, 0)")).toBeNull();
+    expect(visibleTint("transparent")).toBeNull();
+    expect(visibleTint("rgba(16, 185, 129, 0.118)")).toBe("rgba(16, 185, 129, 0.118)");
+    expect(visibleTint("#10b981")).toBe("#10b981");
+  });
+});

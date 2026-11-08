@@ -1,6 +1,7 @@
 import type { MarkdownStyle } from "react-native-enriched-markdown";
 import type { Theme } from "@/styles/theme";
 import { isWeb } from "@/constants/platform";
+import { surfaceFill } from "@/styles/surface-backdrop";
 
 // iOS Safari needs the prefix to override the gesture host's selection suppression.
 const WEB_CONTAINER = { userSelect: "text", WebkitUserSelect: "text" } as const;
@@ -20,7 +21,9 @@ export function createMarkdownStyles(
     fontSize,
     fontFamily: theme.fontFamily.ui,
     lineHeight: Math.round(fontSize * 1.4),
-    color: muted ? theme.colors.foregroundMuted : theme.colors.foreground,
+    color: muted
+      ? theme.colors.foregroundMuted
+      : (theme.chrome.proseColor ?? theme.colors.foreground),
     ...block,
   };
   const heading = (scale: number) => ({
@@ -28,6 +31,7 @@ export function createMarkdownStyles(
     fontSize: Math.round(fontSize * scale),
     lineHeight: Math.round(fontSize * scale * 1.3),
     fontWeight: "bold",
+    ...(theme.chrome.headingColor && !muted ? { color: theme.chrome.headingColor } : {}),
   });
   return {
     containerStyle: isWeb ? WEB_CONTAINER : undefined,
@@ -64,26 +68,29 @@ export function createMarkdownStyles(
           caution: { color: theme.colors.statusDanger, backgroundColor: theme.colors.surface2 },
         },
       },
-      link: { color: theme.colors.accentBright, underline: false },
+      ...(theme.chrome.proseColor && !muted
+        ? { strong: { color: theme.colors.foreground }, em: { color: theme.colors.foreground } }
+        : {}),
+      link: { color: theme.chrome.linkColor ?? theme.colors.accentBright, underline: false },
       linkVariants: {
         "^(?!https?://).+": {
-          color: theme.colors.accentBright,
+          color: theme.chrome.linkColor ?? theme.colors.accentBright,
         },
       },
       code: {
         fontFamily: theme.fontFamily.mono === "ui-monospace" && !isWeb ? "" : theme.fontFamily.mono,
         fontScale: theme.fontSize.code / fontSize,
         color: theme.colors.foreground,
-        backgroundColor: theme.colors.surface2,
+        backgroundColor: theme.chrome.inlineCodeFill ?? theme.colors.surface2,
         borderColor: "transparent",
       },
       codeBlock: {
         ...paragraph,
         fontFamily: theme.fontFamily.mono === "ui-monospace" && !isWeb ? "" : theme.fontFamily.mono,
         fontSize: theme.fontSize.code,
-        backgroundColor: theme.colors.surface2,
+        backgroundColor: theme.chrome.codeBlockFill ?? theme.colors.surface2,
         borderColor: theme.colors.border,
-        borderRadius: 8,
+        borderRadius: theme.chrome.codeBlockRadius ?? 8,
         padding: 12,
       },
       table: {
@@ -91,8 +98,8 @@ export function createMarkdownStyles(
         borderColor: theme.colors.border,
         headerBackgroundColor: theme.colors.surface2,
         headerTextColor: theme.colors.foreground,
-        rowEvenBackgroundColor: theme.colors.surface0,
-        rowOddBackgroundColor: theme.colors.surface1,
+        rowEvenBackgroundColor: surfaceFill(theme, "surface0"),
+        rowOddBackgroundColor: surfaceFill(theme, "surface1"),
       },
       taskList: {
         checkedTextColor: theme.colors.foregroundMuted,

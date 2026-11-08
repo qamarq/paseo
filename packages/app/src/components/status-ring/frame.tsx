@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StyleSheet as RNStyleSheet, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
-import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
+import { knockoutColor, type SurfaceBackdrop } from "@/styles/surface-backdrop";
 import { getStatusDotColor } from "@/utils/status-dot-color";
 import {
   STATUS_RING_FRAME_SIZE,
@@ -89,12 +89,14 @@ export const styles = StyleSheet.create((theme) => {
       alignItems: "center",
       justifyContent: "center",
     },
-    backdropSurface0: { backgroundColor: theme.colors.surface0 },
-    backdropSurface1: { backgroundColor: theme.colors.surface1 },
-    backdropSurfaceSidebar: { backgroundColor: theme.colors.surfaceSidebar },
-    backdropSurfaceSidebarHover: { backgroundColor: theme.colors.surfaceSidebarHover },
-    backdropSurfaceSidebarSelected: { backgroundColor: theme.colors.surfaceSidebarSelected },
-    backdropSurface2: { backgroundColor: theme.colors.surface2 },
+    backdropSurface0: { backgroundColor: knockoutColor(theme, "surface0") },
+    backdropSurface1: { backgroundColor: knockoutColor(theme, "surface1") },
+    backdropSurfaceSidebar: { backgroundColor: knockoutColor(theme, "surfaceSidebar") },
+    backdropSurfaceSidebarHover: { backgroundColor: knockoutColor(theme, "surfaceSidebarHover") },
+    backdropSurfaceSidebarSelected: {
+      backgroundColor: knockoutColor(theme, "surfaceSidebarSelected"),
+    },
+    backdropSurface2: { backgroundColor: knockoutColor(theme, "surface2") },
 
     // The closed ring the quarter runs on. Same colour rather than a grey so the indicator is one
     // object at one hue; the opacity is what puts it behind the quarter instead of competing.

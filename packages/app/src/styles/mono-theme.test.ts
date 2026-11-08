@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildMonoTheme, monoWindowTint, type MonoThemeInput } from "./mono-theme";
+import { knockoutColor } from "./surface-backdrop";
 import { darkTheme, lightTheme } from "./theme";
 
 function input(overrides: Partial<MonoThemeInput> = {}): MonoThemeInput {
@@ -230,6 +231,76 @@ describe("buildMonoTheme", () => {
     expect(colors.surfaceWorkspaceGlass).toBe(colors.surface0);
   });
 
+  it("makes row and chip fills translucent and turns off knockouts under glass", () => {
+    const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+
+    expect(chrome.glass).toBe(true);
+    expect(colors.surfaceSidebarHover).toBe("rgba(235, 235, 235, 0.05)");
+    expect(colors.surfaceSidebarSelected).toBe("rgba(235, 235, 235, 0.12)");
+    expect(chrome.fills).toMatchObject({
+      surface0: "transparent",
+      surfaceSidebar: "transparent",
+      surface2: "rgba(235, 235, 235, 0.1)",
+    });
+    expect(colors.terminal.background).toBe("rgba(0, 0, 0, 0)");
+  });
+
+  it("draws hairlines translucent under glass so they do not read as dark seams", () => {
+    const glassy = buildMonoTheme(input({ glass: { mainPaneGlass: true } })).colors;
+
+    expect(glassy.border).toBe("rgba(235, 235, 235, 0.07)");
+    expect(glassy.borderAccent).toBe("rgba(235, 235, 235, 0.1)");
+    expect(buildMonoTheme(input()).colors.border).toMatch(OPAQUE_HEX);
+  });
+
+  it("keeps the main pane fill and terminal opaque when main pane glass is off", () => {
+    const { colors, chrome } = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(chrome.fills?.surface0).toBeUndefined();
+    expect(colors.terminal.background).toBe(colors.surface0);
+  });
+
+  it("uses MonoCode's chrome geometry with or without glass", () => {
+    for (const glass of [null, { mainPaneGlass: true }]) {
+      const { chrome } = buildMonoTheme(input({ glass }));
+      expect(chrome).toMatchObject({
+        tabHeight: 30,
+        tabRadius: 6,
+        floatingRadius: 12,
+        modalRadius: 16,
+        composerRadius: 8,
+      });
+    }
+    expect(buildMonoTheme(input()).chrome.glass).toBe(false);
+  });
+
+  it("lifts light section labels above MonoCode's 40% so they stay legible", () => {
+    expect(buildMonoTheme(input()).chrome.sectionLabelColor).toBe("rgba(235, 235, 235, 0.4)");
+    expect(buildMonoTheme(input({ scheme: "light" })).chrome.sectionLabelColor).toBe(
+      "rgba(46, 46, 46, 0.55)",
+    );
+  });
+
+  it("knocks out only the backdrops that glass turned translucent", () => {
+    const paneGlass = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+    const sidebarOnly = buildMonoTheme(input({ glass: { mainPaneGlass: false } }));
+
+    expect(knockoutColor(paneGlass, "surface0")).toBe("transparent");
+    expect(knockoutColor(sidebarOnly, "surface0")).toBe(sidebarOnly.colors.surface0);
+    expect(knockoutColor(sidebarOnly, "surfaceSidebarHover")).toBe("transparent");
+    expect(knockoutColor(darkTheme, "surface1")).toBe(darkTheme.colors.surface1);
+  });
+
+  it("frosts floating surfaces in dark and keeps them solid in light", () => {
+    const dark = buildMonoTheme(input()).chrome;
+    const light = buildMonoTheme(input({ scheme: "light" }));
+
+    expect(dark.floatingBlur).toBe(24);
+    expect(dark.composerBlur).toBe(8);
+    expect(light.chrome.floatingBlur).toBe(0);
+    expect(light.chrome.floatingFill).toBe(light.colors.surface0);
+  });
+
   it("never applies glass to the light scheme", () => {
     const glassy = buildMonoTheme(input({ scheme: "light", glass: { mainPaneGlass: true } }));
 
@@ -299,6 +370,21 @@ describe("Mono action and message colors", () => {
       expect(contrast(colors.foregroundMuted, colors.surface0)).toBeGreaterThanOrEqual(4.5);
     }
   });
+});
+
+describe("Mono diff gutter", () => {
+  it.each([
+    ["default", 0.15, 0.25],
+    ["highContrast", 0.28, 0.45],
+  ] as const)(
+    "composes the %s gutter overlay up to MonoCode's gutter strength",
+    (diffPalette, line, gutter) => {
+      const { colors } = buildMonoTheme(input({ diffPalette }));
+      const overlay = Number(/, ([\d.]+)\)$/.exec(colors.diffAdditionGutter)?.[1]);
+
+      expect(1 - (1 - line) * (1 - overlay)).toBeCloseTo(gutter, 2);
+    },
+  );
 });
 
 describe("monoWindowTint", () => {

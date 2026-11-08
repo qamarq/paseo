@@ -12,6 +12,8 @@ export function createDiffPalette(theme: Theme): DiffPalette {
     deletion: theme.colors.diffDeletionForeground,
     additionBackground: theme.colors.diffAdditionBackground,
     deletionBackground: theme.colors.diffDeletionBackground,
+    additionGutter: theme.colors.diffAdditionGutter,
+    deletionGutter: theme.colors.diffDeletionGutter,
     emptyBackground: theme.colors.surface0,
     selection: theme.colors.terminal.blue,
     headerActiveSurface: theme.colors.surface1,
@@ -34,6 +36,8 @@ export function retainDiffPalette(previous: DiffPalette, next: DiffPalette): Dif
     previous.deletion !== next.deletion ||
     previous.additionBackground !== next.additionBackground ||
     previous.deletionBackground !== next.deletionBackground ||
+    previous.additionGutter !== next.additionGutter ||
+    previous.deletionGutter !== next.deletionGutter ||
     previous.emptyBackground !== next.emptyBackground ||
     previous.selection !== next.selection ||
     previous.headerActiveSurface !== next.headerActiveSurface ||
@@ -63,4 +67,10 @@ export function codeLineNumberTone(cell: DiffCell): "addition" | "deletion" | "f
   if (cell.type === "add") return "addition";
   if (cell.type === "remove") return "deletion";
   return "foregroundMuted";
+}
+
+const INVISIBLE_COLOR = /^(transparent|rgba\(.*,\s*0(\.0*)?\))$/;
+
+export function visibleTint(color: string): string | null {
+  return INVISIBLE_COLOR.test(color.trim()) ? null : color;
 }

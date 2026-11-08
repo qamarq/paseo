@@ -103,8 +103,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing[2],
   },
   title: {
-    color: theme.colors.foregroundMuted,
-    fontSize: theme.fontSize.sm,
+    color: theme.chrome.sectionLabelColor ?? theme.colors.foregroundMuted,
+    fontSize: theme.chrome.sectionLabelSize ?? theme.fontSize.sm,
     fontWeight: theme.fontWeight.normal,
   },
   actions: {

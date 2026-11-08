@@ -4,6 +4,8 @@ import {
   buildDarkTheme,
   buildLightSemanticColors,
   buildLightTheme,
+  DEFAULT_CHROME,
+  type ChromeTokens,
   type Theme,
 } from "./theme";
 
@@ -85,7 +87,14 @@ const MONO_DIFF_BACKGROUND_ALPHA: Record<MonoDiffPalette, number> = {
   highContrast: 0.28,
 };
 
+const MONO_DIFF_GUTTER_ALPHA: Record<MonoDiffPalette, number> = {
+  default: 0.25,
+  colorblind: 0.25,
+  highContrast: 0.45,
+};
+
 const LIGHT_BACKGROUND_LIGHTNESS = 97;
+const TRANSPARENT_TERMINAL = "rgba(0, 0, 0, 0)";
 const USER_ACCENT_BUBBLE_STRENGTH = 0.24;
 const USER_ACCENT_BORDER_ALPHA = 0.3;
 const WINDOW_BACKGROUND_OPACITY = 0.4;
@@ -214,13 +223,22 @@ function resolvePrimary(
   return { primary: toHex(content), primaryForeground: toHex(background) };
 }
 
-function diffLineColors(diff: MonoDiffColors, alpha: number) {
-  const tint = (hex: string) => toRgba(parseHexColor(hex) ?? [0, 0, 0], alpha);
+// The gutter overlay lands on the line fill, so its alpha composes up to MonoCode's gutter strength.
+function gutterOverlayAlpha(line: number, gutter: number): number {
+  return Math.round((1 - (1 - gutter) / (1 - line)) * 1000) / 1000;
+}
+
+function diffLineColors(diff: MonoDiffColors, palette: MonoDiffPalette) {
+  const alpha = MONO_DIFF_BACKGROUND_ALPHA[palette];
+  const gutter = gutterOverlayAlpha(alpha, MONO_DIFF_GUTTER_ALPHA[palette]);
+  const tint = (hex: string, value: number) => toRgba(parseHexColor(hex) ?? [0, 0, 0], value);
   return {
     diffAdditionForeground: diff.additionForeground,
     diffDeletionForeground: diff.deletionForeground,
-    diffAdditionBackground: tint(diff.addition),
-    diffDeletionBackground: tint(diff.deletion),
+    diffAdditionBackground: tint(diff.addition, alpha),
+    diffDeletionBackground: tint(diff.deletion, alpha),
+    diffAdditionGutter: tint(diff.addition, gutter),
+    diffDeletionGutter: tint(diff.deletion, gutter),
   };
 }
 
@@ -266,6 +284,112 @@ function glassLayers(
   };
 }
 
+const MONO_FILL = {
+  rowHover: 0.05,
+  rowSelected: 0.12,
+  chipHover: 0.05,
+  chipSelected: 0.1,
+  floating: 0.02,
+  floatingBorder: 0.1,
+  modalBorder: 0.07,
+  composer: 0.03,
+  composerBorder: 0.1,
+  inlineCode: 0.08,
+  codeBlock: 0.06,
+  sectionLabel: 0.4,
+  sectionLabelLight: 0.55,
+  searchFieldBorder: 0.08,
+  pill: 0.1,
+  rail: 0.14,
+  meta: 0.45,
+  pillHover: 0.15,
+};
+const MODAL_BASE_ALPHA = 0.55;
+const MONO_PROSE_INK = 0.78;
+const MONO_LINK: Record<MonoColorScheme, string> = {
+  dark: "#7dd3fc",
+  light: toHex(hslToRgb(211, 92, 40)),
+};
+const MONO_HEADING: Record<MonoColorScheme, string> = { dark: "#f9a8c9", light: "#be185d" };
+const VEIL_ALPHA = 0.8;
+const MODAL_SCRIM = "rgba(0, 0, 0, 0.4)";
+const FLOATING_BLUR = 24;
+const COMPOSER_BLUR = 8;
+const FEEDBACK_MS = 120;
+
+function monoChrome(
+  scheme: MonoColorScheme,
+  glass: MonoGlass | null,
+  content: Rgb,
+  background: Rgb,
+): ChromeTokens {
+  const ink = (alpha: number) => toRgba(content, alpha);
+  const dark = scheme === "dark";
+  const base = toHex(background);
+  return {
+    ...DEFAULT_CHROME,
+    glass: glass !== null,
+    feedbackMs: FEEDBACK_MS,
+    fills: glass
+      ? {
+          ...(glass.mainPaneGlass ? { surface0: "transparent" } : {}),
+          surface1: ink(MONO_FILL.chipHover),
+          surface2: ink(MONO_FILL.chipSelected),
+          surfaceSidebar: "transparent",
+          surfaceSidebarHover: ink(MONO_FILL.rowHover),
+          surfaceSidebarSelected: ink(MONO_FILL.rowSelected),
+        }
+      : null,
+    rowRadius: 8,
+    navRowHeight: 32,
+    rowLabelWeight: "500",
+    searchFieldBorder: ink(MONO_FILL.searchFieldBorder),
+    sectionLabelSize: 11,
+    sectionLabelColor: ink(dark ? MONO_FILL.sectionLabel : MONO_FILL.sectionLabelLight),
+    sidebarNavDivider: "transparent",
+    tabHeight: 30,
+    tabRadius: 6,
+    tabLabelSize: 13,
+    iconButtonSize: 24,
+    floatingRadius: 12,
+    tooltipRadius: 8,
+    floatingFill: dark ? ink(MONO_FILL.floating) : base,
+    floatingBorder: ink(MONO_FILL.floatingBorder),
+    floatingBlur: dark ? FLOATING_BLUR : 0,
+    menuItemRadius: 8,
+    selectionFill: ink(MONO_FILL.chipSelected),
+    modalRadius: 16,
+    modalFill: dark ? toRgba(background, MODAL_BASE_ALPHA) : base,
+    modalBorder: ink(MONO_FILL.modalBorder),
+    modalBlur: dark ? FLOATING_BLUR : 0,
+    scrim: MODAL_SCRIM,
+    veil: toRgba(background, VEIL_ALPHA),
+    composerRadius: 8,
+    composerFill: dark ? ink(MONO_FILL.composer) : base,
+    composerBorder: ink(MONO_FILL.composerBorder),
+    composerBlur: dark ? COMPOSER_BLUR : 0,
+    sendButtonRadius: 6,
+    secondaryButtonFill: ink(MONO_FILL.pill),
+    pillFill: ink(MONO_FILL.pill),
+    pillHoverFill: ink(MONO_FILL.pillHover),
+    pillRadius: 6,
+    pillTextSize: 12,
+    userBubbleRadius: 18,
+    userBubblePaddingX: 12,
+    userBubblePaddingY: 8,
+    railColor: ink(MONO_FILL.rail),
+    toolTargetMono: true,
+    metaColor: ink(MONO_FILL.meta),
+    proseColor: toHex(mix(content, background, MONO_PROSE_INK)),
+    linkColor: MONO_LINK[scheme],
+    headingColor: MONO_HEADING[scheme],
+    inlineCodeRadius: 6,
+    inlineCodeFill: ink(MONO_FILL.inlineCode),
+    codeBlockRadius: 10,
+    codeBlockFill: ink(MONO_FILL.codeBlock),
+  };
+}
+
 export function buildMonoTheme(input: MonoThemeInput): Theme {
   const { scheme } = input;
   const background = backgroundRgb(input);
@@ -295,9 +419,17 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
   };
   const accent = input.accentColor === null ? null : parseHexColor(input.accentColor);
   const primary = resolvePrimary(scheme, accent, content, background);
+  const glass = scheme === "dark" ? input.glass : null;
   const overrides = {
-    surfaceSidebarHover: ink("rowHover"),
-    surfaceSidebarSelected: ink("rowSelected"),
+    surfaceSidebarHover: glass ? toRgba(content, MONO_FILL.rowHover) : ink("rowHover"),
+    surfaceSidebarSelected: glass ? toRgba(content, MONO_FILL.rowSelected) : ink("rowSelected"),
+    // An opaque hairline reads as a dark seam over glass; a translucent one stays a hairline.
+    ...(glass
+      ? {
+          border: toRgba(content, INK.dark.stroke),
+          borderAccent: toRgba(content, INK.dark.strongStroke),
+        }
+      : {}),
     surfaceWorkspace: tint.surface0,
     interactionHighlight: toRgba(content, INK[scheme].interaction),
     ...primary,
@@ -309,23 +441,32 @@ export function buildMonoTheme(input: MonoThemeInput): Theme {
     userBubbleBorder: accent ? toRgba(accent, USER_ACCENT_BORDER_ALPHA) : ink("userBubble"),
     diffAddition: diff.additionForeground,
     diffDeletion: diff.deletionForeground,
-    ...diffLineColors(diff, MONO_DIFF_BACKGROUND_ALPHA[input.diffPalette]),
-    ...glassLayers(scheme === "dark" ? input.glass : null, tint),
+    ...diffLineColors(diff, input.diffPalette),
+    ...glassLayers(glass, tint),
   };
+  const chrome = monoChrome(scheme, glass, content, background);
 
   if (scheme === "dark") {
-    return buildDarkTheme({
+    const colors = {
       ...buildDarkSemanticColors({ ...tint, terminalBlack: tint.surfaceSidebar }),
       ...overrides,
-    });
+    };
+    const terminal =
+      glass?.mainPaneGlass === true
+        ? { ...colors.terminal, background: TRANSPARENT_TERMINAL }
+        : colors.terminal;
+    return { ...buildDarkTheme({ ...colors, terminal }), chrome };
   }
-  return buildLightTheme({
-    ...buildLightSemanticColors({
-      ...tint,
-      primary: overrides.primary,
-      primaryForeground: overrides.primaryForeground,
-      terminalBlack: tint.foreground,
+  return {
+    ...buildLightTheme({
+      ...buildLightSemanticColors({
+        ...tint,
+        primary: overrides.primary,
+        primaryForeground: overrides.primaryForeground,
+        terminalBlack: tint.foreground,
+      }),
+      ...overrides,
     }),
-    ...overrides,
-  });
+    chrome,
+  };
 }

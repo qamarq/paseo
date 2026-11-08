@@ -2,12 +2,14 @@ import { useId } from "react";
 import { View } from "react-native";
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Rect, Stop } from "react-native-svg";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
-import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
+import { knockoutColor, type SurfaceBackdrop } from "@/styles/surface-backdrop";
 import type { Theme } from "@/styles/theme";
+import { backdropBlur, trailingMask } from "@/styles/web-effects";
 
 export const SCRIM_WIDTH = 48;
 // The fade is a fixed length so a wider scrim only adds solid surface under its actions.
 const SCRIM_FADE_WIDTH = SCRIM_WIDTH * 0.55;
+const GLASS_SCRIM_BLUR = 6;
 
 function TrailingActionScrimSvg({
   gradientId,
@@ -37,12 +39,12 @@ function TrailingActionScrimSvg({
 const ThemedTrailingActionScrimSvg = withUnistyles(TrailingActionScrimSvg);
 
 const backdropColorMappings: Record<SurfaceBackdrop, (theme: Theme) => { color: string }> = {
-  surface0: (theme) => ({ color: theme.colors.surface0 }),
-  surface1: (theme) => ({ color: theme.colors.surface1 }),
-  surface2: (theme) => ({ color: theme.colors.surface2 }),
-  surfaceSidebar: (theme) => ({ color: theme.colors.surfaceSidebar }),
-  surfaceSidebarHover: (theme) => ({ color: theme.colors.surfaceSidebarHover }),
-  surfaceSidebarSelected: (theme) => ({ color: theme.colors.surfaceSidebarSelected }),
+  surface0: (theme) => ({ color: knockoutColor(theme, "surface0") }),
+  surface1: (theme) => ({ color: knockoutColor(theme, "surface1") }),
+  surface2: (theme) => ({ color: knockoutColor(theme, "surface2") }),
+  surfaceSidebar: (theme) => ({ color: knockoutColor(theme, "surfaceSidebar") }),
+  surfaceSidebarHover: (theme) => ({ color: knockoutColor(theme, "surfaceSidebarHover") }),
+  surfaceSidebarSelected: (theme) => ({ color: knockoutColor(theme, "surfaceSidebarSelected") }),
 };
 
 /** Fades trailing content into the surface beneath an absolutely overlaid action. */
@@ -70,12 +72,23 @@ export function TrailingActionScrim({
   );
 }
 
-const styles = StyleSheet.create({
+export function trailingActionMask(theme: Theme, width: number = SCRIM_WIDTH) {
+  if (!theme.chrome.glass) return {};
+  return trailingMask(width, SCRIM_FADE_WIDTH);
+}
+
+const styles = StyleSheet.create((theme) => ({
   scrim: (width: number) => ({
     position: "absolute",
     top: 0,
     bottom: 0,
     right: 0,
     width,
+    ...(theme.chrome.glass
+      ? {
+          ...backdropBlur(GLASS_SCRIM_BLUR),
+          WebkitMaskImage: `linear-gradient(to right, transparent, #000 ${SCRIM_FADE_WIDTH}px)`,
+        }
+      : {}),
   }),
-});
+}));

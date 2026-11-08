@@ -105,6 +105,8 @@ function build(layout: "unified" | "split") {
       deletion: "red",
       additionBackground: "#010",
       deletionBackground: "#100",
+      additionGutter: "transparent",
+      deletionGutter: "transparent",
       emptyBackground: "#111",
       selection: "blue",
       headerActiveSurface: "#222",

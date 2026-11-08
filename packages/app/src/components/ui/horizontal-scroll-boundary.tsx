@@ -1,6 +1,7 @@
-import { useCallback, useId } from "react";
+import { useCallback, useId, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import Animated, {
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -8,9 +9,12 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { scheduleOnRN } from "react-native-worklets";
 import type { Theme } from "@/styles/theme";
+import { axisMask } from "@/styles/web-effects";
 
 const EDGE_EPSILON = 1;
+const NO_EDGES: ScrollEdges = { start: false, end: false };
 const SHADE_WIDTH = 24;
 
 function ScrollBoundaryShadeSvg({ side, color }: { side: "left" | "right"; color: string }) {
@@ -37,6 +41,16 @@ function ScrollBoundaryShadeSvg({ side, color }: { side: "left" | "right"; color
 const ThemedScrollBoundaryShadeSvg = withUnistyles(ScrollBoundaryShadeSvg);
 const surfaceColorMapping = (theme: Theme) => ({ color: theme.colors.surface0 });
 const sidebarColorMapping = (theme: Theme) => ({ color: theme.colors.surfaceSidebar });
+
+export interface ScrollEdges {
+  start: boolean;
+  end: boolean;
+}
+
+export function horizontalScrollMask(theme: Theme, edges: ScrollEdges) {
+  if (!theme.chrome.glass) return {};
+  return axisMask("horizontal", edges.start ? SHADE_WIDTH : 0, edges.end ? SHADE_WIDTH : 0);
+}
 
 export function useHorizontalScrollBoundary() {
   const offset = useSharedValue(0);
@@ -65,7 +79,24 @@ export function useHorizontalScrollBoundary() {
   const rightShadeStyle = useAnimatedStyle(() => ({
     opacity: Number(offset.value + viewportWidth.value < contentWidth.value - EDGE_EPSILON),
   }));
-  return { onLayout, onContentSizeChange, onScroll, leftShadeStyle, rightShadeStyle };
+  const [edges, setEdges] = useState<ScrollEdges>(NO_EDGES);
+  const publishEdges = useCallback((start: boolean, end: boolean) => {
+    setEdges((current) =>
+      current.start === start && current.end === end ? current : { start, end },
+    );
+  }, []);
+  useAnimatedReaction(
+    () => ({
+      start: offset.value > EDGE_EPSILON,
+      end: offset.value + viewportWidth.value < contentWidth.value - EDGE_EPSILON,
+    }),
+    (next, previous) => {
+      if (previous && next.start === previous.start && next.end === previous.end) return;
+      scheduleOnRN(publishEdges, next.start, next.end);
+    },
+    [publishEdges],
+  );
+  return { onLayout, onContentSizeChange, onScroll, leftShadeStyle, rightShadeStyle, edges };
 }
 
 export function HorizontalScrollBoundaryShades({
@@ -103,12 +134,13 @@ export function HorizontalScrollBoundaryShades({
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   shade: {
     position: "absolute",
     top: 0,
     bottom: 1,
     width: SHADE_WIDTH,
+    display: theme.chrome.glass ? "none" : "flex",
   },
   left: { left: 0 },
   right: { right: 0 },

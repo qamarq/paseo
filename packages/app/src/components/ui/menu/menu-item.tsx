@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { Theme } from "@/styles/theme";
 import { MenuDepthProvider, useMenuContext } from "./menu-context";
 import { MENU_ITEM_HEIGHT } from "./menu-geometry";
+import { feedbackTransition } from "@/styles/web-effects";
 
 const ThemedCheck = withUnistyles(Check);
 const ThemedCheckCircle = withUnistyles(CheckCircle);
@@ -448,7 +449,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing[1],
     borderWidth: theme.borderWidth[1],
     borderColor: "transparent",
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.chrome.menuItemRadius ?? theme.borderRadius.md,
+    ...feedbackTransition(theme.chrome.feedbackMs),
     outlineWidth: 0,
     outlineColor: "transparent",
   },
@@ -463,8 +465,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing[1],
     borderWidth: theme.borderWidth[1],
     borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface2,
+    borderRadius: theme.chrome.menuItemRadius ?? theme.borderRadius.md,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   fieldFocused: {
     borderColor: theme.colors.borderAccent,
@@ -478,14 +480,14 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: 0,
   },
   itemHovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   itemPressed: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   // The row you are inside, not the value you chose. A chosen value is marked by its check.
   itemActive: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.chrome.selectionFill ?? theme.colors.surface2,
   },
   itemDisabled: {
     opacity: 0.5,
