@@ -301,6 +301,31 @@ describe("buildMonoTheme", () => {
     expect(light.chrome.floatingFill).toBe(light.colors.surface0);
   });
 
+  it("seals floating and modal surfaces on the base over glass, where blur alone leaks the page", () => {
+    const glassy = buildMonoTheme(input({ glass: { mainPaneGlass: true } }));
+    const opaque = buildMonoTheme(input()).chrome;
+
+    expect(glassy.chrome).toMatchObject({
+      floatingFill: "rgba(24, 24, 24, 0.6)",
+      modalFill: "rgba(24, 24, 24, 0.6)",
+      frostBase: glassy.colors.surface0,
+    });
+    expect(opaque).toMatchObject({
+      floatingFill: "rgba(235, 235, 235, 0.02)",
+      modalFill: "rgba(15, 15, 15, 0.55)",
+      frostBase: null,
+    });
+  });
+
+  it("gives every Mono floating surface MonoCode's shadow and inset menu dividers", () => {
+    for (const scheme of ["dark", "light"] as const) {
+      expect(buildMonoTheme(input({ scheme })).chrome).toMatchObject({
+        floatingShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        menuSeparatorInset: 4,
+      });
+    }
+  });
+
   it("never applies glass to the light scheme", () => {
     const glassy = buildMonoTheme(input({ scheme: "light", glass: { mainPaneGlass: true } }));
 

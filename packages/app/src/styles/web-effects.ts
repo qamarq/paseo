@@ -4,10 +4,14 @@ interface WebEffectStyle {
 }
 
 const NO_EFFECT: WebEffectStyle = {};
+const FROST_BASE_PASSES = 4;
 
-export function backdropBlur(radius: number): WebEffectStyle {
+export function backdropBlur(radius: number, frostBase: string | null = null): WebEffectStyle {
   if (radius <= 0) return NO_EFFECT;
-  return { backdropFilter: `blur(${radius}px)` };
+  if (frostBase === null) return { backdropFilter: `blur(${radius}px)` };
+  // Each pass raises the blurred copy's alpha so it covers the sharp page under a translucent window.
+  const base = ` drop-shadow(0 0 0 ${frostBase})`.repeat(FROST_BASE_PASSES);
+  return { backdropFilter: `blur(${radius}px)${base}` };
 }
 
 export function trailingMask(width: number, fade: number): WebEffectStyle {

@@ -15,6 +15,7 @@ import { isWeb } from "@/constants/platform";
 import { useLocalDaemonServerId } from "@/hooks/use-is-local-daemon";
 import { OverlayLayerProvider, useGlobalOverlayLayer } from "@/lib/overlay-root";
 import { useHosts } from "@/runtime/host-runtime";
+import { modalSurfaceStyle } from "@/styles/floating-surface";
 import { orderHostsLocalFirst, type HostProfile } from "@/types/host-connection";
 
 type HostFilter = (host: HostProfile) => boolean;
@@ -296,11 +297,13 @@ const styles = StyleSheet.create((theme) => ({
     maxWidth: "92%",
     maxHeight: "80%",
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.surface0,
+    ...modalSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface0,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.lg,
+      shadow: theme.shadow.lg,
+    }),
     overflow: "hidden",
-    ...theme.shadow.lg,
   },
   header: {
     gap: theme.spacing[3],

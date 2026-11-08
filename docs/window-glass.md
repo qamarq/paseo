@@ -26,3 +26,5 @@ The tint is MonoCode's native tint: the dark background at `0.4 + 0.6 × sidebar
 Window captures omit live backdrops: `screencapture -l` and ScreenCaptureKit window filters render the glass as flat grey. Only the framebuffer shows the blur. Put an opaque window of your own behind the glass window, make the glass window its child so it stays on top, and capture the glass window's rect with `screencapture -R` after checking that no other app's window overlaps it.
 
 A plain window capture is enough to spot stale paint: stretch its contrast and look for doubled text or panes darker than the title bar.
+
+To check a frosted surface (menu, popover, modal) without Screen Recording permission, take a CDP screenshot of the dev window. It keeps the page's alpha and includes CSS backdrop filters, so composite it over a dark image and look for page text showing through the surface.

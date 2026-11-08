@@ -392,8 +392,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingBottom: theme.spacing[1],
   },
   labelText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.foregroundMuted,
+    fontSize: theme.chrome.sectionLabelSize ?? theme.fontSize.sm,
+    color: theme.chrome.sectionLabelColor ?? theme.colors.foregroundMuted,
   },
   // `border` sits between surface1 and surface2, which put it within a hair of the hover fill and
   // made separators vanish against a hovered row. `borderAccent` is the colour the menu surface
@@ -403,11 +403,12 @@ const styles = StyleSheet.create((theme) => ({
   // That is one number controlling one gap: rows no longer carry vertical spacing of their own,
   // so there is nothing left for this to double up with.
   //
-  // No horizontal margin, and the page has no horizontal padding, so the rule still runs the
-  // full width of the surface rather than reading as an inset tick between two chips.
+  // No horizontal margin by default, and the page has no horizontal padding, so the rule runs the
+  // full width of the surface. Mono insets it to the chips' edge, as MonoCode does.
   separator: {
     height: 1,
     marginVertical: theme.spacing[1],
+    marginHorizontal: theme.chrome.menuSeparatorInset ?? 0,
     backgroundColor: theme.colors.borderAccent,
   },
   // A hint with `trailing` is a key on the left edge and its value on the right, so the values
