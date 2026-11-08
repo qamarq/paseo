@@ -20,7 +20,8 @@ import {
   type PluginThemeOption,
 } from "@/plugins/themes";
 import { PLUGIN_THEME_NAMES, PLUGIN_THEME_PREFERENCE, THEME_TO_UNISTYLES } from "@/styles/theme";
-import { applyAppearance } from "./apply";
+import { applyAppearance, applyMonoTheme, type AppearanceInput } from "./apply";
+import { useMonoColorScheme } from "./mono-scheme";
 import { AppearanceSystemBars } from "./system-bars";
 
 interface ContributedThemes {
@@ -64,11 +65,12 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     if (settings.theme !== PLUGIN_THEME_PREFERENCE) return null;
     return options.find((option) => option.id === settings.pluginThemeId) ?? null;
   }, [options, settings.pluginThemeId, settings.theme]);
+  const { hue, saturation, darkLightness, accentColor, diffPalette } = settings.monoAppearance;
+  const monoScheme = useMonoColorScheme(settings.monoAppearance.scheme);
 
   useEffect(() => {
     if (isLoading) return;
-    applyTheme({ preference: settings.theme, contributedTheme: selected });
-    applyAppearance({
+    const appearance: AppearanceInput = {
       uiFontFamily: settings.uiFontFamily,
       monoFontFamily: settings.monoFontFamily,
       uiBaseFontSize: settings.uiBaseFontSize,
@@ -76,12 +78,27 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       codeFontSize: settings.codeFontSize,
       contentMaxWidth: resolveContentMaxWidth({ contentMaxWidth: settings.contentMaxWidth }),
       syntaxTheme: settings.syntaxTheme,
-    });
+    };
+    if (monoScheme && selected === null) {
+      applyMonoTheme(
+        { scheme: monoScheme, hue, saturation, darkLightness, accentColor, diffPalette },
+        appearance,
+      );
+    } else {
+      applyTheme({ preference: settings.theme, contributedTheme: selected });
+      applyAppearance(appearance);
+    }
     setHasAppliedAppearance(true);
   }, [
     isLoading,
     selected,
     settings.theme,
+    monoScheme,
+    hue,
+    saturation,
+    darkLightness,
+    accentColor,
+    diffPalette,
     settings.uiFontFamily,
     settings.monoFontFamily,
     settings.uiBaseFontSize,

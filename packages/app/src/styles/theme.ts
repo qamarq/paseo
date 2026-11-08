@@ -838,6 +838,10 @@ export const PLUGIN_THEME_NAMES = {
   light: "pluginLight",
   dark: "pluginDark",
 } as const;
+export const MONO_THEME_NAMES = {
+  light: "monoLight",
+  dark: "monoDark",
+} as const;
 
 export type ThemePreference =
   | (typeof THEME_OPTIONS)[number]["name"]
@@ -863,6 +867,8 @@ type RegisteredThemes = {
 } & {
   pluginLight: typeof lightTheme;
   pluginDark: typeof darkTheme;
+  monoLight: typeof lightTheme;
+  monoDark: typeof darkTheme;
 };
 
 export const THEME_TO_UNISTYLES = Object.fromEntries(
@@ -879,6 +885,8 @@ export const REGISTERED_THEMES = {
   ),
   [PLUGIN_THEME_NAMES.light]: lightTheme,
   [PLUGIN_THEME_NAMES.dark]: darkTheme,
+  [MONO_THEME_NAMES.light]: lightTheme,
+  [MONO_THEME_NAMES.dark]: darkTheme,
 } as RegisteredThemes;
 
 export function getNextThemePreference(current: ThemePreference): ThemePreference {
