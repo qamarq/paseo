@@ -66,15 +66,14 @@ describe("isMonoActive", () => {
     ).toBe(true);
   });
 
-  it("applies to every built-in preference right away", () => {
-    expect(
-      isMonoActive({
-        themePreference: "dark",
-        pluginThemeSelected: false,
-        pluginCatalogsSettled: false,
-      }),
-    ).toBe(true);
-  });
+  it.each(["auto", "dark", "light", "midnight", "pureBlack"] as const)(
+    "applies right away over the built-in %s preference, as kept from an official Paseo profile",
+    (themePreference) => {
+      expect(
+        isMonoActive({ themePreference, pluginThemeSelected: false, pluginCatalogsSettled: false }),
+      ).toBe(true);
+    },
+  );
 });
 
 describe("interface scale", () => {

@@ -13,6 +13,10 @@ Electron's `vibrancy` gives AppKit's material as-is. Under our tint it adds a `c
 - If the addon fails to load, `window/native-glass.ts` logs a warning and the glass controller uses Electron vibrancy.
 - `build:main` compiles the addon with `xcrun clang++` as a universal binary against the running Node's Node-API headers, and skips it while the `.node` is newer than its sources. Without the Xcode Command Line Tools or the headers it warns and skips locally, so glass uses Electron vibrancy, and fails in CI. It is a no-op on other platforms. The packaged `.node` is unpacked from the asar.
 
+## Transparent window
+
+Every macOS window is created with `transparent: true`, glass or not (`getGlassWindowOptions` in `packages/desktop/src/window/window-glass.ts`). Electron makes the window's widget translucent only at creation, and only for `transparent` or a `vibrancy` option. The native backdrop passes neither, and an opaque widget never clears the regions it repaints: the translucent tint stacks frame after frame, so text leaves offset ghosts and busy areas such as the chat and the sidebar list turn opaque within seconds. Glass can turn on after launch, so the window cannot wait for it. With glass off the window gets an opaque background color.
+
 ## Tint
 
 The tint is MonoCode's native tint: the dark background at `0.4 + 0.6 × sidebar opacity`, painted once on `html` (`monoWindowTint` in `packages/app/src/styles/mono-theme.ts`). Every glass layer token stays transparent; a second translucent fill compounds and darkens the window.
@@ -20,3 +24,5 @@ The tint is MonoCode's native tint: the dark background at `0.4 + 0.6 × sidebar
 ## Checking it visually
 
 Window captures omit live backdrops: `screencapture -l` and ScreenCaptureKit window filters render the glass as flat grey. Only the framebuffer shows the blur. Put an opaque window of your own behind the glass window, make the glass window its child so it stays on top, and capture the glass window's rect with `screencapture -R` after checking that no other app's window overlaps it.
+
+A plain window capture is enough to spot stale paint: stretch its contrast and look for doubled text or panes darker than the title bar.
