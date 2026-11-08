@@ -24,6 +24,7 @@ import {
 } from "lucide-react-native";
 import type { MatchRange } from "@getpaseo/protocol/search/text-match";
 import { useIsCompactFormFactor } from "@/constants/layout";
+import { floatingSurfaceStyle } from "@/styles/floating-surface";
 import type { Theme } from "@/styles/theme";
 import { Button } from "./button";
 import { HighlightedText } from "./highlighted-text";
@@ -339,12 +340,15 @@ const styles = StyleSheet.create((theme: Theme) => ({
     flexShrink: 1,
     // Keep a complete selectable row (36), list padding (8), and borders (2).
     minHeight: 46,
-    backgroundColor: theme.colors.surface1,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
-    borderRadius: theme.borderRadius.lg,
+    ...floatingSurfaceStyle(theme, {
+      backgroundColor: theme.colors.surface1,
+      borderColor: theme.colors.borderAccent,
+      borderRadius: theme.borderRadius.lg,
+      shadow: theme.shadow.md,
+    }),
+    borderRadius: theme.chrome.composerRadius ?? theme.borderRadius.lg,
     overflow: "hidden",
-    ...theme.shadow.md,
   },
   scrollView: {
     flexGrow: 0,

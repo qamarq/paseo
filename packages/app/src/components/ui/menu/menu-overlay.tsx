@@ -480,8 +480,8 @@ const styles = StyleSheet.create((theme) => ({
       backgroundColor: theme.colors.surface1,
       borderColor: theme.colors.borderAccent,
       borderRadius: theme.borderRadius.lg,
+      shadow: theme.shadow.md,
     }),
     overflow: "hidden",
-    ...theme.shadow.md,
   },
 }));

@@ -290,6 +290,7 @@ const MONO_FILL = {
   chipHover: 0.05,
   chipSelected: 0.1,
   floating: 0.02,
+  frostLift: 0.04,
   floatingBorder: 0.1,
   modalBorder: 0.07,
   composer: 0.03,
@@ -305,6 +306,8 @@ const MONO_FILL = {
   pillHover: 0.15,
 };
 const MODAL_BASE_ALPHA = 0.55;
+const FROST_ALPHA = 0.6;
+const FLOATING_SHADOW = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)";
 const MONO_PROSE_INK = 0.78;
 const MONO_LINK: Record<MonoColorScheme, string> = {
   dark: "#7dd3fc",
@@ -326,6 +329,7 @@ function monoChrome(
   const ink = (alpha: number) => toRgba(content, alpha);
   const dark = scheme === "dark";
   const base = toHex(background);
+  const frost = glass ? toRgba(mix(content, background, MONO_FILL.frostLift), FROST_ALPHA) : null;
   return {
     ...DEFAULT_CHROME,
     glass: glass !== null,
@@ -353,13 +357,15 @@ function monoChrome(
     iconButtonSize: 24,
     floatingRadius: 12,
     tooltipRadius: 8,
-    floatingFill: dark ? ink(MONO_FILL.floating) : base,
+    floatingFill: frost ?? (dark ? ink(MONO_FILL.floating) : base),
     floatingBorder: ink(MONO_FILL.floatingBorder),
     floatingBlur: dark ? FLOATING_BLUR : 0,
+    floatingShadow: FLOATING_SHADOW,
+    frostBase: glass ? base : null,
     menuItemRadius: 8,
     selectionFill: ink(MONO_FILL.chipSelected),
     modalRadius: 16,
-    modalFill: dark ? toRgba(background, MODAL_BASE_ALPHA) : base,
+    modalFill: frost ?? (dark ? toRgba(background, MODAL_BASE_ALPHA) : base),
     modalBorder: ink(MONO_FILL.modalBorder),
     modalBlur: dark ? FLOATING_BLUR : 0,
     scrim: MODAL_SCRIM,

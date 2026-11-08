@@ -607,10 +607,10 @@ const styles = StyleSheet.create((theme) => ({
       backgroundColor: theme.colors.popover,
       borderColor: theme.colors.borderAccent,
       borderRadius: theme.borderRadius.xl,
+      shadow: theme.shadow.md,
     }),
     borderRadius:
       theme.chrome.tooltipRadius ?? theme.chrome.floatingRadius ?? theme.borderRadius.xl,
-    ...theme.shadow.md,
     zIndex: 1000,
   },
 }));

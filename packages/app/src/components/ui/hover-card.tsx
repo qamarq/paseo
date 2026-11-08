@@ -418,8 +418,8 @@ const styles = StyleSheet.create((theme) => ({
       backgroundColor: theme.colors.popover,
       borderColor: theme.colors.borderAccent,
       borderRadius: theme.borderRadius.xl,
+      shadow: theme.shadow.md,
     }),
-    ...theme.shadow.md,
     zIndex: 1000,
   },
 }));

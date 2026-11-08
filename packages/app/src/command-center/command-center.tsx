@@ -1039,9 +1039,9 @@ const styles = StyleSheet.create((theme) => ({
       backgroundColor: theme.colors.surface0,
       borderColor: theme.colors.border,
       borderRadius: theme.borderRadius.lg,
+      shadow: theme.shadow.lg,
     }),
     overflow: "hidden",
-    ...theme.shadow.lg,
   },
   header: {
     paddingHorizontal: theme.spacing[4],
